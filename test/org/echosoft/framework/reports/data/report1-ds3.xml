@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<data>
+  <activity id="a1" pid="" name="Строительство" level="0">
+    <company id="c11" name="ГУЛАГ" director="Иванов И.И." >
+      <project id="p1" name="project 1" active="true" started="01.01.2009">
+        <invoice id="1" name="накладная 1" contragent="Company1" invoice="D1" amount="16" unitcost="1.5" />
+      </project>
+    </company>
+    <company id="c12" name="НИИ ЧИВО" director="Янус А.В." >
+      <project id="p2" name="project 2" active="false" started="02.01.2009">
+        <invoice id="1" name="накладная 2" contragent="Company2" invoice="D2" amount="10" unitcost="2.5" />
+      </project>
+    </company>
+  </activity>
+  <activity id="a2" pid="" name="Реконструкция" level="0">
+    <company id="c21" name="ГУЛАГ" director="Иванов И.И.">
+      <project id="p1" name="project 1" active="true" started="03.01.2009">
+        <invoice id="3" name="накладная 3" contragent="John Doe" invoice="D3" amount="7" unitcost="3" />
+      </project>
+    </company>
+    <company id="c22" name="НИИ ЧИВО" director="Янус А.В." >
+      <project id="p3" name="project 3" active="true" started="04.01.2009">
+        <invoice id="4" name="накладная 4" contragent="John Doe" invoice="D4" amount="6" unitcost="3" />
+      </project>
+    </company>
+    <company id="c23" name="ОграБанкъ" director="Шерстопалов Х.Б." >
+      <project id="p3" name="project 3" active="true" started="04.01.2009">
+        <invoice id="4" name="накладная 4" contragent="John Doe" invoice="D4" amount="6" unitcost="3" />
+      </project>
+    </company>
+  </activity>
+  <activity id="a3" pid="" name="Закупки" level="0">
+    <company id="c31" name="ТЯЖМАШСТРОЙ" director="Уркин Г.В.">
+      <project id="p31" name="Перевооружение-1995" active="true" started="01.04.1994">
+        <invoice id="4" name="дырка от бублика" contragent="Сукинъ и Сыновья" invoice="C001/S" amount="200" unitcost="3.0" />
+        <invoice id="6" name="осла дохлого уши" contragent="Сукинъ и Сыновья" invoice="C002/S" amount="2" unitcost="15.0" />
+      </project>
+    </company>
+  </activity>
+
+</data>

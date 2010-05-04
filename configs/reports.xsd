@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="report" type="Report"/>
+
+  <xs:complexType name="Report">
+    <xs:annotation>
+      <xs:documentation>
+        Содержит описание модели одного отчета.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="description" type="ReportDescription" minOccurs="0" maxOccurs="1"/>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="filtered-data-provider" type="FilteredDataProvider"/>
+        <xs:element name="list-data-provider" type="ListDataProvider"/>
+        <xs:element name="sql-data-provider" type="SQLDataProvider"/>
+        <xs:element name="class-data-provider" type="ClassDataProvider"/>
+      </xs:choice>
+      <xs:element name="report-listener" type="ReportEventListener" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="sheet" type="Sheet" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="title" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Название отчета.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="preserveTemplate" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>
+          Если в атрибуте указано "true" то в итоговый отчет будут по умолчанию скопированы все свойств листа отчета из шаблона а также все скрипты,
+          относящиеся к шаблону отчета в целом.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="user" type="Expression" default="user">
+      <xs:annotation>
+        <xs:documentation>
+          Если в каком-либо листе итогового отчета будет установлен флаг "protected" то пользователь не сможет изменить содержимое данного листа
+          пока не введет определенное имя пользователя (содержится в данном атрибуте) и пароль (содержится в атрибуте "password").
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="Expression">
+      <xs:annotation>
+        <xs:documentation>
+          Если в каком-либо листе итогового отчета будет установлен флаг "protected" то пользователь не сможет изменить содержимое данного листа
+          пока не введет определенное имя пользователя (содержится в данном атрибуте) и пароль (содержится в атрибуте "password").
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="ReportDescription">
+    <xs:annotation>
+      <xs:documentation>
+        Содержит дополнительное описание данного отчета. При построении отчета
+        все поля описанные в этой секции будут представлены в свойствах итогового документа excel.
+        В качестве значений полей допускаются el-выражения.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="company" type="Expression" minOccurs="0"/>
+      <xs:element name="application" type="Expression" minOccurs="0"/>
+      <xs:element name="author" type="Expression" minOccurs="0"/>
+      <xs:element name="version" type="Expression" minOccurs="0"/>
+      <xs:element name="title" type="Expression" minOccurs="0"/>
+      <xs:element name="subject" type="Expression" minOccurs="0"/>
+      <xs:element name="category" type="Expression" minOccurs="0"/>
+      <xs:element name="comments" type="Expression" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AbstractDataProvider" abstract="true">
+    <xs:choice minOccurs="0">
+      <xs:element name="filter" type="Expression"/>
+      <xs:element name="params" type="Expression"/>
+      <xs:element name="param" type="Parameter" maxOccurs="unbounded"/>
+    </xs:choice>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="FilteredDataProvider">
+    <xs:annotation>
+      <xs:documentation>
+        Определяет "логический" поставщик данных на основе определенного подмножества данных исходного поставщика данных.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="predicate" type="Expression" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Правило, позволяющее определить входит ли указанная запись из исходного поставщика данных в новый поставщик данных.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="ListDataProvider">
+    <xs:complexContent>
+      <xs:extension base="AbstractDataProvider">
+        <xs:attribute name="data" type="Expression" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="SQLDataProvider">
+    <xs:complexContent>
+      <xs:extension base="AbstractDataProvider">
+        <xs:choice>
+          <xs:element name="sql" type="Expression"/>
+          <xs:element name="sql-ref" type="Expression"/>
+        </xs:choice>
+        <xs:attribute name="datasource" type="Expression" use="required"/>
+        <xs:attribute name="processor" type="SQLProcessorType" default="generic"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ClassDataProvider">
+    <xs:complexContent>
+      <xs:extension base="AbstractDataProvider">
+        <xs:attribute name="object" type="Expression" use="required"/>
+        <xs:attribute name="method" type="Expression" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ReportEventListener">
+    <xs:annotation>
+      <xs:documentation>
+        Описывает обработчик события который срабатывает в самом начале формирования очередного экземпляра отчета.
+        Значением атрибута class должен являться либо объект класса реализующего интерфейс org.echosoft.framework.reports.model.events.ReportEventListener
+        либо строка с именем класса реализующем этот интерфейс.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="class" type="Expression"/>
+    <xs:attribute name="instance" type="Expression"/>
+  </xs:complexType>
+
+  <xs:complexType name="SectionEventListener">
+    <xs:annotation>
+      <xs:documentation>
+        Описывает обработчик событий который ассоциирован с конкретной секцией отчета и может срабатывать в двух случаях:
+        - перед началом обработки первой секции отчета.
+        - после окончания обработки последней секции отчета.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="class" type="Expression"/>
+    <xs:attribute name="instance" type="Expression"/>
+  </xs:complexType>
+
+  <xs:complexType name="CellEventListener">
+    <xs:annotation>
+      <xs:documentation>
+        Описывает обработчик события который срабатывает перед рендерингом очередной ячейки в секции отчета.
+        Значением атрибута class должен являться либо объект класса реализующего интерфейс org.echosoft.framework.reports.model.events.CellEventListener
+        либо строка с именем класса реализующем этот интерфейс.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="class" type="Expression"/>
+    <xs:attribute name="instance" type="Expression"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="Sheet">
+    <xs:annotation>
+      <xs:documentation>
+        Содержит описание характеристик и структуры отдельно взятого листа в отчете.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence minOccurs="1" maxOccurs="unbounded">
+      <xs:choice>
+        <xs:element name="plain-section" type="PlainSection"/>
+        <xs:element name="grouping-section" type="GroupingSection"/>
+        <xs:element name="composite-section" type="CompositeSection"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="title" type="Expression" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Название данного листа отчета которое увидит пользователь.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="hidden" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>
+          Если в атрибуте указано "true" то содержимое данного листа хоть и будет включено в итоговый отчет но лист будет помечен как невидимый.
+          Доступ к нему может быть осуществлен либо из скриптов либо если пользователь явно пометит его как видимый.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rendered" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>
+          Если в атрибуте указано "false" то данный лист будет исключен из обработки при построении отчета.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="protected" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>
+          Следует ли данный лист отчета защищать паролем от редактирования.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="zoom" type="Zoom" default="100">
+      <xs:annotation>
+        <xs:documentation>
+          Позволяет указать масштаб (в процентах) отображения данного листа отчета. Допустимые значения: 1..400
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="group-columns" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+          Строка вида: A-K,F-AD, F-AG
+          Определяет как должны быть сгруппированы колонки в итоговом отчете. Данный атрибут содержит перечисление через запятую
+          всех задействованных на данном листе группировок, каждая из которых описывается символьными именами первой и последней колонок, разделенных символом '-'. 
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+
+  <xs:complexType name="AbstractSection" abstract="true">
+    <xs:annotation>
+      <xs:documentation>
+        Содержит общие свойства для всех видов секций отчета.
+        Секции расположены на листах отчетах.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="provider" type="xs:IDREF">
+      <xs:annotation>
+        <xs:documentation>
+          Ссылка на поставщик данных, ассоциированный с данной секцией, когда он указан, содержимое секции повторяется столько раз, сколько
+          сколько записей было извлечено из этого поставщика.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rendered" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>
+          Если в атрибуте указано "false" то данная секция будет исключена из обработки при построении отчета.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="hidden" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>
+          Если в атрибуте указано "true" то в итоговом отчете все строки листа содержащие информацию из этой секции будут
+          помечены как невидимые. Доступ к ним может быть осуществлен либо из скриптов либо если пользователь явно пометит их как видимые.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="collapsible" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>
+          Если в атрибуте указано "true" то в итоговом отчете все строки относящиеся к данной секции можно будет быстро свернуть в одну строку.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="collapsed" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>
+          Используется только совместно с атрибутом collapsible="true". Если в атрибуте указано "true" то все строки относящиеся к данной секции будут
+          по умолчанию свернуты в одну строку.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+
+  <xs:complexType name="PlainSection">
+    <xs:annotation>
+      <xs:documentation>
+        Описывает простую многострочную секцию в отчете.
+        Как правило такие секции используются для описания заголовков и подвалов на страницах отчетов.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="AbstractSection">
+        <xs:sequence>
+          <xs:element name="section-listener" type="SectionEventListener" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="cell-listener" type="CellEventListener" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="height" type="xs:positiveInteger" use="required">
+          <xs:annotation>
+            <xs:documentation>
+              Количество строк в шаблоне отчета отведенных на описание данной секции.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <xs:complexType name="GroupingSection">
+    <xs:annotation>
+      <xs:documentation>
+        Расширяет функционал доступный в PlainSection за счет добавления возможности представлять данные сгруппированные по некоторым признакам.
+        Данный вид секций в отчете, ориентирован на отображение данных с использованием возможных группировок по одному или более полям.
+        Главный критерий при использовании группировок в отчетах - данные для отчета должны быть уже отсортированы по
+        данным полям в соответствующей последовательности.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="AbstractSection">
+        <xs:sequence>
+          <xs:element name="section-listener" type="SectionEventListener" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="cell-listener" type="CellEventListener" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="group" type="Group" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="indentColumns" type="xs:string"/>
+        <xs:attribute name="rowHeight" type="xs:positiveInteger" default="1">
+          <xs:annotation>
+            <xs:documentation>
+              Количество строк в шаблоне отчета, отведенных на описание строк с информацией о каждой записи в секции.
+              Общее количество строк в шаблоне отчета отведенных на описание данной секции складывается из суммы строк занятых на описание группировочных строк
+              и количества строк занятых описанием группировочных строк.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <xs:complexType name="CompositeSection">
+    <xs:annotation>
+      <xs:documentation>
+        Расширяет функционал доступный в GroupingSection.
+        Данный вид секций в отчете используется в первую очередь для группировки секций которые логически связаны между собой и есть необходимость выполнять
+        над всеми ними какие-то общие действия.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="AbstractSection">
+        <xs:sequence>
+          <xs:element name="section-listener" type="SectionEventListener" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="cell-listener" type="CellEventListener" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="group" type="Group" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="plain-section" type="PlainSection"/>
+            <xs:element name="grouping-section" type="GroupingSection"/>
+            <xs:element name="composite-section" type="CompositeSection"/>
+          </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="indentColumns" type="xs:string"/>
+        <xs:attribute name="provider-usage" type="ProviderUsage" default="STANDARD">
+          <xs:annotation>
+            <xs:documentation>
+              Используется только совместно с атрибутом "provider".
+              Определяет режимы использования поставщиков данных в секциях отчетов.
+              Значение атрибута по умолчанию - "STANDARD".
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <xs:complexType name="Group">
+    <xs:annotation>
+      <xs:documentation>
+        Позволяет группировать в отчете строки по некоторым полям. Использование группировок в модели отчета дает нам
+        ряд возможностей:
+        - указывать отдельное стилевое оформление соответствующих строк отчета.
+        - использовать разного рода агрегатные функции в ячейках отчета (формулы в Excel).
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="group-style" type="GroupStyle" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="height" type="xs:positiveInteger" default="1">
+      <xs:annotation>
+        <xs:documentation>
+          Определяет количество строк в шаблоне отведенных на описание одной группировочной записи в итоговом отчете.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="discriminatorField" type="xs:Name"/>
+    <xs:attribute name="levelField" type="xs:Name"/>
+    <xs:attribute name="collapsible" type="xs:boolean" default="true"/>
+    <xs:attribute name="collapsed" type="xs:boolean" default="false"/>
+    <xs:attribute name="skipEmptyGroups" type="xs:boolean" default="false"/>
+    <xs:attribute name="hidden" type="xs:boolean" default="false"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="GroupStyle">
+    <xs:annotation>
+      <xs:documentation>
+        Описывает альтернативные представления одной группировочной строки. Зачастую данная возможность используется
+        для того чтобы указать как будет выглядеть группировочная строка на конкретном уровне иерархии.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="level" type="xs:nonNegativeInteger" default="0"/>
+    <xs:attribute name="default" type="xs:boolean" default="false"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="Parameter">
+    <xs:attribute name="name" type="Expression" use="required"/>
+    <xs:attribute name="value" type="Expression" use="required"/>
+  </xs:complexType>
+
+
+  <xs:simpleType name="SQLProcessorType">
+    <xs:annotation>
+      <xs:documentation>Перечень поддерживаемых обработчиков запросов</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:Name">
+      <xs:enumeration value="oracle"/>
+      <xs:enumeration value="pgsql"/>
+      <xs:enumeration value="mssql"/>
+      <xs:enumeration value="generic"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ProviderUsage">
+    <xs:annotation>
+      <xs:documentation>Определяет режимы использования поставщиков данных в секциях отчетов.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:Name">
+      <xs:enumeration value="STANDARD">
+        <xs:annotation>
+          <xs:documentation>
+            Повторяет столько раз тело секции сколько записей было прочитано обработчиком секции из поставщика данных.
+            Количество повторов тела секции может быть меньшим количества записей возвращаемых поставщиком данных в случае составных секций
+            когда у них есть дочерние секции подключенные к тому же курсору данных посредством использования т.н. логических источников данных - {@link
+            org.echosoft.framework.reports.model.providers.FilteredDataProviderHolder}.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DECLARE_ONLY">
+        <xs:annotation>
+          <xs:documentation>
+            Данный режим дает нам возможность единожды инициализировав курсор в составной секции, использовать затем данные из него в дочерних секциях
+            посредством т.н. логических источников данных (см. описание тега filtered-data-provider).
+            Важным отличием данного режима от STANDARD является то что абсолютно ВСЕ записи этого курсора доступны производным от него поставщикам.
+            Если бы мы открывали курсор в режиме STANDARD то производным от него поставщикам будут доступны все записи кроме первой
+            (уже прочитанной при открытии родительской секции).
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="PREFETCH_RECORDS">
+        <xs:annotation>
+          <xs:documentation>
+            Обработка секции похожа на режим STANDARD но перевод курсора на следующую запись в поставщике данных не выполняется
+            и соответственно необходимо это выполнять где-то в дочерних секциях иначе у нас получится бесконечный цикл.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:simpleType name="Expression">
+    <xs:annotation>
+      <xs:documentation>
+        Представляет собой динамически вычисляемые выражения вида:
+        <code>Отчет по подразделению ${env:department.name}</code>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+
+  <xs:simpleType name="Zoom">
+    <xs:annotation>
+      <xs:documentation>
+        Диапазон чисел, допустимый для описания масштаба отдельно взятого листа отчета.
+        Измеряется в процентах и может изменяться в диапазоне 1..400.
+      </xs:documentation>
+      </xs:annotation>
+      <xs:restriction base="xs:positiveInteger">
+        <xs:minInclusive value="1" />
+        <xs:maxInclusive value="400" />
+      </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>

@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project name="Reports" default="compile" basedir=".">
+
+  <target name="clean" depends="init" description="remove compiled classes">
+    <delete dir="build"/>
+  </target>
+
+
+  <target name="compile" depends="init" description="quick compile modified classes (default target)">
+    <antcall target="compile-to">
+      <param name="srcdir" value="java:test"/>
+      <param name="to" value="build/classes"/>
+    </antcall>
+    <copy todir="build/classes">
+      <fileset dir="test">
+        <patternset refid="all.config.files"/>
+      </fileset>
+    </copy>
+  </target>
+
+
+  <target name="build" depends="clean, compile" description="recompile all source code in the project"/>
+
+
+  <target name="jar" depends="clean,get-revision-info" description="make webui-extras jars">
+    <antcall target="compile-to">
+      <param name="srcdir" value="java"/>
+      <param name="to" value="build/classes"/>
+    </antcall>
+    <!-- generate jar with reports framework -->
+    <jar jarfile="build/${app.name}-${spec.version}${spec.extraversion}.jar">
+      <fileset dir="build/classes">
+        <include name="org/echosoft/framework/reports/**/*.*"/>
+      </fileset>
+      <manifest>
+        <attribute name="Built-By" value="${built.by}"/>
+        <attribute name="Built-Date" value="${built.date}"/>
+        <section name="org/echosoft/framework/reports/">
+          <attribute name="Specification-Vendor" value="${spec.vendor}"/>
+          <attribute name="Specification-Version" value="${spec.version}"/>
+          <attribute name="Implementation-Version" value="${built.revision}"/>
+        </section>
+      </manifest>
+      <metainf dir="configs">
+        <include name="reports.xsd" />
+      </metainf>
+    </jar>
+    <!--generate source distribution -->
+    <jar jarfile="build/${app.name}-${spec.version}${spec.extraversion}-src.zip">
+      <fileset dir="java" excludes="**/.svn/*.*">
+        <include name="org/echosoft/framework/reports/**/*.*"/>
+      </fileset>
+      <manifest>
+        <attribute name="Built-By" value="${built.by}"/>
+        <attribute name="Built-Date" value="${built.date}"/>
+        <section name="org/echosoft/framework/reports/">
+          <attribute name="Specification-Vendor" value="${spec.vendor}"/>
+          <attribute name="Specification-Version" value="${spec.version}"/>
+          <attribute name="Implementation-Version" value="${built.revision}"/>
+        </section>
+      </manifest>
+      <metainf dir="configs">
+        <include name="reports.xsd" />
+      </metainf>
+    </jar>
+    <delete dir="build/classes"/>
+  </target>
+
+
+
+  <target name="javadoc" depends="init" description="make java documentation">
+    <delete dir="build/doc"/>
+    <mkdir dir="build/doc/javadoc"/>
+    <javadoc sourcepath="java" destdir="build/doc/javadoc"
+             encoding="${build.encoding}" charset="${build.encoding}"
+             packagenames="**.*"
+             classpathref="build.classpath"
+             author="true"
+             version="true"
+             use="true"
+             private="true"
+             windowtitle="${app.name} ${spec.version} Java API">
+    </javadoc>
+  </target>
+
+  <target name="test" depends="compile" description="run all unit tests">
+    <junit printsummary="withOutAndErr">
+      <jvmarg value="-Dorg.echosoft.reports.app.root=${basedir}/" />
+      <classpath refid="run.classpath"/>
+      <formatter type="plain"/>
+      <batchtest todir="build">
+        <fileset dir="test">
+          <include name="**/*Test.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+
+
+  <!-- any supplementary declarations -->
+
+  <target name="init">
+    <tstamp>
+      <format property="built.date" pattern="dd.MM.yyyy HH:mm:ss"/>
+    </tstamp>
+    <property file="build.properties"/>
+    <path id="build.classpath">
+      <fileset dir="lib" includes="**/*.jar"/>
+    </path>
+    <path id="run.classpath">
+      <pathelement location="build/classes"/>
+      <path refid="build.classpath"/>
+    </path>
+    <patternset id="all.config.files">
+      <include name="**/*.xml"/>
+      <include name="**/*.xsd"/>
+      <include name="**/*.xls"/>
+    </patternset>
+  </target>
+
+  <target name="get-revision-info">
+    <!--
+    <exec executable="svn" dir="."  output="revision.info">
+      <arg value="info"/>
+    </exec>
+    <replaceregexp file="revision.info" match="(?s)(.*Revision:\ )(\d+)(.*)" replace="\2"/>
+    <loadfile property="built.revision" srcfile="revision.info"/>
+    <delete file="revision.info" />
+    -->
+    <property name="built.revision" value="0" />
+    <echo message="revision: ${built.revision}" />
+  </target>
+
+
+  <target name="compile-to" depends="init, get-revision-info">
+    <mkdir dir="${to}"/>
+    <depend srcdir="${srcdir}" destdir="${to}" closure="yes">
+      <include name="**/*.java"/>
+    </depend>
+    <javac srcdir="${srcdir}" destdir="${to}" classpathref="build.classpath" encoding="${build.encoding}"
+           source="${build.source}" target="${build.target}" deprecation="${build.deprecation}" nowarn="${build.nowarn}"
+           debug="${build.debug}" debugLevel="${build.debug.level}" includeAntRuntime="false">
+    </javac>
+    <copy todir="${to}">
+      <fileset dir="java">
+        <patternset refid="all.config.files"/>
+      </fileset>
+    </copy>
+    <mkdir dir="${to}/META-INF" />
+    <echo file="${to}/META-INF/MANIFEST.MF">Built-By: ${built.by}
+Built-Date: ${built.date}
+Specification-Vendor: ${spec.vendor}
+Specification-Version: ${spec.version}
+Implementation-Version: ${built.revision}
+</echo>
+    <native2ascii encoding="${build.encoding}" src="java" dest="${to}" includes="**/*.properties"/>
+  </target>
+
+</project>

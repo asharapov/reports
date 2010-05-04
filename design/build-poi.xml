@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE project PUBLIC "-//Ant//Project 1.5//EN" "ant.dtd">
+<project name="POI Build (extended)" default="help" basedir=".">
+
+	<import file="build.xml" />
+
+
+	<target name="src-jar" description="generates poi-src.jar file">
+        <jar destfile="${dist.dir}/${jar.name}-${version.id}-src.zip">
+            <fileset dir="src/java">
+                <include name="org/**/*.*"/>
+            </fileset>
+            <fileset dir="src/contrib/src">
+                <include name="org/**/*.*"/>
+            </fileset>
+            <fileset dir="src/scratchpad/src">
+                <include name="org/**/*.*"/>
+            </fileset>
+            <manifest>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Specification-Title" value="Apache POI"/>
+                <attribute name="Specification-Version" value="${version.id}"/>
+                <attribute name="Specification-Vendor" value="Apache"/>
+                <attribute name="Implementation-Title" value="Apache POI"/>
+                <attribute name="Implementation-Version" value="${version.id}"/>
+                <attribute name="Implementation-Vendor" value="Apache"/>
+            </manifest>        
+        </jar>
+	</target>
+
+</project>

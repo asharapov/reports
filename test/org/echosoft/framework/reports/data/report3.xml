@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<report id="report3" title="Ведомость 3" password="123" preserveTemplate="true"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://echosoft.org/java/excel-reports/reports.xsd">
+
+  <description>
+    <company>my company</company>
+    <application>Test Cases</application>
+    <author>It's me</author>
+    <version>3</version>
+    <title>Report's title</title>
+    <subject>my subject</subject>
+    <category>my category</category>
+    <comments>my comments</comments>
+  </description>
+
+  <list-data-provider id="ds1" data="${env:activities}" />
+
+  <sheet id="sheet1" title="Проверка шаблона">
+    <plain-section id="sheet1.static" height="5" />
+  </sheet>
+
+  <sheet id="sheet2" title="группировки в составных секциях">
+    <composite-section id="sheet2.data" provider="ds1">
+      <group discriminatorField="activity.id" height="1" />
+      <group discriminatorField="company.id" height="1" />
+      <plain-section id="sheet2.data.project" height="1" />
+      <plain-section id="sheet2.data.invoice" height="2" />
+    </composite-section>
+  </sheet>
+
+</report>
