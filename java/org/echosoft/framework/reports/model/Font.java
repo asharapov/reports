@@ -11,7 +11,7 @@ public class Font implements Serializable, Cloneable {
 
     private short id;
     private short boldWeight;
-    private byte charSet;
+    private int charSet;
     private Color color;
     private short fontHeight;
     private String fontName;
@@ -44,10 +44,10 @@ public class Font implements Serializable, Cloneable {
         this.boldWeight = boldWeight;
     }
 
-    public byte getCharSet() {
+    public int getCharSet() {
         return charSet;
     }
-    public void setCharSet(byte charSet) {
+    public void setCharSet(int charSet) {
         this.charSet = charSet;
     }
 
