@@ -73,15 +73,6 @@ public class ExcelReportProcessor {
     private static final String MACROS = "$M=";
     private static final int MACROS_LENGTH = MACROS.length();
 
-    private static final ExcelReportProcessor instance = new ExcelReportProcessor();
-
-    public static ExcelReportProcessor getInstance() {
-        return instance;
-    }
-
-    private ExcelReportProcessor() {
-    }
-
     /**
      * Формирует отчет на основании его модели и указанных пользователем в контексте параметров.
      *
