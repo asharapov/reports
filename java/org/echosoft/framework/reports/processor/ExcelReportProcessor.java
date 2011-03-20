@@ -16,12 +16,14 @@ import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hpsf.Variant;
 import org.apache.poi.hpsf.wellknown.PropertyIDMap;
 import org.apache.poi.hpsf.wellknown.SectionIDMap;
+import org.apache.poi.hssf.model.InternalSheet;
 import org.apache.poi.hssf.record.PaletteRecord;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
+import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -41,6 +43,7 @@ import org.echosoft.framework.reports.model.CompositeSection;
 import org.echosoft.framework.reports.model.Font;
 import org.echosoft.framework.reports.model.GroupStyle;
 import org.echosoft.framework.reports.model.GroupingSection;
+import org.echosoft.framework.reports.model.PageSettings;
 import org.echosoft.framework.reports.model.PlainSection;
 import org.echosoft.framework.reports.model.PrintSetup;
 import org.echosoft.framework.reports.model.Report;
@@ -317,13 +320,7 @@ public class ExcelReportProcessor {
                 final ColumnGroup group = i.next().getData();
                 ectx.wsheet.groupColumn(group.getFirstColumn(), (short) group.getLastColumn());
             }
-            ectx.wsheet.getHeader().setLeft(sheet.getHeader().getLeft());
-            ectx.wsheet.getHeader().setCenter(sheet.getHeader().getCenter());
-            ectx.wsheet.getHeader().setRight(sheet.getHeader().getRight());
-            ectx.wsheet.getFooter().setLeft(sheet.getFooter().getLeft());
-            ectx.wsheet.getFooter().setCenter(sheet.getFooter().getCenter());
-            ectx.wsheet.getFooter().setRight(sheet.getFooter().getRight());
-            processPrintSetup(ectx.wsheet, sheet.getPrintSetup());
+            processPageSettings(ectx.wsheet, sheet.getPageSettings());
         }
         for (final ReportEventListener listener : ectx.listeners) {
             listener.afterSheet(ectx);
@@ -332,24 +329,37 @@ public class ExcelReportProcessor {
         ectx.wsheet = null;
     }
 
-    private void processPrintSetup(final HSSFSheet sheet, final PrintSetup printSetup) {
-        sheet.getPrintSetup().setPaperSize(printSetup.getPaperSize());
-        sheet.getPrintSetup().setScale(printSetup.getScale());
-        sheet.getPrintSetup().setFitWidth(printSetup.getFitWidth());
-        sheet.getPrintSetup().setPageStart(printSetup.getPageStart());
-        sheet.getPrintSetup().setFitHeight(printSetup.getFitHeight());
-        sheet.getPrintSetup().setFooterMargin(printSetup.getFooterMargin());
-        sheet.getPrintSetup().setLandscape(printSetup.getLandscape());
-        sheet.getPrintSetup().setLeftToRight(printSetup.getLeftToRight());
-        sheet.getPrintSetup().setNoColor(printSetup.getNoColor());
-        sheet.getPrintSetup().setOptions(printSetup.getOptions());
-        sheet.getPrintSetup().setDraft(printSetup.getDraft());
-        sheet.getPrintSetup().setHResolution(printSetup.getHResolution());
-        sheet.getPrintSetup().setNotes(printSetup.getNotes());
-        sheet.getPrintSetup().setUsePage(printSetup.getUsePage());
-        sheet.getPrintSetup().setVResolution(printSetup.getVResolution());
-        sheet.getPrintSetup().setValidSettings(printSetup.getValidSettings());
-        sheet.getPrintSetup().setNoOrientation(printSetup.getNoOrientation());
+    private void processPageSettings(final HSSFSheet sheet, final PageSettings pageSettings) {
+        sheet.getHeader().setLeft(pageSettings.getHeader().getLeft());
+        sheet.getHeader().setCenter(pageSettings.getHeader().getCenter());
+        sheet.getHeader().setRight(pageSettings.getHeader().getRight());
+        sheet.getFooter().setLeft(pageSettings.getFooter().getLeft());
+        sheet.getFooter().setCenter(pageSettings.getFooter().getCenter());
+        sheet.getFooter().setRight(pageSettings.getFooter().getRight());
+        sheet.setMargin(InternalSheet.TopMargin, pageSettings.getMargins().getTop());
+        sheet.setMargin(InternalSheet.RightMargin, pageSettings.getMargins().getRight());
+        sheet.setMargin(InternalSheet.BottomMargin, pageSettings.getMargins().getBottom());
+        sheet.setMargin(InternalSheet.LeftMargin, pageSettings.getMargins().getLeft());
+        processPrintSetup(sheet.getPrintSetup(), pageSettings.getPrintSetup());
+    }
+    private void processPrintSetup(final HSSFPrintSetup hps, final PrintSetup printSetup) {
+        hps.setPaperSize(printSetup.getPaperSize());
+        hps.setScale(printSetup.getScale());
+        hps.setFitWidth(printSetup.getFitWidth());
+        hps.setPageStart(printSetup.getPageStart());
+        hps.setFitHeight(printSetup.getFitHeight());
+        hps.setFooterMargin(printSetup.getFooterMargin());
+        hps.setLandscape(printSetup.getLandscape());
+        hps.setLeftToRight(printSetup.getLeftToRight());
+        hps.setNoColor(printSetup.getNoColor());
+        hps.setOptions(printSetup.getOptions());
+        hps.setDraft(printSetup.getDraft());
+        hps.setHResolution(printSetup.getHResolution());
+        hps.setNotes(printSetup.getNotes());
+        hps.setUsePage(printSetup.getUsePage());
+        hps.setVResolution(printSetup.getVResolution());
+        hps.setValidSettings(printSetup.getValidSettings());
+        hps.setNoOrientation(printSetup.getNoOrientation());
     }
 
     protected void processSection(final ExecutionContext ectx, final Section section) throws Exception {

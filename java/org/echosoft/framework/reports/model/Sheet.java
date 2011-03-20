@@ -71,19 +71,9 @@ public class Sheet implements Serializable {
     private final TreeNode<ColumnGroup> colgroups;
 
     /**
-     * Верхний колонтитул данной страницы.
+     * Группа свойств, относящихся к описанию представления страницы.
      */
-    private Header header;
-
-    /**
-     * Нижний колонтитул данной страницы.
-     */
-    private Header footer;
-
-    /**
-     * Настройка печати
-     */
-    private PrintSetup printSetup;
+    private PageSettings pageSettings;
 
     /**
      * Определяет масштаб отображения листа в процентах. Диапазон допустимых значений: 1..400. 
@@ -109,9 +99,7 @@ public class Sheet implements Serializable {
         this.colwidths = EMPTY_INT_ARRAY;
         this.colhidden = EMPTY_BOOLEAN_ARRAY;
         this.colgroups = new TreeNode<ColumnGroup>("", null);
-        this.header = new Header();
-        this.footer = new Header();
-        this.printSetup = new PrintSetup();
+        this.pageSettings = new PageSettings();
         this.zoom = 100;
     }
 
@@ -233,7 +221,7 @@ public class Sheet implements Serializable {
      * @param colwidths  информация о ширине колонок на листе начиная с самой первой колонки. Если значение какого-либо
      * элемента меньше нуля то будет использоваться значение по умолчанию.
      */
-    public void setColumnWidths(int[] colwidths) {
+    public void setColumnWidths(final int[] colwidths) {
         this.colwidths = colwidths!=null ? colwidths : EMPTY_INT_ARRAY;
     }
 
@@ -282,7 +270,7 @@ public class Sheet implements Serializable {
      *
      * @param colhidden  информация о видимости каждой колонки отчета.
      */
-    public void setColumnHidden(boolean[] colhidden) {
+    public void setColumnHidden(final boolean[] colhidden) {
         this.colhidden = colhidden!=null ? colhidden : EMPTY_BOOLEAN_ARRAY;
     }
 
@@ -300,11 +288,11 @@ public class Sheet implements Serializable {
      *
      * @param group  очередная группа колонок.
      */
-    public void addColumnGroup(ColumnGroup group) {
+    public void addColumnGroup(final ColumnGroup group) {
         addColumnGroup(colgroups, group);
     }
 
-    protected TreeNode<ColumnGroup> addColumnGroup(TreeNode<ColumnGroup> parent, ColumnGroup group) {
+    protected TreeNode<ColumnGroup> addColumnGroup(final TreeNode<ColumnGroup> parent, final ColumnGroup group) {
         for (TreeNode<ColumnGroup> node : parent.getChildren()) {
             if (group.insideOf(node.getData()))
                 return addColumnGroup(node, group);
@@ -316,30 +304,12 @@ public class Sheet implements Serializable {
     }
 
     /**
-     * Возвращает верхний колонтитул листа отчета.
+     * Настройки отображения страницы.
      *
-     * @return заголовок листа отчета. Никогда не возвращает <code>null</code>.
+     * @return группа свойств описывающая настройки отображения страницы. Никогда не возвращает <code>null</code>.
      */
-    public Header getHeader() {
-        return header;
-    }
-
-    /**
-     * Возвращает нижний колонтитул листа отчета.
-     *
-     * @return подвал листа отчета. Никогда не возвращает <code>null</code>.
-     */
-    public Header getFooter() {
-        return footer;
-    }
-
-    /**
-     * Возвращает настройки печати
-     *
-     * @return настройки печати листа. Никогда не возвращает <code>null</code>.
-     */
-    public PrintSetup getPrintSetup(){
-        return printSetup;
+    public PageSettings getPageSettings() {
+        return pageSettings;
     }
 
     /**
@@ -418,9 +388,7 @@ public class Sheet implements Serializable {
             parent.addChildNode(node.getId(), node.getData());
         }
 
-        result.header = (Header)header.clone();
-        result.footer = (Header)footer.clone();
-        result.printSetup = (PrintSetup) printSetup.clone();
+        result.pageSettings = (PageSettings)pageSettings.clone();
         result.zoom = zoom;
 
         for (Section section : sections) {

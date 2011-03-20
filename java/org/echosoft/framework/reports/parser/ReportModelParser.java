@@ -8,6 +8,7 @@ import java.util.Iterator;
 
 import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hpsf.SummaryInformation;
+import org.apache.poi.hssf.model.InternalSheet;
 import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -23,6 +24,8 @@ import org.echosoft.framework.reports.model.CompositeSection;
 import org.echosoft.framework.reports.model.GroupModel;
 import org.echosoft.framework.reports.model.GroupStyle;
 import org.echosoft.framework.reports.model.GroupingSection;
+import org.echosoft.framework.reports.model.Margins;
+import org.echosoft.framework.reports.model.PageSettings;
 import org.echosoft.framework.reports.model.PlainSection;
 import org.echosoft.framework.reports.model.PrintSetup;
 import org.echosoft.framework.reports.model.Report;
@@ -306,13 +309,7 @@ public class ReportModelParser {
                 sheet.addColumnGroup( new ColumnGroup(c1, c2) );
             }
         }
-        sheet.getHeader().setLeft(esheet.getHeader().getLeft());
-        sheet.getHeader().setCenter(esheet.getHeader().getCenter());
-        sheet.getHeader().setRight(esheet.getHeader().getCenter());
-        sheet.getFooter().setLeft(esheet.getFooter().getLeft());
-        sheet.getFooter().setCenter(esheet.getFooter().getCenter());
-        sheet.getFooter().setRight(esheet.getFooter().getRight());
-        copyPrintSetup(sheet.getPrintSetup(), esheet.getPrintSetup());
+        copyPageSettings(sheet.getPageSettings(), esheet);
 
         int offset = 0;
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext();) {
@@ -354,6 +351,19 @@ public class ReportModelParser {
         return sheet;
     }
 
+    private static void copyPageSettings(final PageSettings pageSettings, final HSSFSheet esheet) {
+        pageSettings.getHeader().setLeft(esheet.getHeader().getLeft());
+        pageSettings.getHeader().setCenter(esheet.getHeader().getCenter());
+        pageSettings.getHeader().setRight(esheet.getHeader().getCenter());
+        pageSettings.getFooter().setLeft(esheet.getFooter().getLeft());
+        pageSettings.getFooter().setCenter(esheet.getFooter().getCenter());
+        pageSettings.getFooter().setRight(esheet.getFooter().getRight());
+        pageSettings.getMargins().setTop( esheet.getMargin(InternalSheet.TopMargin) );
+        pageSettings.getMargins().setRight( esheet.getMargin(InternalSheet.RightMargin) );
+        pageSettings.getMargins().setBottom( esheet.getMargin(InternalSheet.BottomMargin) );
+        pageSettings.getMargins().setLeft( esheet.getMargin(InternalSheet.LeftMargin) );
+        copyPrintSetup(pageSettings.getPrintSetup(), esheet.getPrintSetup());
+    }
     private static void copyPrintSetup(final PrintSetup modelPrintSetup, final HSSFPrintSetup printSetup) {
         modelPrintSetup.setPaperSize(printSetup.getPaperSize());
         modelPrintSetup.setScale(printSetup.getScale());
