@@ -76,12 +76,6 @@ public class Sheet implements Serializable {
     private PageSettings pageSettings;
 
     /**
-     * Определяет масштаб отображения листа в процентах. Диапазон допустимых значений: 1..400. 
-     * Значение по умолчанию: 100.
-     */
-    private int zoom;
-
-    /**
      * Упорядоченный список разделов, присутствующих на данном листе отчета.
      */
     private final List<Section> sections;
@@ -100,7 +94,6 @@ public class Sheet implements Serializable {
         this.colhidden = EMPTY_BOOLEAN_ARRAY;
         this.colgroups = new TreeNode<ColumnGroup>("", null);
         this.pageSettings = new PageSettings();
-        this.zoom = 100;
     }
 
     /**
@@ -312,19 +305,6 @@ public class Sheet implements Serializable {
         return pageSettings;
     }
 
-    /**
-     * Возвращает масштаб отображения листа.
-     * @return  Масштаб отображения листа в процентах. Число в диапазоне 1..400
-     */
-    public int getZoom() {
-        return zoom;
-    }
-    public void setZoom(int zoomInPercents) {
-        if (zoomInPercents<1 || zoomInPercents>400)
-            throw new IllegalArgumentException("Illegal zoom value: "+zoomInPercents);
-        this.zoom = zoomInPercents;
-    }
-
 
     /**
      * Осуществляет поиск секции на листе по ее идентификатору.
@@ -389,7 +369,6 @@ public class Sheet implements Serializable {
         }
 
         result.pageSettings = (PageSettings)pageSettings.clone();
-        result.zoom = zoom;
 
         for (Section section : sections) {
             result.sections.add( section.cloneSection(target) );

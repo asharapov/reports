@@ -60,11 +60,12 @@ import org.echosoft.framework.reports.model.providers.ProviderUsage;
 import org.echosoft.framework.reports.util.POIUtils;
 
 /**
- * Формирует итоговый отчет по его модели и на основании данных указанных пользователем в качестве параметров.
+ * Формирует итоговый отчет по его модели и на основании данных указанных пользователем в качестве параметров.<br/>
+ * Результатом работы данного построителя является экземпляр {@link HSSFWorkbook} соответствующий формату Excel-2003.
  *
  * @author Anton Sharapov
  */
-public class ExcelReportProcessor {
+public class ExcelReportProcessor implements ReportProcessor {
 
     public static final String VAR_CONTEXT = "context";
     public static final String VAR_RECORD = "record";
@@ -76,13 +77,8 @@ public class ExcelReportProcessor {
     private static final String MACROS = "$M=";
     private static final int MACROS_LENGTH = MACROS.length();
 
-    private static final ExcelReportProcessor instance = new ExcelReportProcessor();
 
-    public static ExcelReportProcessor getInstance() {
-        return instance;
-    }
-
-    private ExcelReportProcessor() {
+    public ExcelReportProcessor() {
     }
 
     /**
@@ -93,6 +89,7 @@ public class ExcelReportProcessor {
      * @return сформированный отчет.
      * @throws ReportProcessingException в случае каких-либо проблем.
      */
+    @Override
     public HSSFWorkbook process(Report report, final ELContext ctx) throws ReportProcessingException {
         ExecutionContext ectx = null;
         try {
@@ -301,7 +298,6 @@ public class ExcelReportProcessor {
             ectx.wsheet.setAlternativeExpression(false);  // setAlternativeExpression делает то что должен делать метод setRowSumBelow() ...
             final int sheetIdx = ectx.wb.getSheetIndex(ectx.wsheet);
             ectx.wb.setSheetHidden(sheetIdx, sheet.isHidden());
-            ectx.wsheet.setZoom(sheet.getZoom(), 100);
             if (sheet.isProtected() && ectx.report.getPassword()!=null && ectx.wb.isWriteProtected()) {
                 ectx.wsheet.protectSheet( (String)ectx.report.getPassword().getValue(ectx.elctx) );
             }
@@ -341,6 +337,11 @@ public class ExcelReportProcessor {
         sheet.setMargin(InternalSheet.BottomMargin, pageSettings.getMargins().getBottom());
         sheet.setMargin(InternalSheet.LeftMargin, pageSettings.getMargins().getLeft());
         processPrintSetup(sheet.getPrintSetup(), pageSettings.getPrintSetup());
+        sheet.setFitToPage(pageSettings.isFitToPage());
+        sheet.setHorizontallyCenter(pageSettings.isHorizontallyCenter());
+        sheet.setVerticallyCenter(pageSettings.isVerticallyCenter());
+        if (pageSettings.getZoom()!=null)
+            sheet.setZoom(pageSettings.getZoom(), 100);
     }
     private void processPrintSetup(final HSSFPrintSetup hps, final PrintSetup printSetup) {
         hps.setPaperSize(printSetup.getPaperSize());
@@ -348,6 +349,7 @@ public class ExcelReportProcessor {
         hps.setFitWidth(printSetup.getFitWidth());
         hps.setPageStart(printSetup.getPageStart());
         hps.setFitHeight(printSetup.getFitHeight());
+        hps.setHeaderMargin(printSetup.getHeaderMargin());
         hps.setFooterMargin(printSetup.getFooterMargin());
         hps.setLandscape(printSetup.getLandscape());
         hps.setLeftToRight(printSetup.getLeftToRight());
@@ -360,6 +362,7 @@ public class ExcelReportProcessor {
         hps.setVResolution(printSetup.getVResolution());
         hps.setValidSettings(printSetup.getValidSettings());
         hps.setNoOrientation(printSetup.getNoOrientation());
+        hps.setCopies(printSetup.getCopies());
     }
 
     protected void processSection(final ExecutionContext ectx, final Section section) throws Exception {

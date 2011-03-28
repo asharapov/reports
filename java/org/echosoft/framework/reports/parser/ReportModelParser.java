@@ -24,7 +24,6 @@ import org.echosoft.framework.reports.model.CompositeSection;
 import org.echosoft.framework.reports.model.GroupModel;
 import org.echosoft.framework.reports.model.GroupStyle;
 import org.echosoft.framework.reports.model.GroupingSection;
-import org.echosoft.framework.reports.model.Margins;
 import org.echosoft.framework.reports.model.PageSettings;
 import org.echosoft.framework.reports.model.PlainSection;
 import org.echosoft.framework.reports.model.PrintSetup;
@@ -290,11 +289,10 @@ public class ReportModelParser {
         if (esheet == null)
             throw new RuntimeException("Template doesn't contains sheet " + id);
         final Sheet sheet = new Sheet(id);
-        sheet.setTitle( new BaseExpression( StringUtil.trim(element.getAttribute("title"))) );
+        sheet.setTitle(new BaseExpression(StringUtil.trim(element.getAttribute("title"))));
         sheet.setHidden(Any.asBoolean(StringUtil.trim(element.getAttribute("hidden")), false));
         sheet.setRendered(Any.asBoolean(StringUtil.trim(element.getAttribute("rendered")), true));
         sheet.setProtected(Any.asBoolean(StringUtil.trim(element.getAttribute("protected")), false));
-        sheet.setZoom( Any.asInt(StringUtil.trim(element.getAttribute("zoom")),100) );
         final String cgs = StringUtil.trim(element.getAttribute("group-columns"));
         if (cgs!=null) {
             for (Iterator<String> it = new FastStringTokenizer(cgs,',', (char)0); it.hasNext(); ) {
@@ -310,6 +308,9 @@ public class ReportModelParser {
             }
         }
         copyPageSettings(sheet.getPageSettings(), esheet);
+        final String zoomstr = StringUtil.trim(element.getAttribute("zoom"));
+        if (zoomstr!=null)
+            sheet.getPageSettings().setZoom(Any.asInt(zoomstr,100));
 
         int offset = 0;
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext();) {
@@ -354,15 +355,18 @@ public class ReportModelParser {
     private static void copyPageSettings(final PageSettings pageSettings, final HSSFSheet esheet) {
         pageSettings.getHeader().setLeft(esheet.getHeader().getLeft());
         pageSettings.getHeader().setCenter(esheet.getHeader().getCenter());
-        pageSettings.getHeader().setRight(esheet.getHeader().getCenter());
+        pageSettings.getHeader().setRight(esheet.getHeader().getRight());
         pageSettings.getFooter().setLeft(esheet.getFooter().getLeft());
         pageSettings.getFooter().setCenter(esheet.getFooter().getCenter());
         pageSettings.getFooter().setRight(esheet.getFooter().getRight());
-        pageSettings.getMargins().setTop( esheet.getMargin(InternalSheet.TopMargin) );
-        pageSettings.getMargins().setRight( esheet.getMargin(InternalSheet.RightMargin) );
-        pageSettings.getMargins().setBottom( esheet.getMargin(InternalSheet.BottomMargin) );
-        pageSettings.getMargins().setLeft( esheet.getMargin(InternalSheet.LeftMargin) );
+        pageSettings.getMargins().setTop(esheet.getMargin(InternalSheet.TopMargin));
+        pageSettings.getMargins().setRight(esheet.getMargin(InternalSheet.RightMargin));
+        pageSettings.getMargins().setBottom(esheet.getMargin(InternalSheet.BottomMargin));
+        pageSettings.getMargins().setLeft(esheet.getMargin(InternalSheet.LeftMargin));
         copyPrintSetup(pageSettings.getPrintSetup(), esheet.getPrintSetup());
+        pageSettings.setFitToPage(esheet.getFitToPage());
+        pageSettings.setHorizontallyCenter(esheet.getHorizontallyCenter());
+        pageSettings.setVerticallyCenter(esheet.getVerticallyCenter());
     }
     private static void copyPrintSetup(final PrintSetup modelPrintSetup, final HSSFPrintSetup printSetup) {
         modelPrintSetup.setPaperSize(printSetup.getPaperSize());

@@ -3,13 +3,13 @@ package org.echosoft.framework.reports;
 import javax.sql.DataSource;
 import java.io.FileOutputStream;
 
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.echosoft.common.utils.StringUtil;
 import org.echosoft.framework.reports.model.ColumnGroup;
 import org.echosoft.framework.reports.model.Report;
 import org.echosoft.framework.reports.model.Sheet;
 import org.echosoft.framework.reports.model.el.ELContext;
-import org.echosoft.framework.reports.processor.ExcelReportProcessor;
+import org.echosoft.framework.reports.registry.ReportsRegistry;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.postgresql.ds.PGPoolingDataSource;
@@ -48,7 +48,7 @@ public class SimpleReportTest {
         ctx.getEnvironment().put("payments", TestUtils.loadPayments("report1-ds2.xml"));
 
         final long started = System.currentTimeMillis();
-        final HSSFWorkbook result = ExcelReportProcessor.getInstance().process(report, ctx);
+        final Workbook result = ReportsRegistry.getDefaultProcessor().process(report, ctx);
         System.out.println("report " + report.getId() + " generated for a " + (System.currentTimeMillis() - started) + " ms.");
 
         for (int i = 0; i < result.getNumberOfSheets(); i++) {
@@ -72,7 +72,7 @@ public class SimpleReportTest {
         ctx.getEnvironment().put("toDate", StringUtil.parseDate("25.08.2008"));
         ctx.getEnvironment().put("activities", TestUtils.loadPayments("report1-ds3.xml"));
 
-        final HSSFWorkbook result = ExcelReportProcessor.getInstance().process(report, ctx);
+        final Workbook result = ReportsRegistry.getDefaultProcessor().process(report, ctx);
         final FileOutputStream out = new FileOutputStream("result-2.xls");
         result.write(out);
         out.close();
@@ -86,7 +86,7 @@ public class SimpleReportTest {
         ctx.getEnvironment().put("company", "Сукинъ и Сыновья");
         ctx.getEnvironment().put("activities", TestUtils.loadPayments("report1-ds3.xml"));
 
-        final HSSFWorkbook result = ExcelReportProcessor.getInstance().process(report, ctx);
+        final Workbook result = ReportsRegistry.getDefaultProcessor().process(report, ctx);
         final FileOutputStream out = new FileOutputStream("result-3.xls");
         result.write(out);
         out.close();
