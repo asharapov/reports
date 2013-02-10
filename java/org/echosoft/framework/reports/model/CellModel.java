@@ -11,7 +11,7 @@ import org.echosoft.framework.reports.model.el.ExpressionFactory;
  *
  * @author Anton Sharapov
  */
-public class Cell implements Serializable, Cloneable {
+public class CellModel implements Serializable, Cloneable {
 
     /**
      * Выражение, на основе которого вычисляется содержимое ячейки.
@@ -37,11 +37,11 @@ public class Cell implements Serializable, Cloneable {
      * @return  массив каждый элемент которого является клоном элемента с тем же индексом в массиве переданном на вход данного метода.
      * @throws CloneNotSupportedException  поднимается в случае возникновения каких-либо проблем с клонированием объектов.
      */
-    public static Cell[] cloneArray(final Cell[] src) throws CloneNotSupportedException {
-        final Cell[] dst = new Cell[src.length];
+    public static CellModel[] cloneArray(final CellModel[] src) throws CloneNotSupportedException {
+        final CellModel[] dst = new CellModel[src.length];
         for (int i=src.length-1; i>=0; i--) {
-            final Cell c = src[i];
-            dst[i] = c!=null ? (Cell)c.clone() : null;
+            final CellModel c = src[i];
+            dst[i] = c!=null ? (CellModel)c.clone() : null;
         }
         return dst;
     }
@@ -50,10 +50,10 @@ public class Cell implements Serializable, Cloneable {
      * @param cell  ячейка из шаблона отчета.
      * @param palette  реестр всех стилей используемых в данном отчете.
      */
-    public Cell(final HSSFCell cell, final StylePalette palette) {
+    public CellModel(final HSSFCell cell, final StylePalette palette) {
         expr = ExpressionFactory.makeExpression(cell);
         type = cell.getCellType();
-        final CellStyle s = palette.ensureStyleRegistered(cell.getCellStyle());
+        final CellStyleModel s = palette.ensureStyleRegistered(cell.getCellStyle());
         style = s.getId();
         dataFormat = s.getDataFormat();
     }
@@ -61,7 +61,7 @@ public class Cell implements Serializable, Cloneable {
     /**
      * Пытаемся создать новую пустую ячейку
      */
-    public Cell() {
+    public CellModel() {
         expr = ExpressionFactory.EMPTY_EXPRESSION;
         type = HSSFCell.CELL_TYPE_BLANK;
         style = -1; // используем стиль по умолчанию ...

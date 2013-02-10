@@ -4,11 +4,11 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
 
 /**
  * Содержит полный реестр стилей ячеек используемых в макете отчета.
@@ -17,9 +17,9 @@ import org.apache.poi.hssf.util.HSSFColor;
  */
 public class StylePalette implements Serializable, Cloneable {
 
-    private Map<Short,Color> colors;
-    private Map<Short,Font> fonts;
-    private Map<Short,CellStyle> styles;
+    private Map<Short,ColorModel> colors;
+    private Map<Short,FontModel> fonts;
+    private Map<Short,CellStyleModel> styles;
 
     private final transient HSSFWorkbook wb;
     private final transient HSSFPalette palette;
@@ -28,9 +28,9 @@ public class StylePalette implements Serializable, Cloneable {
         this.wb = wb;
         this.palette = wb!=null ? wb.getCustomPalette() : null;
 
-        colors = new HashMap<Short,Color>();
-        fonts = new HashMap<Short,Font>();
-        styles = new HashMap<Short,CellStyle>();
+        colors = new HashMap<Short,ColorModel>();
+        fonts = new HashMap<Short,FontModel>();
+        styles = new HashMap<Short,CellStyleModel>();
     }
 
     /**
@@ -38,7 +38,7 @@ public class StylePalette implements Serializable, Cloneable {
      * @param style  стиль ячейки шаблона.
      * @return  true если данный стиль уже зарегистрирован в данном реестре.
      */
-    public boolean containsStyle(final HSSFCellStyle style) {
+    public boolean containsStyle(final CellStyle style) {
         return styles.containsKey(style.getIndex());
     }
 
@@ -48,10 +48,10 @@ public class StylePalette implements Serializable, Cloneable {
      * @param s  стиль ячейки шаблона.
      * @return  модель стиля ячейки не привязанная к конкретному экземпляру HSSFWorkbook.
      */
-    public CellStyle ensureStyleRegistered(final HSSFCellStyle s) {
-        CellStyle style = styles.get(s.getIndex());
+    public CellStyleModel ensureStyleRegistered(final CellStyle s) {
+        CellStyleModel style = styles.get(s.getIndex());
         if (style==null) {
-            style = new CellStyle();
+            style = new CellStyleModel();
             style.setId( s.getIndex() );
             style.setAlignment( s.getAlignment() );
             style.setBorderBottom( s.getBorderBottom() );
@@ -78,11 +78,11 @@ public class StylePalette implements Serializable, Cloneable {
         return style;
     }
 
-    private Font getFontModel(final short fontIndex) {
-        Font font = fonts.get(fontIndex);
+    private FontModel getFontModel(final short fontIndex) {
+        FontModel font = fonts.get(fontIndex);
         if (font==null) {
-            final HSSFFont f = wb.getFontAt(fontIndex);
-            font = new Font();
+            final Font f = wb.getFontAt(fontIndex);
+            font = new FontModel();
             font.setId( f.getIndex() );
             font.setBoldWeight( f.getBoldweight() );
             font.setCharSet( f.getCharSet() );
@@ -98,13 +98,13 @@ public class StylePalette implements Serializable, Cloneable {
         return font;
     }
 
-    private Color getColorModel(final short colorIndex) {
-        Color color = colors.get(colorIndex);
+    private ColorModel getColorModel(final short colorIndex) {
+        ColorModel color = colors.get(colorIndex);
         if (color==null) {
             final HSSFColor c = palette.getColor(colorIndex);
             if (c!=null) {
                 final short[] triplet = c.getTriplet();
-                color = new Color(colorIndex, (byte)triplet[0], (byte)triplet[1], (byte)triplet[2]);
+                color = new ColorModel(colorIndex, (byte)triplet[0], (byte)triplet[1], (byte)triplet[2]);
                 colors.put(colorIndex, color);
             }
         }
@@ -116,7 +116,7 @@ public class StylePalette implements Serializable, Cloneable {
      * Полный список всех зарегистрированных стилей ячеек которые используются при построении данного отчета.
      * @return  полный список всех зарегистрированных стилей ячеек.
      */
-    public Map<Short,CellStyle> getStyles() {
+    public Map<Short,CellStyleModel> getStyles() {
         return styles;
     }
 
@@ -124,7 +124,7 @@ public class StylePalette implements Serializable, Cloneable {
      * Возвращает полный список всех используемых в отчете шрифтов.
      * @return  полный список всех используемых в отчете шрифтов.
      */
-    public Map<Short,Font> getFonts() {
+    public Map<Short,FontModel> getFonts() {
         return fonts;
     }
 
@@ -132,24 +132,24 @@ public class StylePalette implements Serializable, Cloneable {
      * Возвращает полный список всех используемых в отчете цветов.
      * @return  полный список всех используемых в отчете цветов.
      */
-    public Map<Short,Color> getColors() {
+    public Map<Short,ColorModel> getColors() {
         return colors;
     }
 
     @Override
     public Object clone() throws CloneNotSupportedException {
         final StylePalette result = (StylePalette)super.clone();
-        result.colors = new HashMap<Short,Color>(colors.size());
-        for (Map.Entry<Short,Color> e : colors.entrySet()) {
-            result.colors.put(e.getKey(), (Color)e.getValue().clone());
+        result.colors = new HashMap<Short,ColorModel>(colors.size());
+        for (Map.Entry<Short,ColorModel> e : colors.entrySet()) {
+            result.colors.put(e.getKey(), (ColorModel)e.getValue().clone());
         }
-        result.fonts = new HashMap<Short,Font>(fonts.size());
-        for (Map.Entry<Short,Font> e : fonts.entrySet()) {
-            result.fonts.put(e.getKey(), (Font)e.getValue().clone());
+        result.fonts = new HashMap<Short,FontModel>(fonts.size());
+        for (Map.Entry<Short,FontModel> e : fonts.entrySet()) {
+            result.fonts.put(e.getKey(), (FontModel)e.getValue().clone());
         }
-        result.styles = new HashMap<Short,CellStyle>(styles.size());
-        for (Map.Entry<Short,CellStyle> e : styles.entrySet()) {
-            result.styles.put(e.getKey(), (CellStyle)e.getValue().clone());
+        result.styles = new HashMap<Short,CellStyleModel>(styles.size());
+        for (Map.Entry<Short,CellStyleModel> e : styles.entrySet()) {
+            result.styles.put(e.getKey(), (CellStyleModel)e.getValue().clone());
         }
         return result;
     }

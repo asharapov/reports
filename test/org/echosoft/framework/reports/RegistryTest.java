@@ -15,7 +15,7 @@ public class RegistryTest {
 
     @Test
     public void registerFromDirTest() throws Exception {
-        final File dir = new File("w:/reports/test/org/echosoft/framework/reports/data/");
+        final File dir = new File("./test/org/echosoft/framework/reports/data/");
         Assert.assertTrue(dir.isDirectory());
         ReportsRegistry.registerReportsFromDirectory(dir, true, null);
         System.out.println(ReportsRegistry.getReports());

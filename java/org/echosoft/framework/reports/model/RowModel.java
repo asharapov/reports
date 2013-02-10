@@ -9,13 +9,13 @@ import java.util.List;
  *
  * @author Anton Sharapov
  */
-public class Row implements Serializable, Cloneable {
+public class RowModel implements Serializable, Cloneable {
 
     /**
      * Список ячеек в строке.
      * Некоторые элементы этого массива могут быть равны <code>null</code>. Это нормально для т.н. "пустых" ячеек.
      */
-    private List<Cell> cells;
+    private List<CellModel> cells;
 
     /**
      * Высота строки.
@@ -28,8 +28,8 @@ public class Row implements Serializable, Cloneable {
     private boolean hidden;
 
 
-    public Row() {
-        cells = new ArrayList<Cell>();
+    public RowModel() {
+        cells = new ArrayList<CellModel>();
         height = -1;
     }
 
@@ -38,7 +38,7 @@ public class Row implements Serializable, Cloneable {
      * вместо нее возвращается <code>null</code>.
      * @return  Список ячеек строки. Список не может быть <code>null</code>.
      */
-    public List<Cell> getCells() {
+    public List<CellModel> getCells() {
         return cells;
     }
 
@@ -76,10 +76,10 @@ public class Row implements Serializable, Cloneable {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        final Row result = (Row)super.clone();
-        result.cells = new ArrayList<Cell>(cells.size());
-        for (Cell cm : cells) {
-            result.cells.add( cm!=null ? (Cell)cm.clone() : null );
+        final RowModel result = (RowModel)super.clone();
+        result.cells = new ArrayList<CellModel>(cells.size());
+        for (CellModel cm : cells) {
+            result.cells.add( cm!=null ? (CellModel)cm.clone() : null );
         }
         return result;
     }
@@ -88,7 +88,7 @@ public class Row implements Serializable, Cloneable {
     public String toString() {
         final StringBuilder buf = new StringBuilder(1024);
         buf.append("[ \n");
-        for (Cell cell : cells) {
+        for (CellModel cell : cells) {
             buf.append("  ").append(cell).append('\n');
         }
         buf.append("]\n");

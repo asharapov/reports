@@ -7,7 +7,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.echosoft.common.utils.StringUtil;
 import org.echosoft.framework.reports.model.ColumnGroup;
 import org.echosoft.framework.reports.model.Report;
-import org.echosoft.framework.reports.model.Sheet;
+import org.echosoft.framework.reports.model.SheetModel;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.registry.ReportsRegistry;
 import org.junit.BeforeClass;
@@ -21,7 +21,7 @@ public class SimpleReportTest {
 
     private static DataSource ds;
 
-    @BeforeClass
+    //@BeforeClass
     public static void beforeClass() throws Exception {
         final PGPoolingDataSource pds = new PGPoolingDataSource();
         pds.setServerName( "localhost" );
@@ -35,7 +35,7 @@ public class SimpleReportTest {
     @Test
     public void testReport1() throws Exception {
         final Report report = TestUtils.loadReport("report1");
-        final Sheet sheet1 = report.findSheetById("sheet1");
+        final SheetModel sheet1 = report.findSheetById("sheet1");
         sheet1.addColumnGroup(new ColumnGroup(4, 7));
         sheet1.addColumnGroup(new ColumnGroup(5, 6));
 

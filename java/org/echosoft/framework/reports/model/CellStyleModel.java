@@ -7,7 +7,7 @@ import java.io.Serializable;
  * 
  * @author Anton Sharapov
  */
-public class CellStyle implements Serializable, Cloneable {
+public class CellStyleModel implements Serializable, Cloneable {
 
     private short id;
     private short alignment;
@@ -15,19 +15,19 @@ public class CellStyle implements Serializable, Cloneable {
     private short borderLeft;
     private short borderRight;
     private short borderTop;
-    private Color bottomBorderColor;
+    private ColorModel bottomBorderColor;
     private String dataFormat;
-    private Color fillBackgroundColor;
-    private Color fillForegroundColor;
+    private ColorModel fillBackgroundColor;
+    private ColorModel fillForegroundColor;
     private short fillPattern;
-    private Font font;
+    private FontModel font;
     private boolean hidden;
     private short indention;
-    private Color leftBorderColor;
+    private ColorModel leftBorderColor;
     private boolean locked;
-    private Color rightBorderColor;
+    private ColorModel rightBorderColor;
     private short rotation;
-    private Color topBorderColor;
+    private ColorModel topBorderColor;
     private short verticalAlignment;
     private boolean wrapText;
 
@@ -79,10 +79,10 @@ public class CellStyle implements Serializable, Cloneable {
         this.borderTop = borderTop;
     }
 
-    public Color getBottomBorderColor() {
+    public ColorModel getBottomBorderColor() {
         return bottomBorderColor;
     }
-    public void setBottomBorderColor(Color bottomBorderColor) {
+    public void setBottomBorderColor(ColorModel bottomBorderColor) {
         this.bottomBorderColor = bottomBorderColor;
     }
 
@@ -93,17 +93,17 @@ public class CellStyle implements Serializable, Cloneable {
         this.dataFormat = dataFormat;
     }
 
-    public Color getFillBackgroundColor() {
+    public ColorModel getFillBackgroundColor() {
         return fillBackgroundColor;
     }
-    public void setFillBackgroundColor(Color fillBackgroundColor) {
+    public void setFillBackgroundColor(ColorModel fillBackgroundColor) {
         this.fillBackgroundColor = fillBackgroundColor;
     }
 
-    public Color getFillForegroundColor() {
+    public ColorModel getFillForegroundColor() {
         return fillForegroundColor;
     }
-    public void setFillForegroundColor(Color fillForegroundColor) {
+    public void setFillForegroundColor(ColorModel fillForegroundColor) {
         this.fillForegroundColor = fillForegroundColor;
     }
 
@@ -114,10 +114,10 @@ public class CellStyle implements Serializable, Cloneable {
         this.fillPattern = fillPattern;
     }
 
-    public Font getFont() {
+    public FontModel getFont() {
         return font;
     }
-    public void setFont(Font font) {
+    public void setFont(FontModel font) {
         this.font = font;
     }
 
@@ -135,10 +135,10 @@ public class CellStyle implements Serializable, Cloneable {
         this.indention = indention;
     }
 
-    public Color getLeftBorderColor() {
+    public ColorModel getLeftBorderColor() {
         return leftBorderColor;
     }
-    public void setLeftBorderColor(Color leftBorderColor) {
+    public void setLeftBorderColor(ColorModel leftBorderColor) {
         this.leftBorderColor = leftBorderColor;
     }
 
@@ -149,10 +149,10 @@ public class CellStyle implements Serializable, Cloneable {
         this.locked = locked;
     }
 
-    public Color getRightBorderColor() {
+    public ColorModel getRightBorderColor() {
         return rightBorderColor;
     }
-    public void setRightBorderColor(Color rightBorderColor) {
+    public void setRightBorderColor(ColorModel rightBorderColor) {
         this.rightBorderColor = rightBorderColor;
     }
 
@@ -163,10 +163,10 @@ public class CellStyle implements Serializable, Cloneable {
         this.rotation = rotation;
     }
 
-    public Color getTopBorderColor() {
+    public ColorModel getTopBorderColor() {
         return topBorderColor;
     }
-    public void setTopBorderColor(Color topBorderColor) {
+    public void setTopBorderColor(ColorModel topBorderColor) {
         this.topBorderColor = topBorderColor;
     }
 
@@ -186,19 +186,19 @@ public class CellStyle implements Serializable, Cloneable {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        final CellStyle result = (CellStyle)super.clone();
+        final CellStyleModel result = (CellStyleModel)super.clone();
         if (bottomBorderColor!=null)
-            result.bottomBorderColor = (Color)bottomBorderColor.clone();
+            result.bottomBorderColor = (ColorModel)bottomBorderColor.clone();
         if (fillBackgroundColor!=null)
-            result.fillBackgroundColor = (Color)fillBackgroundColor.clone();
+            result.fillBackgroundColor = (ColorModel)fillBackgroundColor.clone();
         if (leftBorderColor!=null)
-            result.leftBorderColor = (Color)leftBorderColor.clone();
+            result.leftBorderColor = (ColorModel)leftBorderColor.clone();
         if (rightBorderColor!=null)
-            result.rightBorderColor = (Color)rightBorderColor.clone();
+            result.rightBorderColor = (ColorModel)rightBorderColor.clone();
         if (topBorderColor!=null)
-            result.topBorderColor = (Color)topBorderColor.clone();
+            result.topBorderColor = (ColorModel)topBorderColor.clone();
         if (font!=null)
-            result.font = (Font)font.clone();
+            result.font = (FontModel)font.clone();
         return result;
     }
 
@@ -206,9 +206,9 @@ public class CellStyle implements Serializable, Cloneable {
         return id;
     }
     public boolean equals(Object obj) {
-        if (obj==null || !(CellStyle.class.equals(obj.getClass())))
+        if (obj==null || !(CellStyleModel.class.equals(obj.getClass())))
             return false;
-        final CellStyle other = (CellStyle)obj;
+        final CellStyleModel other = (CellStyleModel)obj;
         return  id==other.id &&
                 alignment==other.alignment &&
                 borderBottom==other.borderBottom &&

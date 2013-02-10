@@ -10,7 +10,7 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.echosoft.framework.reports.model.Report;
-import org.echosoft.framework.reports.model.Sheet;
+import org.echosoft.framework.reports.model.SheetModel;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.events.ReportEventListener;
 import org.echosoft.framework.reports.model.events.ReportEventListenerHolder;
@@ -42,7 +42,7 @@ public final class ExecutionContext {
     /**
      * Обрабатываемый в настоящее время лист отчета (модель)
      */
-    public Sheet sheet;
+    public SheetModel sheet;
 
     /**
      * Контекст обработки текущей секции.

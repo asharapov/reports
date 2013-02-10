@@ -11,12 +11,12 @@ public class PageSettings implements Serializable, Cloneable {
     /**
      * Верхний колонтитул данной страницы.
      */
-    private Header header;
+    private HeaderModel header;
 
     /**
      * Нижний колонтитул данной страницы.
      */
-    private Header footer;
+    private HeaderModel footer;
 
     /**
      * Настройка печати.
@@ -50,8 +50,8 @@ public class PageSettings implements Serializable, Cloneable {
     private Integer zoom;
 
     public PageSettings() {
-        this.header = new Header();
-        this.footer = new Header();
+        this.header = new HeaderModel();
+        this.footer = new HeaderModel();
         this.printSetup = new PrintSetup();
         this.margins = new Margins();
         this.zoom = null;
@@ -62,7 +62,7 @@ public class PageSettings implements Serializable, Cloneable {
      *
      * @return заголовок листа отчета. Никогда не возвращает <code>null</code>.
      */
-    public Header getHeader() {
+    public HeaderModel getHeader() {
         return header;
     }
 
@@ -71,7 +71,7 @@ public class PageSettings implements Serializable, Cloneable {
      *
      * @return подвал листа отчета. Никогда не возвращает <code>null</code>.
      */
-    public Header getFooter() {
+    public HeaderModel getFooter() {
         return footer;
     }
 
@@ -143,8 +143,8 @@ public class PageSettings implements Serializable, Cloneable {
     @Override
     public Object clone() throws CloneNotSupportedException {
         final PageSettings result = (PageSettings)super.clone();
-        result.header = (Header)header.clone();
-        result.footer = (Header)footer.clone();
+        result.header = (HeaderModel)header.clone();
+        result.footer = (HeaderModel)footer.clone();
         result.printSetup = (PrintSetup)printSetup.clone();
         result.margins = (Margins)margins.clone();
         return result;

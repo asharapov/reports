@@ -15,7 +15,7 @@ import org.echosoft.framework.reports.model.el.Expression;
  * 
  * @author Anton Sharapov
  */
-public class Sheet implements Serializable {
+public class SheetModel implements Serializable {
 
     private static int[] EMPTY_INT_ARRAY = new int[0];
     private static boolean[] EMPTY_BOOLEAN_ARRAY = new boolean[0];
@@ -81,7 +81,7 @@ public class Sheet implements Serializable {
     private final List<Section> sections;
 
 
-    public Sheet(String id) {
+    public SheetModel(String id) {
         id = StringUtil.trim(id);
         if (id==null)
             throw new IllegalArgumentException("Report sheet identifier must be specified");
@@ -349,10 +349,10 @@ public class Sheet implements Serializable {
      * @return  глубокую копию данного листа отчета.
      * @throws CloneNotSupportedException  в случае проблем с клонированием какого-нибудь элемента листа.
      */
-    public Sheet cloneSheet(final Report target) throws CloneNotSupportedException {
+    public SheetModel cloneSheet(final Report target) throws CloneNotSupportedException {
         if (target==null)
             throw new IllegalArgumentException("Target report model must be specified");
-        final Sheet result = new Sheet(id);
+        final SheetModel result = new SheetModel(id);
         result.title = title;
         result.hidden = hidden;
         result.locked = locked;

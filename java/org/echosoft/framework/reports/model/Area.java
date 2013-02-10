@@ -27,7 +27,7 @@ public class Area implements Serializable, Cloneable {
      * Если какая-то из ячеек не представлена в отчете (метод <code>row.getCell()</code> возввращает <code>null</code>)
      * то этой ячейке соответствует <code>null</code> в списке.
      */
-    private List<Row> rows;
+    private List<RowModel> rows;
 
     /**
      * Информация о регионах (некоторого множества ячеек объединенных в одно целое) в рамках данной секции.
@@ -58,13 +58,13 @@ public class Area implements Serializable, Cloneable {
     public Area(final HSSFSheet sheet, final int top, final int height, final StylePalette palette) {
         if (sheet==null || top<0 || height<1)
             throw new IllegalArgumentException("Illegal area arguments");
-        rows = new ArrayList<Row>();
+        rows = new ArrayList<RowModel>();
         regions = new ArrayList<Region>();
 
         final int bottom = top + height - 1;
         int lastColumn = 0;
         for (int i=top; i<=bottom; i++) {
-            final Row rm = new Row();
+            final RowModel rm = new RowModel();
             rows.add( rm );
             final HSSFRow row = sheet.getRow(i);
             if (row==null) {
@@ -79,7 +79,7 @@ public class Area implements Serializable, Cloneable {
                 if (cell==null) {
                     rm.getCells().add( null );
                 } else {
-                    rm.getCells().add( new Cell(cell, palette) );
+                    rm.getCells().add( new CellModel(cell, palette) );
                 }
             }
         }
@@ -138,7 +138,7 @@ public class Area implements Serializable, Cloneable {
      * Возвращает список строк в данной области.
      * @return  список строк области.
      */
-    public List<Row> getRows() {
+    public List<RowModel> getRows() {
         return rows;
     }
 
@@ -156,7 +156,7 @@ public class Area implements Serializable, Cloneable {
      * @param rownum  номер строки в которой находится заданная ячейка. Отсчет номеров строк начинается с первой строки данной области строк.
      * @return  модель шаблона для указанной ячейки.
      */
-    public Cell getCell(final int colnum, final int rownum) {
+    public CellModel getCell(final int colnum, final int rownum) {
         return rows.get(rownum).getCells().get(colnum);
     }
 
@@ -183,7 +183,7 @@ public class Area implements Serializable, Cloneable {
      * @return  массив удаленных ячеек. первый элемент массива - удаленная ячейка из первой строки области, последний элемент массива - удаленная ячейка из последней строки области.
      *          Если в какой-то строке региона не было ячеек в указанной колонке то в соответствующий элемент массива сохраняется <code>null</code>.
      */
-    public Cell[] removeColumn(final int colnum) {
+    public CellModel[] removeColumn(final int colnum) {
         if (colnum<0 || colnum>=columnsCount)
             throw new IndexOutOfBoundsException("Invalid range");
         // пересчитаем характеристики всех регионов области ...
@@ -201,9 +201,9 @@ public class Area implements Serializable, Cloneable {
             }
         }
         // удалим колонку ...        
-        final Cell[] result = new Cell[rows.size()];
+        final CellModel[] result = new CellModel[rows.size()];
         for (int i=rows.size()-1; i>=0; i--) {
-            final List<Cell> cells = rows.get(i).getCells();
+            final List<CellModel> cells = rows.get(i).getCells();
             result[i] = colnum<cells.size() ? cells.remove(colnum) : null;
         }
         recalculateColumnsCount();
@@ -215,7 +215,7 @@ public class Area implements Serializable, Cloneable {
      * @param rownum индекс удаляемой строки.
      * @return  массив всех ячеек из заданной строки. Если в удаляемой строке в какой-то ячейке не было ничего указано то соответствующий элемент массива будет равен <code>null</code>.
      */
-    public Cell[] removeRow(final int rownum) {
+    public CellModel[] removeRow(final int rownum) {
         if (rownum<0 || rownum>=rows.size())
             throw new IndexOutOfBoundsException("Invalid range");
         // пересчитаем характеристики всех регионов области ...
@@ -233,9 +233,9 @@ public class Area implements Serializable, Cloneable {
             }
         }
         // удалим строку ...
-        final Row r = rows.remove(rownum);
+        final RowModel r = rows.remove(rownum);
         recalculateColumnsCount();
-        return r.getCells().toArray(new Cell[columnsCount]);
+        return r.getCells().toArray(new CellModel[columnsCount]);
     }
 
     /**
@@ -243,13 +243,13 @@ public class Area implements Serializable, Cloneable {
      * @param colnum  индекс колонки которая будет вставлена.
      * @param cells  массив ячеек которые будут добавлены в соответствующие строки области.
      */
-    public void addColumn(final int colnum, final Cell[] cells) {
+    public void addColumn(final int colnum, final CellModel[] cells) {
         if (colnum<0 || colnum>columnsCount)
             throw new IllegalArgumentException("Invalid range");
         // добавим колонку ...
         for (int i=rows.size()-1; i>=0; i--) {
-            final Cell cell = i<cells.length ? cells[i] : null;   // содержимое ячейки которое надо добавить в шаблон.
-            final List<Cell> rcells = rows.get(i).getCells();     // разреженный список ячеек в текущей строке.
+            final CellModel cell = i<cells.length ? cells[i] : null;   // содержимое ячейки которое надо добавить в шаблон.
+            final List<CellModel> rcells = rows.get(i).getCells();     // разреженный список ячеек в текущей строке.
             if (cell!=null || colnum<rcells.size()) {
                 while (colnum>rcells.size()) rcells.add(null);
                 rows.get(i).getCells().add(colnum, cell);
@@ -272,11 +272,11 @@ public class Area implements Serializable, Cloneable {
      * @param rownum  индекс строки которая будет вставлена в область.
      * @param cells  массив ячеек которые будут вставлены в добавленную строку области.
      */
-    public void addRow(final int rownum, final Cell[] cells) {
+    public void addRow(final int rownum, final CellModel[] cells) {
         if (rownum<0 || rownum>rows.size())
             throw new IndexOutOfBoundsException("row number is out of bounds");
         // добавим строку ...
-        final Row row = new Row();
+        final RowModel row = new RowModel();
         row.getCells().addAll( Arrays.asList(cells) );
         rows.add(rownum, row);
         recalculateColumnsCount();
@@ -329,7 +329,7 @@ public class Area implements Serializable, Cloneable {
      */
     protected void recalculateColumnsCount() {
         int count = 0;
-        for (Row row : rows) {
+        for (RowModel row : rows) {
             int ci = row.getCells().size();
             while (ci>0 && row.getCells().get(ci-1)==null) {
                 ci--;
@@ -346,7 +346,7 @@ public class Area implements Serializable, Cloneable {
     public String dumpStructure() {
         final StringBuilder buf = new StringBuilder(2048);
         buf.append("=== template area:  rows=").append(rows.size()).append(", regions=").append(regions.size()).append(" ===\n");
-        for (Row row : rows) {
+        for (RowModel row : rows) {
             buf.append(row!=null ? row.toString() : "<empty>\n");
         }
         buf.append("=== end of template area ===\n");
@@ -356,9 +356,9 @@ public class Area implements Serializable, Cloneable {
     @Override
     public Object clone() throws CloneNotSupportedException {
         final Area result = (Area)super.clone();
-        result.rows = new ArrayList<Row>(rows.size());
-        for (Row rm : rows) {
-            result.rows.add( (Row)rm.clone() );
+        result.rows = new ArrayList<RowModel>(rows.size());
+        for (RowModel rm : rows) {
+            result.rows.add( (RowModel)rm.clone() );
         }
         result.regions = new ArrayList<Region>(regions.size());
         for (Region region : regions) {

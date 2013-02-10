@@ -30,7 +30,7 @@ import org.echosoft.framework.reports.model.PrintSetup;
 import org.echosoft.framework.reports.model.Report;
 import org.echosoft.framework.reports.model.ReportDescription;
 import org.echosoft.framework.reports.model.Section;
-import org.echosoft.framework.reports.model.Sheet;
+import org.echosoft.framework.reports.model.SheetModel;
 import org.echosoft.framework.reports.model.el.BaseExpression;
 import org.echosoft.framework.reports.model.events.CellEventListenerHolder;
 import org.echosoft.framework.reports.model.events.ReportEventListenerHolder;
@@ -102,7 +102,7 @@ public class ReportModelParser {
                     parseReportEventListener(report, element);
                 } else
                 if ("sheet".equals(tagName)) {
-                    final Sheet sheet = parseSheet(wb, report, element);
+                    final SheetModel sheet = parseSheet(wb, report, element);
                     if (report.findSheetById(sheet.getId()) != null)
                         throw new RuntimeException("Sheet " + sheet.getId() + " already exists in report " + report.getId());
                     report.getSheets().add(sheet);
@@ -283,12 +283,12 @@ public class ReportModelParser {
     }
 
 
-    private static Sheet parseSheet(final HSSFWorkbook wb, final Report report, final Element element) {
+    private static SheetModel parseSheet(final HSSFWorkbook wb, final Report report, final Element element) {
         final String id = StringUtil.trim(element.getAttribute("id"));
         final HSSFSheet esheet = wb.getSheet(id);
         if (esheet == null)
             throw new RuntimeException("Template doesn't contains sheet " + id);
-        final Sheet sheet = new Sheet(id);
+        final SheetModel sheet = new SheetModel(id);
         sheet.setTitle(new BaseExpression(StringUtil.trim(element.getAttribute("title"))));
         sheet.setHidden(Any.asBoolean(StringUtil.trim(element.getAttribute("hidden")), false));
         sheet.setRendered(Any.asBoolean(StringUtil.trim(element.getAttribute("rendered")), true));

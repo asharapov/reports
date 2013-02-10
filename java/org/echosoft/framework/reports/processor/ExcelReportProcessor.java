@@ -35,21 +35,21 @@ import org.echosoft.common.query.Query;
 import org.echosoft.common.query.providers.DataProvider;
 import org.echosoft.framework.reports.macros.Macros;
 import org.echosoft.framework.reports.model.Area;
-import org.echosoft.framework.reports.model.Cell;
-import org.echosoft.framework.reports.model.CellStyle;
-import org.echosoft.framework.reports.model.Color;
+import org.echosoft.framework.reports.model.CellModel;
+import org.echosoft.framework.reports.model.CellStyleModel;
+import org.echosoft.framework.reports.model.ColorModel;
 import org.echosoft.framework.reports.model.ColumnGroup;
 import org.echosoft.framework.reports.model.CompositeSection;
-import org.echosoft.framework.reports.model.Font;
+import org.echosoft.framework.reports.model.FontModel;
 import org.echosoft.framework.reports.model.GroupStyle;
 import org.echosoft.framework.reports.model.GroupingSection;
 import org.echosoft.framework.reports.model.PageSettings;
 import org.echosoft.framework.reports.model.PlainSection;
 import org.echosoft.framework.reports.model.PrintSetup;
 import org.echosoft.framework.reports.model.Report;
-import org.echosoft.framework.reports.model.Row;
+import org.echosoft.framework.reports.model.RowModel;
 import org.echosoft.framework.reports.model.Section;
-import org.echosoft.framework.reports.model.Sheet;
+import org.echosoft.framework.reports.model.SheetModel;
 import org.echosoft.framework.reports.model.StylePalette;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.events.CellEvent;
@@ -106,7 +106,7 @@ public class ExcelReportProcessor implements ReportProcessor {
             for (final ReportEventListener listener : ectx.listeners) {
                 listener.beforeReport(ectx);
             }
-            for (final Sheet sheet : report.getSheets()) {
+            for (final SheetModel sheet : report.getSheets()) {
                 processSheet(ectx, sheet);
             }
             boolean activeSheetSpecified = false;
@@ -242,18 +242,18 @@ public class ExcelReportProcessor implements ReportProcessor {
         if (palette.getColors().size() > PaletteRecord.STANDARD_PALETTE_SIZE)
             throw new RuntimeException("too many colors on report");
         final HSSFPalette pal = wb.getCustomPalette();
-        for (final Color color : palette.getColors().values()) {
+        for (final ColorModel color : palette.getColors().values()) {
             pal.setColorAtIndex(color.getId(), color.getRed(), color.getGreen(), color.getBlue());
         }
 
         final Map<Short, HSSFFont> fonts = new HashMap<Short, HSSFFont>();
         final HSSFDataFormat formatter = wb.createDataFormat();
-        for (final Font font : palette.getFonts().values()) {
+        for (final FontModel font : palette.getFonts().values()) {
             final HSSFFont f = POIUtils.ensureFontExists(wb, font);
             fonts.put(font.getId(), f);
         }
 
-        for (final CellStyle style : palette.getStyles().values()) {
+        for (final CellStyleModel style : palette.getStyles().values()) {
             final short bbc = style.getBottomBorderColor() != null ? style.getBottomBorderColor().getId() : 0;
             final short fbc = style.getFillBackgroundColor() != null ? style.getFillBackgroundColor().getId() : 0;
             final short ffc = style.getFillForegroundColor() != null ? style.getFillForegroundColor().getId() : 0;
@@ -287,7 +287,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         return styles;
     }
 
-    protected void processSheet(final ExecutionContext ectx, final Sheet sheet) throws Exception {
+    protected void processSheet(final ExecutionContext ectx, final SheetModel sheet) throws Exception {
         ectx.sheet = sheet;
         for (final ReportEventListener listener : ectx.listeners) {
             listener.beforeSheet(ectx);
@@ -589,7 +589,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         int r = startRow;
         final Map<String, Object> variables = ectx.elctx.getVariables();
         final boolean hidden = template.isHidden();
-        for (final Row rm : template.getRows()) {
+        for (final RowModel rm : template.getRows()) {
             HSSFRow row = ectx.wsheet.getRow(r);
             if (row == null) {
                 row = ectx.wsheet.createRow(r);
@@ -602,9 +602,9 @@ public class ExcelReportProcessor implements ReportProcessor {
             variables.put(VAR_PREV_ROW, r - 1);
             variables.put(VAR_ROW, r);
             variables.put(VAR_NEXT_ROW, r + 1);
-            final List<Cell> cells = rm.getCells();
+            final List<CellModel> cells = rm.getCells();
             for (int i = 0; i < cells.size(); i++) {
-                final Cell cm = cells.get(i);
+                final CellModel cm = cells.get(i);
                 if (cm == null)
                     continue;
                 final HSSFCellStyle style = ectx.styles.get(cm.getStyle());

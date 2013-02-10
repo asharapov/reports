@@ -7,12 +7,12 @@ import java.io.Serializable;
  *
  * @author Anton Sharapov
  */
-public class Font implements Serializable, Cloneable {
+public class FontModel implements Serializable, Cloneable {
 
     private short id;
     private short boldWeight;
     private int charSet;
-    private Color color;
+    private ColorModel color;
     private short fontHeight;
     private String fontName;
     private boolean italic;
@@ -20,7 +20,7 @@ public class Font implements Serializable, Cloneable {
     private short typeOffset;
     private byte underline;
 
-    public Font() {
+    public FontModel() {
         fontName = "Arial";
     }
 
@@ -51,10 +51,10 @@ public class Font implements Serializable, Cloneable {
         this.charSet = charSet;
     }
 
-    public Color getColor() {
+    public ColorModel getColor() {
         return color;
     }
-    public void setColor(Color color) {
+    public void setColor(ColorModel color) {
         this.color = color;
     }
 
@@ -105,9 +105,9 @@ public class Font implements Serializable, Cloneable {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        final Font result = (Font)super.clone();
+        final FontModel result = (FontModel)super.clone();
         if (color!=null)
-            result.color = (Color)color.clone();
+            result.color = (ColorModel)color.clone();
         return result;
     }
 
@@ -115,9 +115,9 @@ public class Font implements Serializable, Cloneable {
         return id;
     }
     public boolean equals(Object obj) {
-        if (obj==null || !(Font.class.equals(obj.getClass())))
+        if (obj==null || !(FontModel.class.equals(obj.getClass())))
             return false;
-        final Font other = (Font)obj;
+        final FontModel other = (FontModel)obj;
         return id==other.id &&
                 (color!=null ? color.equals(other.color) : other.color==null) &&
                 boldWeight==other.boldWeight && charSet==other.charSet &&

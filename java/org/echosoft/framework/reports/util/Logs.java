@@ -11,6 +11,7 @@ public final class Logs {
     private Logs() {
     }
 
+
     public static final Log reports = LogFactory.getLog("echosoft.reports");
 
 }

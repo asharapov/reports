@@ -7,14 +7,14 @@ import java.io.Serializable;
  *
  * @author Anton Sharapov
  */
-public class Color implements Serializable, Cloneable {
+public class ColorModel implements Serializable, Cloneable {
 
     private final short id;
     private final byte red;
     private final byte green;
     private final byte blue;
 
-    public Color(short id, byte red, byte green, byte blue) {
+    public ColorModel(short id, byte red, byte green, byte blue) {
         this.id = id;
         this.red = red;
         this.green = green;
@@ -65,9 +65,9 @@ public class Color implements Serializable, Cloneable {
         return id;
     }
     public boolean equals(Object obj) {
-        if (obj==null || !(Color.class.equals(obj.getClass())))
+        if (obj==null || !(ColorModel.class.equals(obj.getClass())))
             return false;
-        final Color other = (Color)obj;
+        final ColorModel other = (ColorModel)obj;
         return id==other.id && red==other.red && green==other.green && blue==other.blue;
     }
     public String toString() {

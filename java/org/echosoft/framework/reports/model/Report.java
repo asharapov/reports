@@ -37,7 +37,7 @@ public class Report implements Serializable {
 
     /**
      * Логин, который надо указать пользователю работающему с отчетом построенным на основе данного шаблона чтобы изменить данные
-     * на тех листах отчета которые были помечены как защищенные (см. {@link Sheet#isProtected()}).
+     * на тех листах отчета которые были помечены как защищенные (см. {@link SheetModel#isProtected()}).
      * <strong>Внимание!</strong> защита от внесения изменений работает не на всех процессорах электронных таблиц!. 
      */
     private Expression user;
@@ -66,7 +66,7 @@ public class Report implements Serializable {
     /**
      * Информация по всем листам отчета.
      */
-    private final List<Sheet> sheets;
+    private final List<SheetModel> sheets;
 
     /**
      * Перечень всех используемых в отчете стилей оформлений ячеек.
@@ -94,7 +94,7 @@ public class Report implements Serializable {
             throw new IllegalArgumentException("Report identifier must be specified");
         this.id = id;
         this.description = new ReportDescription();
-        this.sheets = new ArrayList<Sheet>();
+        this.sheets = new ArrayList<SheetModel>();
         this.palette = new StylePalette(wb);
         this.macros = new HashMap<String,Macros>();
         this.listeners = new ArrayList<ReportEventListenerHolder>();
@@ -129,8 +129,8 @@ public class Report implements Serializable {
         for (Map.Entry<String,DataProviderHolder> entry : src.providers.entrySet()) {
             providers.put(entry.getKey(), (DataProviderHolder)entry.getValue().clone());
         }
-        sheets = new ArrayList<Sheet>();
-        for (Sheet sheet : src.sheets) {
+        sheets = new ArrayList<SheetModel>();
+        for (SheetModel sheet : src.sheets) {
             sheets.add( sheet.cloneSheet(this) );
         }
     }
@@ -163,7 +163,7 @@ public class Report implements Serializable {
 
     /**
      * Возвращает логин, который надо указать пользователю перед измением данных в тех листах сгенерированного отчета которые были помечены как "защищенные"
-     * (см. {@link Sheet#isProtected()}).
+     * (см. {@link SheetModel#isProtected()}).
      * <strong>Внимание!</strong> защита от внесения изменений работает не на всех процессорах электронных таблиц!.
      * @return выражение, вычисленный результат которого используется для определения имени пользователя, которому разрешена правка защищенных листов отчета.
      */
@@ -173,7 +173,7 @@ public class Report implements Serializable {
 
     /**
      * Определяет логин, который надо указать пользователю перед измением данных в тех листах сгенерированного отчета которые были помечены как "защищенные"
-     * (см. {@link Sheet#isProtected()}).
+     * (см. {@link SheetModel#isProtected()}).
      * <strong>Внимание!</strong> защита от внесения изменений работает не на всех процессорах электронных таблиц!.
      * @param user  выражение, вычисленный результат которого используется для определения имени пользователя, которому разрешена правка защищенных листов отчета.
      */
@@ -183,7 +183,7 @@ public class Report implements Serializable {
 
     /**
      * Возвращает пароль, который надо указать пользователю перед измением данных в тех листах сгенерированного отчета которые были помечены как "защищенные"
-     * (см. {@link Sheet#isProtected()}).
+     * (см. {@link SheetModel#isProtected()}).
      * <strong>Внимание!</strong> защита от внесения изменений работает не на всех процессорах электронных таблиц!.
      * @return выражение, вычисленный результат которого используется для определения пароля, к логину пользователя которому разрешена правка защищенных листов отчета.
      */
@@ -244,7 +244,7 @@ public class Report implements Serializable {
      */
     public Section findSectionById(String sectionId) {
         Section result;
-        for (Sheet sheet : sheets) {
+        for (SheetModel sheet : sheets) {
             result = sheet.findSectionById(sectionId);
             if (result!=null)
                 return result;
@@ -258,8 +258,8 @@ public class Report implements Serializable {
      * @param sheetId  идентификатор отчета. Не может быть пустой строкой или null.
      * @return  информация об искомом листе отчета или <code>null</code> если лист с таким идентификатором отсутствует в отчете.
      */
-    public Sheet findSheetById(final String sheetId) {
-        for (Sheet sheet : sheets) {
+    public SheetModel findSheetById(final String sheetId) {
+        for (SheetModel sheet : sheets) {
             if (sheet.getId().equals(sheetId))
                 return sheet;
         }
@@ -272,7 +272,7 @@ public class Report implements Serializable {
      *
      * @return  список листов отчета.
      */
-    public List<Sheet> getSheets() {
+    public List<SheetModel> getSheets() {
         return sheets;
     }
 

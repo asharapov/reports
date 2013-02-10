@@ -7,7 +7,7 @@ import java.io.Serializable;
  *
  * @author Anton Sharapov
  */
-public class Header implements Serializable, Cloneable {
+public class HeaderModel implements Serializable, Cloneable {
 
     private String left;
     private String center;
@@ -49,7 +49,7 @@ public class Header implements Serializable, Cloneable {
     public boolean equals(Object obj) {
         if (obj==null || !getClass().equals(obj.getClass()))
             return false;
-        final Header other = (Header)obj;
+        final HeaderModel other = (HeaderModel)obj;
         return (left!=null ? left.equals(other.left) : other.left==null) &&
                (center!=null ? center.equals(other.center) : other.center==null) &&
                (right!=null ? right.equals(other.right) : other.right==null);

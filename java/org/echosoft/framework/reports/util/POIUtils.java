@@ -9,7 +9,7 @@ import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.echosoft.framework.reports.model.Font;
+import org.echosoft.framework.reports.model.FontModel;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.processor.Group;
 import org.echosoft.framework.reports.processor.SectionContext;
@@ -248,7 +248,7 @@ public class POIUtils {
      * @param font  характеристики требуемого фонта.
      * @return  зарегистрированный в рабочей книге фонт с требуемыми характеристиками.
      */
-    public static HSSFFont ensureFontExists(final HSSFWorkbook wb, final Font font) {
+    public static HSSFFont ensureFontExists(final HSSFWorkbook wb, final FontModel font) {
         final short colorId = font.getColor()!=null ? font.getColor().getId() : 0;
         HSSFFont f = wb.findFont(font.getBoldWeight(), colorId, font.getFontHeight(),
                 font.getFontName(), font.isItalic(), font.isStrikeout(), font.getTypeOffset(), font.getUnderline());
