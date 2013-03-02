@@ -21,7 +21,7 @@ public class PageSettings implements Serializable, Cloneable {
     /**
      * Настройка печати.
      */
-    private PrintSetup printSetup;
+    private PrintSetupModel printSetup;
 
     /**
      * Отступы от края листа при печати.
@@ -52,7 +52,7 @@ public class PageSettings implements Serializable, Cloneable {
     public PageSettings() {
         this.header = new HeaderModel();
         this.footer = new HeaderModel();
-        this.printSetup = new PrintSetup();
+        this.printSetup = new PrintSetupModel();
         this.margins = new Margins();
         this.zoom = null;
     }
@@ -80,7 +80,7 @@ public class PageSettings implements Serializable, Cloneable {
      *
      * @return настройки печати листа. Никогда не возвращает <code>null</code>.
      */
-    public PrintSetup getPrintSetup() {
+    public PrintSetupModel getPrintSetup() {
         return printSetup;
     }
 
@@ -145,7 +145,7 @@ public class PageSettings implements Serializable, Cloneable {
         final PageSettings result = (PageSettings)super.clone();
         result.header = (HeaderModel)header.clone();
         result.footer = (HeaderModel)footer.clone();
-        result.printSetup = (PrintSetup)printSetup.clone();
+        result.printSetup = (PrintSetupModel)printSetup.clone();
         result.margins = (Margins)margins.clone();
         return result;
     }

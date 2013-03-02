@@ -29,6 +29,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.echosoft.common.model.TreeNode;
 import org.echosoft.common.query.Query;
@@ -45,7 +46,7 @@ import org.echosoft.framework.reports.model.GroupStyle;
 import org.echosoft.framework.reports.model.GroupingSection;
 import org.echosoft.framework.reports.model.PageSettings;
 import org.echosoft.framework.reports.model.PlainSection;
-import org.echosoft.framework.reports.model.PrintSetup;
+import org.echosoft.framework.reports.model.PrintSetupModel;
 import org.echosoft.framework.reports.model.Report;
 import org.echosoft.framework.reports.model.RowModel;
 import org.echosoft.framework.reports.model.Section;
@@ -246,10 +247,10 @@ public class ExcelReportProcessor implements ReportProcessor {
             pal.setColorAtIndex(color.getId(), color.getRed(), color.getGreen(), color.getBlue());
         }
 
-        final Map<Short, HSSFFont> fonts = new HashMap<Short, HSSFFont>();
+        final Map<Short, Font> fonts = new HashMap<Short, Font>();
         final HSSFDataFormat formatter = wb.createDataFormat();
         for (final FontModel font : palette.getFonts().values()) {
-            final HSSFFont f = POIUtils.ensureFontExists(wb, font);
+            final Font f = POIUtils.ensureFontExists(wb, font);
             fonts.put(font.getId(), f);
         }
 
@@ -343,7 +344,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         if (pageSettings.getZoom()!=null)
             sheet.setZoom(pageSettings.getZoom(), 100);
     }
-    private void processPrintSetup(final HSSFPrintSetup hps, final PrintSetup printSetup) {
+    private void processPrintSetup(final HSSFPrintSetup hps, final PrintSetupModel printSetup) {
         hps.setPaperSize(printSetup.getPaperSize());
         hps.setScale(printSetup.getScale());
         hps.setFitWidth(printSetup.getFitWidth());
@@ -354,7 +355,6 @@ public class ExcelReportProcessor implements ReportProcessor {
         hps.setLandscape(printSetup.getLandscape());
         hps.setLeftToRight(printSetup.getLeftToRight());
         hps.setNoColor(printSetup.getNoColor());
-        hps.setOptions(printSetup.getOptions());
         hps.setDraft(printSetup.getDraft());
         hps.setHResolution(printSetup.getHResolution());
         hps.setNotes(printSetup.getNotes());

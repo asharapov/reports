@@ -3,12 +3,13 @@ package org.echosoft.framework.reports.util;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
-import org.apache.poi.hssf.usermodel.HSSFFont;
-import org.apache.poi.hssf.usermodel.HSSFRichTextString;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.RichTextString;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.echosoft.framework.reports.model.FontModel;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.processor.Group;
@@ -29,22 +30,22 @@ public class POIUtils {
      * @param cell  ячейка документа Excel.
      * @return  содержимое ячейки.
      */
-    public static Object getCellValue(final HSSFCell cell) {
+    public static Object getCellValue(final Cell cell) {
         if (cell==null)
             return null;
         switch (cell.getCellType()) {
-            case HSSFCell.CELL_TYPE_NUMERIC : {
-                                return HSSFDateUtil.isCellDateFormatted(cell)
+            case Cell.CELL_TYPE_NUMERIC : {
+                                return DateUtil.isCellDateFormatted(cell)
                                     ? cell.getDateCellValue() : cell.getNumericCellValue();
                             }
-            case HSSFCell.CELL_TYPE_STRING : {
-                                final HSSFRichTextString rt = cell.getRichStringCellValue();
+            case Cell.CELL_TYPE_STRING : {
+                                final RichTextString rt = cell.getRichStringCellValue();
                                 return rt.numFormattingRuns()==0 ? rt.getString() : rt;
                             }
-            case HSSFCell.CELL_TYPE_FORMULA : return cell.getCellFormula();
-            case HSSFCell.CELL_TYPE_BLANK : return null;
-            case HSSFCell.CELL_TYPE_BOOLEAN : return cell.getBooleanCellValue();
-            case HSSFCell.CELL_TYPE_ERROR : return "#ERR"+cell.getErrorCellValue();
+            case Cell.CELL_TYPE_FORMULA : return cell.getCellFormula();
+            case Cell.CELL_TYPE_BLANK : return null;
+            case Cell.CELL_TYPE_BOOLEAN : return cell.getBooleanCellValue();
+            case Cell.CELL_TYPE_ERROR : return "#ERR"+cell.getErrorCellValue();
             default: return null;
         }
     }
@@ -57,44 +58,45 @@ public class POIUtils {
      * @param value  объект на основании которого устанавливается значение ячейки.
      * @see org.echosoft.framework.reports.processor.ExcelReportProcessor#renderCell(ExecutionContext, Object)
      */
-    public static void setCellValue(final HSSFCell cell, final Object value) {
+    public static void setCellValue(final Cell cell, final Object value) {
         if (value == null) {
-            cell.setCellType(HSSFCell.CELL_TYPE_BLANK);
+            cell.setCellType(Cell.CELL_TYPE_BLANK);
         } else
         if (value instanceof Date) {
-            cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             cell.setCellValue( (Date)value );
         } else
         if (value instanceof Calendar) {
-            cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             cell.setCellValue( (Calendar)value );
         } else
         if (value instanceof Double) {
-            cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             cell.setCellValue((Double)value);
         } else
         if (value instanceof Number) {
-            cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
-            cell.setCellValue( new Double(((Number)value).doubleValue()) );
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(((Number) value).doubleValue());
         } else
         if (value instanceof Boolean) {
-            cell.setCellType(HSSFCell.CELL_TYPE_BOOLEAN);
+            cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
             cell.setCellValue( (Boolean)value );
         } else
-        if (value instanceof HSSFRichTextString) {
-            cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-            cell.setCellValue( (HSSFRichTextString)value );
+        if (value instanceof RichTextString) {
+            cell.setCellType(Cell.CELL_TYPE_STRING);
+            cell.setCellValue( (RichTextString)value );
         } else {
             final String text = value.toString();
-            if (cell.getCellType()==HSSFCell.CELL_TYPE_FORMULA) {
+            if (cell.getCellType()==Cell.CELL_TYPE_FORMULA) {
                 cell.setCellFormula(text);
             } else
             if (text.startsWith(FORMULA)) {
-                cell.setCellType(HSSFCell.CELL_TYPE_FORMULA);
+                cell.setCellType(Cell.CELL_TYPE_FORMULA);
                 cell.setCellFormula( text.substring(FORMULA_LENGTH) );
             } else {
-                cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-                cell.setCellValue( new HSSFRichTextString(text) );
+                cell.setCellType(Cell.CELL_TYPE_STRING);
+                final CreationHelper helper = cell.getSheet().getWorkbook().getCreationHelper();
+                cell.setCellValue( helper.createRichTextString(text) );
             }
         }
     }
@@ -185,7 +187,7 @@ public class POIUtils {
      * @param cell  ячейка таблицы.
      * @return  строка с адресом ячейки на листе отчета.
      */
-    public static String getCellName(final HSSFCell cell) {
+    public static String getCellName(final Cell cell) {
         return cell!=null
                 ? getColumnName(cell.getColumnIndex()) + (cell.getRowIndex()+1) 
                 : null;
@@ -248,9 +250,9 @@ public class POIUtils {
      * @param font  характеристики требуемого фонта.
      * @return  зарегистрированный в рабочей книге фонт с требуемыми характеристиками.
      */
-    public static HSSFFont ensureFontExists(final HSSFWorkbook wb, final FontModel font) {
+    public static Font ensureFontExists(final Workbook wb, final FontModel font) {
         final short colorId = font.getColor()!=null ? font.getColor().getId() : 0;
-        HSSFFont f = wb.findFont(font.getBoldWeight(), colorId, font.getFontHeight(),
+        Font f = wb.findFont(font.getBoldWeight(), colorId, font.getFontHeight(),
                 font.getFontName(), font.isItalic(), font.isStrikeout(), font.getTypeOffset(), font.getUnderline());
         if (f==null) {
             f = wb.createFont();
@@ -274,8 +276,8 @@ public class POIUtils {
      * @param src  фонт взятый в качестве шаблона.
      * @return созданная в этом же документе копия шрифта.
      */
-    public static HSSFFont copyFont(final HSSFWorkbook wb, final HSSFFont src) {
-        final HSSFFont dst = wb.createFont();
+    public static Font copyFont(final Workbook wb, final Font src) {
+        final Font dst = wb.createFont();
         dst.setBoldweight(src.getBoldweight());
         dst.setCharSet(src.getCharSet());
         dst.setColor(src.getColor());
@@ -295,8 +297,8 @@ public class POIUtils {
      * @param src  стиль ячейки взятый в качестве шаблона.
      * @return  созданная копия исходного стиля в этом же документе.
      */
-    public static HSSFCellStyle copyStyle(final HSSFWorkbook wb, final HSSFCellStyle src) {
-        final HSSFCellStyle dst = wb.createCellStyle();
+    public static CellStyle copyStyle(final Workbook wb, final CellStyle src) {
+        final CellStyle dst = wb.createCellStyle();
         dst.setAlignment( src.getAlignment() );
         dst.setBorderBottom( src.getBorderBottom() );
         dst.setBorderLeft( src.getBorderLeft() );
@@ -307,7 +309,9 @@ public class POIUtils {
         dst.setFillForegroundColor( src.getFillForegroundColor() );
         dst.setFillBackgroundColor( src.getFillBackgroundColor() );
         dst.setFillPattern( src.getFillPattern() );
-        dst.setFont( src.getFont(wb) );
+
+        final Font font = wb.getFontAt(src.getFontIndex());     // src.getFont(wb)
+        dst.setFont( font );
         dst.setHidden( src.getHidden() );
         dst.setIndention( src.getIndention() );
         dst.setLeftBorderColor( src.getLeftBorderColor() );
@@ -328,7 +332,7 @@ public class POIUtils {
      * @param bgColor Определяет цвет фона в данной ячейке. Аргумент содержит идентификатор цвета в документе или <code>-1</code> если цвет шрифта должен остаться без изменений.
      * @return копия оригинального стиля указанной ячейки с измененными цветами фона и шрифта. Этот стиль уже зарегистрирован в рабочей книге.
      */
-    public static HSSFCellStyle getAltColorStyle(final ExecutionContext ectx, final int color, final int bgColor) {
+    public static CellStyle getAltColorStyle(final ExecutionContext ectx, final int color, final int bgColor) {
         return getAltColorStyle(ectx, ectx.cell.getCellStyle(), color, bgColor);
     }
 
@@ -341,14 +345,14 @@ public class POIUtils {
      * @param bgColor Определяет цвет фона в данной ячейке. Аргумент содержит идентификатор цвета в документе или <code>-1</code> если цвет шрифта должен остаться без изменений.
      * @return копия оригинального стиля указанной ячейки с измененными цветами фона и шрифта. Этот стиль уже зарегистрирован в рабочей книге.
      */
-    public static HSSFCellStyle getAltColorStyle(final ExecutionContext ectx, final HSSFCellStyle originalStyle, final int color, final int bgColor) {
+    public static CellStyle getAltColorStyle(final ExecutionContext ectx, final CellStyle originalStyle, final int color, final int bgColor) {
         final String styleName = "alt.color.style:"+originalStyle.getIndex()+':'+color+':'+bgColor;
-        HSSFCellStyle style = (HSSFCellStyle)ectx.elctx.getVariables().get(styleName);
+        CellStyle style = (CellStyle)ectx.elctx.getVariables().get(styleName);
         if (style==null) {
             style = POIUtils.copyStyle(ectx.wb, originalStyle);
             if (color>=0) {
-                final HSSFFont of = ectx.wb.getFontAt( originalStyle.getFontIndex() );
-                HSSFFont nf = ectx.wb.findFont(of.getBoldweight(), (short)color, of.getFontHeight(),
+                final Font of = ectx.wb.getFontAt( originalStyle.getFontIndex() );
+                Font nf = ectx.wb.findFont(of.getBoldweight(), (short)color, of.getFontHeight(),
                         of.getFontName(), of.getItalic(), of.getStrikeout(), of.getTypeOffset(), of.getUnderline());
                 if (nf==null) {
                     nf = POIUtils.copyFont(ectx.wb, of);
@@ -357,7 +361,7 @@ public class POIUtils {
                 style.setFont(nf);
             }
             if (bgColor>=0) {
-                style.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
+                style.setFillPattern(CellStyle.SOLID_FOREGROUND);
                 style.setFillForegroundColor( (short)bgColor );
             }
             ectx.elctx.getVariables().put(styleName, style);

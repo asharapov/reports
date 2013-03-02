@@ -8,12 +8,12 @@ import java.util.Iterator;
 
 import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hpsf.SummaryInformation;
-import org.apache.poi.hssf.model.InternalSheet;
-import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.Entry;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.PrintSetup;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.echosoft.common.io.FastStringTokenizer;
 import org.echosoft.common.utils.Any;
 import org.echosoft.common.utils.StringUtil;
@@ -26,7 +26,7 @@ import org.echosoft.framework.reports.model.GroupStyle;
 import org.echosoft.framework.reports.model.GroupingSection;
 import org.echosoft.framework.reports.model.PageSettings;
 import org.echosoft.framework.reports.model.PlainSection;
-import org.echosoft.framework.reports.model.PrintSetup;
+import org.echosoft.framework.reports.model.PrintSetupModel;
 import org.echosoft.framework.reports.model.Report;
 import org.echosoft.framework.reports.model.ReportDescription;
 import org.echosoft.framework.reports.model.Section;
@@ -62,11 +62,13 @@ public class ReportModelParser {
      * @return полная структура отчета.
      * @throws Exception в случае каких-либо проблем.
      */
-    public static Report parse(InputStream template, InputStream structure) throws Exception {
+    public static Report parse(final InputStream template, final InputStream structure) throws Exception {
         // загружаем шаблон отчета ...
         //   в некоторых случаях придется обращаться к потоку дважды, так что сначала сохраним данные в буфер.
         final POIFSFileSystem fs = new POIFSFileSystem(template);
         final HSSFWorkbook wb = new HSSFWorkbook( fs, true );
+        //final Workbook wb = WorkbookFactory.create(template);
+
 
         // загружаем информацию о структуре отчета
         // (подробное описание структуры шаблона отчета)
@@ -283,9 +285,9 @@ public class ReportModelParser {
     }
 
 
-    private static SheetModel parseSheet(final HSSFWorkbook wb, final Report report, final Element element) {
+    private static SheetModel parseSheet(final Workbook wb, final Report report, final Element element) {
         final String id = StringUtil.trim(element.getAttribute("id"));
-        final HSSFSheet esheet = wb.getSheet(id);
+        final Sheet esheet = wb.getSheet(id);
         if (esheet == null)
             throw new RuntimeException("Template doesn't contains sheet " + id);
         final SheetModel sheet = new SheetModel(id);
@@ -352,23 +354,23 @@ public class ReportModelParser {
         return sheet;
     }
 
-    private static void copyPageSettings(final PageSettings pageSettings, final HSSFSheet esheet) {
+    private static void copyPageSettings(final PageSettings pageSettings, final Sheet esheet) {
         pageSettings.getHeader().setLeft(esheet.getHeader().getLeft());
         pageSettings.getHeader().setCenter(esheet.getHeader().getCenter());
         pageSettings.getHeader().setRight(esheet.getHeader().getRight());
         pageSettings.getFooter().setLeft(esheet.getFooter().getLeft());
         pageSettings.getFooter().setCenter(esheet.getFooter().getCenter());
         pageSettings.getFooter().setRight(esheet.getFooter().getRight());
-        pageSettings.getMargins().setTop(esheet.getMargin(InternalSheet.TopMargin));
-        pageSettings.getMargins().setRight(esheet.getMargin(InternalSheet.RightMargin));
-        pageSettings.getMargins().setBottom(esheet.getMargin(InternalSheet.BottomMargin));
-        pageSettings.getMargins().setLeft(esheet.getMargin(InternalSheet.LeftMargin));
+        pageSettings.getMargins().setTop(esheet.getMargin(Sheet.TopMargin));
+        pageSettings.getMargins().setRight(esheet.getMargin(Sheet.RightMargin));
+        pageSettings.getMargins().setBottom(esheet.getMargin(Sheet.BottomMargin));
+        pageSettings.getMargins().setLeft(esheet.getMargin(Sheet.LeftMargin));
         copyPrintSetup(pageSettings.getPrintSetup(), esheet.getPrintSetup());
         pageSettings.setFitToPage(esheet.getFitToPage());
         pageSettings.setHorizontallyCenter(esheet.getHorizontallyCenter());
         pageSettings.setVerticallyCenter(esheet.getVerticallyCenter());
     }
-    private static void copyPrintSetup(final PrintSetup modelPrintSetup, final HSSFPrintSetup printSetup) {
+    private static void copyPrintSetup(final PrintSetupModel modelPrintSetup, final PrintSetup printSetup) {
         modelPrintSetup.setPaperSize(printSetup.getPaperSize());
         modelPrintSetup.setScale(printSetup.getScale());
         modelPrintSetup.setFitWidth(printSetup.getFitWidth());
@@ -378,7 +380,6 @@ public class ReportModelParser {
         modelPrintSetup.setLandscape(printSetup.getLandscape());
         modelPrintSetup.setLeftToRight(printSetup.getLeftToRight());
         modelPrintSetup.setNoColor(printSetup.getNoColor());
-        modelPrintSetup.setOptions(printSetup.getOptions());
         modelPrintSetup.setDraft(printSetup.getDraft());
         modelPrintSetup.setHResolution(printSetup.getHResolution());
         modelPrintSetup.setNotes(printSetup.getNotes());
@@ -390,7 +391,7 @@ public class ReportModelParser {
         modelPrintSetup.setNoOrientation(printSetup.getNoOrientation());
     }
 
-    private static Section parsePlainSection(final HSSFSheet sheet, final int offset, final Report report, final Element element) {
+    private static Section parsePlainSection(final Sheet sheet, final int offset, final Report report, final Element element) {
         final String id = StringUtil.trim(element.getAttribute("id"));
         final PlainSection section = new PlainSection(id);
         section.setCollapsible(Any.asBoolean(element.getAttribute("collapsible"), false));
@@ -417,7 +418,7 @@ public class ReportModelParser {
         return section;
     }
 
-    private static Section parseGroupingSection(final HSSFSheet sheet, final int offset, final Report report, final Element element) {
+    private static Section parseGroupingSection(final Sheet sheet, final int offset, final Report report, final Element element) {
         final String id = StringUtil.trim(element.getAttribute("id"));
         final GroupingSection section = new GroupingSection(id);
         section.setCollapsible(Any.asBoolean(element.getAttribute("collapsible"), false));
@@ -451,7 +452,7 @@ public class ReportModelParser {
         return section;
     }
 
-    private static Section parseCompositeSection(final HSSFSheet sheet, final int offset, final Report report, final Element element) {
+    private static Section parseCompositeSection(final Sheet sheet, final int offset, final Report report, final Element element) {
         final String id = StringUtil.trim(element.getAttribute("id"));
         final CompositeSection section = new CompositeSection(id);
         section.setCollapsible(Any.asBoolean(StringUtil.trim(element.getAttribute("collapsible")), false));
@@ -500,7 +501,7 @@ public class ReportModelParser {
         return section;
     }
 
-    private static GroupModel parseGroup(final HSSFSheet sheet, int offset, final Report report, final Element element) {
+    private static GroupModel parseGroup(final Sheet sheet, int offset, final Report report, final Element element) {
         final GroupModel group = new GroupModel();
         group.setDiscriminatorField(StringUtil.trim(element.getAttribute("discriminatorField")));
         group.setLevelField(StringUtil.trim(element.getAttribute("levelField")));

@@ -2,7 +2,7 @@ package org.echosoft.framework.reports.model;
 
 import java.io.Serializable;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.ss.usermodel.Cell;
 import org.echosoft.framework.reports.model.el.Expression;
 import org.echosoft.framework.reports.model.el.ExpressionFactory;
 
@@ -20,7 +20,7 @@ public class CellModel implements Serializable, Cloneable {
 
     /**
      * Тип данных в ячейке.
-     * @see org.apache.poi.hssf.usermodel.HSSFCell#getCellType()
+     * @see org.apache.poi.ss.usermodel.Cell#getCellType()
      */
     private int type;
 
@@ -50,7 +50,7 @@ public class CellModel implements Serializable, Cloneable {
      * @param cell  ячейка из шаблона отчета.
      * @param palette  реестр всех стилей используемых в данном отчете.
      */
-    public CellModel(final HSSFCell cell, final StylePalette palette) {
+    public CellModel(final Cell cell, final StylePalette palette) {
         expr = ExpressionFactory.makeExpression(cell);
         type = cell.getCellType();
         final CellStyleModel s = palette.ensureStyleRegistered(cell.getCellStyle());
@@ -63,7 +63,7 @@ public class CellModel implements Serializable, Cloneable {
      */
     public CellModel() {
         expr = ExpressionFactory.EMPTY_EXPRESSION;
-        type = HSSFCell.CELL_TYPE_BLANK;
+        type = Cell.CELL_TYPE_BLANK;
         style = -1; // используем стиль по умолчанию ...
     }
 
@@ -84,7 +84,7 @@ public class CellModel implements Serializable, Cloneable {
 
     /**
      * @return Тип данных в ячейке.
-     * @see org.apache.poi.hssf.usermodel.HSSFCell#getCellType()
+     * @see org.apache.poi.ss.usermodel.Cell#getCellType()
      */
     public int getType() {
         return type;

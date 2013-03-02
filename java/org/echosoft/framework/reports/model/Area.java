@@ -7,9 +7,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 /**
@@ -55,7 +55,7 @@ public class Area implements Serializable, Cloneable {
      * @param height  количество строк в области. Должно быть как минимум 1.
      * @param palette  реестр всех стилей используемых в данном отчете.
      */
-    public Area(final HSSFSheet sheet, final int top, final int height, final StylePalette palette) {
+    public Area(final Sheet sheet, final int top, final int height, final StylePalette palette) {
         if (sheet==null || top<0 || height<1)
             throw new IllegalArgumentException("Illegal area arguments");
         rows = new ArrayList<RowModel>();
@@ -66,7 +66,7 @@ public class Area implements Serializable, Cloneable {
         for (int i=top; i<=bottom; i++) {
             final RowModel rm = new RowModel();
             rows.add( rm );
-            final HSSFRow row = sheet.getRow(i);
+            final Row row = sheet.getRow(i);
             if (row==null) {
                 rm.setHeight( sheet.getDefaultRowHeight() );
                 continue;
@@ -75,7 +75,7 @@ public class Area implements Serializable, Cloneable {
             rm.setHidden( row.getZeroHeight() );
             lastColumn = Math.max(lastColumn, row.getLastCellNum());
             for (int j=0; j<=row.getLastCellNum(); j++) {
-                final HSSFCell cell = row.getCell(j);
+                final Cell cell = row.getCell(j);
                 if (cell==null) {
                     rm.getCells().add( null );
                 } else {

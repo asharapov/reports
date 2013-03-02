@@ -9,6 +9,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Workbook;
 
 /**
  * Содержит полный реестр стилей ячеек используемых в макете отчета.
@@ -21,7 +22,7 @@ public class StylePalette implements Serializable, Cloneable {
     private Map<Short,FontModel> fonts;
     private Map<Short,CellStyleModel> styles;
 
-    private final transient HSSFWorkbook wb;
+    private final transient Workbook wb;
     private final transient HSSFPalette palette;
 
     public StylePalette(final HSSFWorkbook wb) {
