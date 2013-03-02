@@ -5,10 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.echosoft.framework.reports.model.Report;
 import org.echosoft.framework.reports.model.SheetModel;
 import org.echosoft.framework.reports.model.el.ELContext;
@@ -70,12 +70,12 @@ public final class ExecutionContext {
     /**
      * Обрабатываемый в настоящее время лист итогового отчета.
      */
-    public HSSFSheet wsheet;
+    public Sheet wsheet;
 
     /**
      * Обрабатываемая в настоящее время ячейка итогового отчета.
      */
-    public HSSFCell cell;
+    public Cell cell;
 
 
     public ExecutionContext(Report report, ELContext ctx, HSSFWorkbook wb, Map<Short,HSSFCellStyle> styles) {

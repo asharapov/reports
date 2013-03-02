@@ -31,7 +31,7 @@ public class GroupingSection extends Section {
     /**
      * Шаблон представления каждой записи в секции. Может соответствовать одной или более строкам в итоговом отчете.
      */
-    private Area rowTemplate;
+    private AreaModel rowTemplate;
 
 
     public GroupingSection(String id) {
@@ -91,11 +91,11 @@ public class GroupingSection extends Section {
      *
      * @return  шаблон представления одной записи.
      */
-    public Area getRowTemplate() {
+    public AreaModel getRowTemplate() {
         return rowTemplate;
     }
 
-    public void setRowTemplate(Area row) {
+    public void setRowTemplate(AreaModel row) {
         this.rowTemplate = row;
     }
 
@@ -146,7 +146,7 @@ public class GroupingSection extends Section {
         result.indentedColumns = new int[indentedColumns.length];
         System.arraycopy(indentedColumns, 0, result.indentedColumns, 0, indentedColumns.length);
         if (rowTemplate!=null)
-            result.rowTemplate = (Area)rowTemplate.clone();
+            result.rowTemplate = (AreaModel)rowTemplate.clone();
         return result;
     }
 

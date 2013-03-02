@@ -7,7 +7,7 @@ import java.io.Serializable;
  *
  * @author Anton Sharapov
  */
-public class ColumnGroup implements Serializable, Cloneable {
+public class ColumnGroupModel implements Serializable, Cloneable {
 
     /**
      * Порядковый номер первой колонки в группе (начиная с 0).
@@ -19,7 +19,7 @@ public class ColumnGroup implements Serializable, Cloneable {
      */
     private final int to;
 
-    public ColumnGroup(int from, int to) {
+    public ColumnGroupModel(int from, int to) {
         if (from<0 || to<0 || from==to)
             throw new IllegalArgumentException("Invalid arguments");
 
@@ -45,7 +45,7 @@ public class ColumnGroup implements Serializable, Cloneable {
      * @param group  группа колонок с которой выполняется сравнение.
      * @return  true если данная группа колонок находится внутри группы, переданной в параметрах.
      */
-    public boolean insideOf(ColumnGroup group) {
+    public boolean insideOf(ColumnGroupModel group) {
         return (from!=group.from || to!=group.to) &&
                (from>=group.from && to<=group.to);
     }
@@ -55,7 +55,7 @@ public class ColumnGroup implements Serializable, Cloneable {
      * @param group  группа колонок для которой выполняется проверка на пересечение.
      * @return  true если данная группа и группа из параметра вызова пересекаются.
      */
-    public boolean intersected(ColumnGroup group) {
+    public boolean intersected(ColumnGroupModel group) {
         return (from<group.from && to>=group.from && to<group.to) ||
                (from>group.from && from<=group.to && to>group.to);
     }
@@ -68,9 +68,9 @@ public class ColumnGroup implements Serializable, Cloneable {
         return from<<8 + to;
     }
     public boolean equals(Object obj) {
-        if (obj==null || !ColumnGroup.class.equals(obj.getClass()))
+        if (obj==null || !ColumnGroupModel.class.equals(obj.getClass()))
             return false;
-        final ColumnGroup other = (ColumnGroup)obj;
+        final ColumnGroupModel other = (ColumnGroupModel)obj;
         return from==other.from && to==other.to;
     }
     public String toString() {

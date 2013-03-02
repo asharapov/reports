@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Общие настройки отображения страниц документа.
  * @author Anton Sharapov
  */
-public class PageSettings implements Serializable, Cloneable {
+public class PageSettingsModel implements Serializable, Cloneable {
 
     /**
      * Верхний колонтитул данной страницы.
@@ -26,7 +26,7 @@ public class PageSettings implements Serializable, Cloneable {
     /**
      * Отступы от края листа при печати.
      */
-    private Margins margins;
+    private MarginsModel margins;
 
     /**
      * Определяет будет ли автоматически вычисляться масштаб страницы таким образом чтобы она занимала страницу целиком.
@@ -49,11 +49,11 @@ public class PageSettings implements Serializable, Cloneable {
      */
     private Integer zoom;
 
-    public PageSettings() {
+    public PageSettingsModel() {
         this.header = new HeaderModel();
         this.footer = new HeaderModel();
         this.printSetup = new PrintSetupModel();
-        this.margins = new Margins();
+        this.margins = new MarginsModel();
         this.zoom = null;
     }
 
@@ -88,7 +88,7 @@ public class PageSettings implements Serializable, Cloneable {
      * Возвращает величины отступов по краям листа при печати.
      * @return  отступы по краям листа при печати. Измеряются в дюймах.
      */
-    public Margins getMargins() {
+    public MarginsModel getMargins() {
         return margins;
     }
 
@@ -142,11 +142,11 @@ public class PageSettings implements Serializable, Cloneable {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        final PageSettings result = (PageSettings)super.clone();
+        final PageSettingsModel result = (PageSettingsModel)super.clone();
         result.header = (HeaderModel)header.clone();
         result.footer = (HeaderModel)footer.clone();
         result.printSetup = (PrintSetupModel)printSetup.clone();
-        result.margins = (Margins)margins.clone();
+        result.margins = (MarginsModel)margins.clone();
         return result;
     }
 }

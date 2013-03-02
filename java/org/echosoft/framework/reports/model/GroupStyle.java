@@ -24,7 +24,7 @@ public class GroupStyle implements Serializable, Cloneable {
     /**
      * Собственно шаблон оформления.
      */
-    private Area template;
+    private AreaModel template;
 
 
     public int getLevel() {
@@ -41,10 +41,10 @@ public class GroupStyle implements Serializable, Cloneable {
         this.defaultStyle = defaultStyle;
     }
 
-    public Area getTemplate() {
+    public AreaModel getTemplate() {
         return template;
     }
-    public void setTemplate(Area template) {
+    public void setTemplate(AreaModel template) {
         this.template = template;
     }
 
@@ -52,7 +52,7 @@ public class GroupStyle implements Serializable, Cloneable {
     public Object clone() throws CloneNotSupportedException {
         final GroupStyle result = (GroupStyle)super.clone();
         if (template!=null)
-            result.template = (Area)template.clone();
+            result.template = (AreaModel)template.clone();
         return result;
     }
 

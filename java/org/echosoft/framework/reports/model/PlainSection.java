@@ -11,7 +11,7 @@ public class PlainSection extends Section {
     /**
      * Список строк из шаблона excel, который соответствует данной секции отчета.
      */
-    private Area template;
+    private AreaModel template;
 
 
     public PlainSection(String id) {
@@ -23,7 +23,7 @@ public class PlainSection extends Section {
      *
      * @return область шаблона отчета с описанием данной секции.
      */
-    public Area getTemplate() {
+    public AreaModel getTemplate() {
         return template;
     }
 
@@ -32,7 +32,7 @@ public class PlainSection extends Section {
      *
      * @param area  фрагмент шаблона отчета с описанием данной секции.
      */
-    public void setTemplate(Area area) {
+    public void setTemplate(AreaModel area) {
         this.template = area;
     }
 
@@ -68,7 +68,7 @@ public class PlainSection extends Section {
     public Section cloneSection(Report target) throws CloneNotSupportedException {
         final PlainSection result = (PlainSection)super.cloneSection(target);
         if (template!=null)
-        result.template = (Area)template.clone();
+        result.template = (AreaModel)template.clone();
         return result;
     }
 

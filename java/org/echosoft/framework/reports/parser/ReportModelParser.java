@@ -18,13 +18,13 @@ import org.echosoft.common.io.FastStringTokenizer;
 import org.echosoft.common.utils.Any;
 import org.echosoft.common.utils.StringUtil;
 import org.echosoft.common.utils.XMLUtil;
-import org.echosoft.framework.reports.model.Area;
-import org.echosoft.framework.reports.model.ColumnGroup;
+import org.echosoft.framework.reports.model.AreaModel;
+import org.echosoft.framework.reports.model.ColumnGroupModel;
 import org.echosoft.framework.reports.model.CompositeSection;
 import org.echosoft.framework.reports.model.GroupModel;
 import org.echosoft.framework.reports.model.GroupStyle;
 import org.echosoft.framework.reports.model.GroupingSection;
-import org.echosoft.framework.reports.model.PageSettings;
+import org.echosoft.framework.reports.model.PageSettingsModel;
 import org.echosoft.framework.reports.model.PlainSection;
 import org.echosoft.framework.reports.model.PrintSetupModel;
 import org.echosoft.framework.reports.model.Report;
@@ -306,7 +306,7 @@ public class ReportModelParser {
                     throw new IllegalArgumentException("Incorrect value for attribute 'column-groups': "+cgs);
                 final int c1 = POIUtils.getColumnNumber(cnames[0]);
                 final int c2 = POIUtils.getColumnNumber(cnames[1]);
-                sheet.addColumnGroup( new ColumnGroup(c1, c2) );
+                sheet.addColumnGroup( new ColumnGroupModel(c1, c2) );
             }
         }
         copyPageSettings(sheet.getPageSettings(), esheet);
@@ -354,7 +354,7 @@ public class ReportModelParser {
         return sheet;
     }
 
-    private static void copyPageSettings(final PageSettings pageSettings, final Sheet esheet) {
+    private static void copyPageSettings(final PageSettingsModel pageSettings, final Sheet esheet) {
         pageSettings.getHeader().setLeft(esheet.getHeader().getLeft());
         pageSettings.getHeader().setCenter(esheet.getHeader().getCenter());
         pageSettings.getHeader().setRight(esheet.getHeader().getRight());
@@ -402,7 +402,7 @@ public class ReportModelParser {
         if (pid != null)
             section.setDataProvider(report.getProviders().get(pid));
         final int height = Any.asInt(element.getAttribute("height"), 1);
-        section.setTemplate(new Area(sheet, offset, height, report.getPalette()));
+        section.setTemplate(new AreaModel(sheet, offset, height, report.getPalette()));
         section.getTemplate().setHidden(section.isHidden());
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext();) {
             final Element el = i.next();
@@ -448,7 +448,7 @@ public class ReportModelParser {
             } else
                 throw new RuntimeException("Unknown element: " + tagName);
         }
-        section.setRowTemplate(new Area(sheet, offset + height, rowHeight, report.getPalette()));
+        section.setRowTemplate(new AreaModel(sheet, offset + height, rowHeight, report.getPalette()));
         return section;
     }
 
@@ -517,7 +517,7 @@ public class ReportModelParser {
                 final GroupStyle style = new GroupStyle();
                 style.setLevel( Any.asInt(StringUtil.trim(el.getAttribute("level")), 0) );
                 style.setDefault( Any.asBoolean(StringUtil.trim(el.getAttribute("default")), false) );
-                style.setTemplate( new Area(sheet, offset, height, report.getPalette()) );
+                style.setTemplate( new AreaModel(sheet, offset, height, report.getPalette()) );
                 style.getTemplate().setHidden(group.isHidden());
                 group.addStyle(style);
                 offset += height;
@@ -528,7 +528,7 @@ public class ReportModelParser {
             final GroupStyle style = new GroupStyle();
             style.setLevel(0);
             style.setDefault(true);
-            style.setTemplate(new Area(sheet, offset, height, report.getPalette()));
+            style.setTemplate(new AreaModel(sheet, offset, height, report.getPalette()));
             style.getTemplate().setHidden(group.isHidden());
             group.addStyle(style);
         }

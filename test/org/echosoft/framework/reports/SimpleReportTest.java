@@ -5,12 +5,11 @@ import java.io.FileOutputStream;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.echosoft.common.utils.StringUtil;
-import org.echosoft.framework.reports.model.ColumnGroup;
+import org.echosoft.framework.reports.model.ColumnGroupModel;
 import org.echosoft.framework.reports.model.Report;
 import org.echosoft.framework.reports.model.SheetModel;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.registry.ReportsRegistry;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.postgresql.ds.PGPoolingDataSource;
 
@@ -36,8 +35,8 @@ public class SimpleReportTest {
     public void testReport1() throws Exception {
         final Report report = TestUtils.loadReport("report1");
         final SheetModel sheet1 = report.findSheetById("sheet1");
-        sheet1.addColumnGroup(new ColumnGroup(4, 7));
-        sheet1.addColumnGroup(new ColumnGroup(5, 6));
+        sheet1.addColumnGroup(new ColumnGroupModel(4, 7));
+        sheet1.addColumnGroup(new ColumnGroupModel(5, 6));
 
         final ELContext ctx = new ELContext();
         ctx.getEnvironment().put("company", "Рога и Копыта");

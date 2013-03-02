@@ -93,7 +93,7 @@ public class CellModel implements Serializable, Cloneable {
     /**
      * Устанавливает новый тип содержимого ячейки.
      * @param type  новый тип содержимого ячейки.
-     * @see org.apache.poi.hssf.usermodel.HSSFCell#getCellType()
+     * @see org.apache.poi.ss.usermodel.Cell#getCellType()
      */
     public void setType(int type) {
         this.type = type;

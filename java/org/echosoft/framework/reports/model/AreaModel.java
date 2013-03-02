@@ -18,7 +18,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
  *
  * @author Anton Sharapov
  */
-public class Area implements Serializable, Cloneable {
+public class AreaModel implements Serializable, Cloneable {
 
     /**
      * Список строк отчета, каждая из которых представлена списком ячеек.
@@ -55,7 +55,7 @@ public class Area implements Serializable, Cloneable {
      * @param height  количество строк в области. Должно быть как минимум 1.
      * @param palette  реестр всех стилей используемых в данном отчете.
      */
-    public Area(final Sheet sheet, final int top, final int height, final StylePalette palette) {
+    public AreaModel(final Sheet sheet, final int top, final int height, final StylePalette palette) {
         if (sheet==null || top<0 || height<1)
             throw new IllegalArgumentException("Illegal area arguments");
         rows = new ArrayList<RowModel>();
@@ -355,7 +355,7 @@ public class Area implements Serializable, Cloneable {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        final Area result = (Area)super.clone();
+        final AreaModel result = (AreaModel)super.clone();
         result.rows = new ArrayList<RowModel>(rows.size());
         for (RowModel rm : rows) {
             result.rows.add( (RowModel)rm.clone() );
@@ -381,13 +381,13 @@ public class Area implements Serializable, Cloneable {
      */
     public static class Region implements Serializable, Cloneable {
 
-        private final Area owner;
+        private final AreaModel owner;
         private int firstCol;
         private int firstRow;
         private int lastCol;
         private int lastRow;
 
-        Region(final Area owner, final int firstCol, final int firstRow, final int lastCol, final int lastRow) {
+        Region(final AreaModel owner, final int firstCol, final int firstRow, final int lastCol, final int lastRow) {
             if (firstCol<0 || firstRow<0 || firstCol>lastCol || firstRow>lastRow || lastCol>=owner.getColumnsCount() || lastRow>=owner.getRows().size())
                 throw new IndexOutOfBoundsException("Invalid range");
             this.owner = owner;

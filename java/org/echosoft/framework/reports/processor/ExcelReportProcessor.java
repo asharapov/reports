@@ -21,30 +21,30 @@ import org.apache.poi.hssf.record.PaletteRecord;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
-import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
-import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
-import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.PrintSetup;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.echosoft.common.model.TreeNode;
 import org.echosoft.common.query.Query;
 import org.echosoft.common.query.providers.DataProvider;
 import org.echosoft.framework.reports.macros.Macros;
-import org.echosoft.framework.reports.model.Area;
+import org.echosoft.framework.reports.model.AreaModel;
 import org.echosoft.framework.reports.model.CellModel;
 import org.echosoft.framework.reports.model.CellStyleModel;
 import org.echosoft.framework.reports.model.ColorModel;
-import org.echosoft.framework.reports.model.ColumnGroup;
+import org.echosoft.framework.reports.model.ColumnGroupModel;
 import org.echosoft.framework.reports.model.CompositeSection;
 import org.echosoft.framework.reports.model.FontModel;
 import org.echosoft.framework.reports.model.GroupStyle;
 import org.echosoft.framework.reports.model.GroupingSection;
-import org.echosoft.framework.reports.model.PageSettings;
+import org.echosoft.framework.reports.model.PageSettingsModel;
 import org.echosoft.framework.reports.model.PlainSection;
 import org.echosoft.framework.reports.model.PrintSetupModel;
 import org.echosoft.framework.reports.model.Report;
@@ -295,8 +295,9 @@ public class ExcelReportProcessor implements ReportProcessor {
         }
         if (ectx.sheet.isRendered()) {
             ectx.wsheet = ectx.wb.createSheet( (String)sheet.getTitle().getValue(ectx.elctx) );
-            //ctx.wsheet.setRowSumsBelow(false);
-            ectx.wsheet.setAlternativeExpression(false);  // setAlternativeExpression делает то что должен делать метод setRowSumBelow() ...
+            ectx.wsheet.setRowSumsBelow(false);
+            //ectx.wsheet.setAlternativeExpression(false);  // TODO: мы использовали этот метод т.к. setRowSumBelow() не работал в должной мере, но судя по коду POI это исправили еще 4 года назад
+
             final int sheetIdx = ectx.wb.getSheetIndex(ectx.wsheet);
             ectx.wb.setSheetHidden(sheetIdx, sheet.isHidden());
             if (sheet.isProtected() && ectx.report.getPassword()!=null && ectx.wb.isWriteProtected()) {
@@ -313,8 +314,8 @@ public class ExcelReportProcessor implements ReportProcessor {
             for (int i = 0; i < hidden.length; i++) {
                 ectx.wsheet.setColumnHidden(i, hidden[i]);
             }
-            for (Iterator<TreeNode<ColumnGroup>> i = sheet.getColumnGroups().traverseChildNodes(); i.hasNext();) {
-                final ColumnGroup group = i.next().getData();
+            for (Iterator<TreeNode<ColumnGroupModel>> i = sheet.getColumnGroups().traverseChildNodes(); i.hasNext();) {
+                final ColumnGroupModel group = i.next().getData();
                 ectx.wsheet.groupColumn(group.getFirstColumn(), (short) group.getLastColumn());
             }
             processPageSettings(ectx.wsheet, sheet.getPageSettings());
@@ -326,7 +327,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         ectx.wsheet = null;
     }
 
-    private void processPageSettings(final HSSFSheet sheet, final PageSettings pageSettings) {
+    private void processPageSettings(final Sheet sheet, final PageSettingsModel pageSettings) {
         sheet.getHeader().setLeft(pageSettings.getHeader().getLeft());
         sheet.getHeader().setCenter(pageSettings.getHeader().getCenter());
         sheet.getHeader().setRight(pageSettings.getHeader().getRight());
@@ -344,7 +345,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         if (pageSettings.getZoom()!=null)
             sheet.setZoom(pageSettings.getZoom(), 100);
     }
-    private void processPrintSetup(final HSSFPrintSetup hps, final PrintSetupModel printSetup) {
+    private void processPrintSetup(final PrintSetup hps, final PrintSetupModel printSetup) {
         hps.setPaperSize(printSetup.getPaperSize());
         hps.setScale(printSetup.getScale());
         hps.setFitWidth(printSetup.getFitWidth());
@@ -579,7 +580,7 @@ public class ExcelReportProcessor implements ReportProcessor {
      * @return номер следующей строки после отображения данной группы строк.
      * @throws Exception в случае каких-либо проблем
      */
-    protected int renderArea(final ExecutionContext ectx, final Area template, int startRow) throws Exception {
+    protected int renderArea(final ExecutionContext ectx, final AreaModel template, int startRow) throws Exception {
         final CellEvent event = new CellEvent(ectx);
 
         if (startRow < 0) {
@@ -590,7 +591,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         final Map<String, Object> variables = ectx.elctx.getVariables();
         final boolean hidden = template.isHidden();
         for (final RowModel rm : template.getRows()) {
-            HSSFRow row = ectx.wsheet.getRow(r);
+            Row row = ectx.wsheet.getRow(r);
             if (row == null) {
                 row = ectx.wsheet.createRow(r);
             }
@@ -650,7 +651,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         } else
         if (value instanceof Number) {
             ectx.cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
-            ectx.cell.setCellValue( new Double(((Number)value).doubleValue()) );
+            ectx.cell.setCellValue(((Number) value).doubleValue());
         } else
         if (value instanceof Boolean) {
             ectx.cell.setCellType(HSSFCell.CELL_TYPE_BOOLEAN);

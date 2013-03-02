@@ -6,28 +6,28 @@ import java.io.Serializable;
  * Содержит величины отступов по краям листа (измеряется в дюймах).
  * @author Anton Sharapov
  */
-public class Margins implements Serializable, Cloneable {
+public class MarginsModel implements Serializable, Cloneable {
 
     private double top;
     private double right;
     private double bottom;
     private double left;
 
-    public Margins() {
+    public MarginsModel() {
         this.top = 1.0;
         this.right = 0.75;
         this.bottom = 1.0;
         this.left = 0.75;
     }
 
-    public Margins(final double margins) {
+    public MarginsModel(final double margins) {
         this.top = margins;
         this.right = margins;
         this.bottom = margins;
         this.left = margins;
     }
 
-    public Margins(final double top, final double right, final double bottom, final double left) {
+    public MarginsModel(final double top, final double right, final double bottom, final double left) {
         this.top = top;
         this.right = right;
         this.bottom = bottom;
@@ -75,7 +75,7 @@ public class Margins implements Serializable, Cloneable {
     public boolean equals(final Object obj) {
         if (obj==null || !getClass().equals(obj.getClass()))
             return false;
-        final Margins other = (Margins)obj;
+        final MarginsModel other = (MarginsModel)obj;
         return top == other.top &&
                right == other.right &&
                bottom == other.bottom &&

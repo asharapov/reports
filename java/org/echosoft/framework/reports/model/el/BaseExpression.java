@@ -4,7 +4,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.poi.hssf.usermodel.HSSFRichTextString;
+import org.apache.poi.ss.usermodel.RichTextString;
 import org.echosoft.common.io.FastStringWriter;
 import org.echosoft.common.utils.BeanUtil;
 
@@ -74,14 +74,14 @@ public class BaseExpression implements Expression {
         if (expression instanceof String) {
             text = (String)expression;
         } else
-        if (expression instanceof HSSFRichTextString) {
-            text = ((HSSFRichTextString)expression).getString();
+        if (expression instanceof RichTextString) {
+            text = ((RichTextString)expression).getString();
         } else {
             chunks.add( new StaticChunk(expression) );
             return;
         }
 
-        if (text.indexOf(START_MARK) < 0) {
+        if (!text.contains(START_MARK)) {
             chunks.add( new StaticChunk(expression) );
             return;
         }

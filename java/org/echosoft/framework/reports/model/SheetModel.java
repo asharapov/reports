@@ -68,12 +68,12 @@ public class SheetModel implements Serializable {
     /**
      * Описывает иерархию группировок колонок.
      */
-    private final TreeNode<ColumnGroup> colgroups;
+    private final TreeNode<ColumnGroupModel> colgroups;
 
     /**
      * Группа свойств, относящихся к описанию представления страницы.
      */
-    private PageSettings pageSettings;
+    private PageSettingsModel pageSettings;
 
     /**
      * Упорядоченный список разделов, присутствующих на данном листе отчета.
@@ -92,8 +92,8 @@ public class SheetModel implements Serializable {
         this.sections = new ArrayList<Section>();
         this.colwidths = EMPTY_INT_ARRAY;
         this.colhidden = EMPTY_BOOLEAN_ARRAY;
-        this.colgroups = new TreeNode<ColumnGroup>("", null);
-        this.pageSettings = new PageSettings();
+        this.colgroups = new TreeNode<ColumnGroupModel>("", null);
+        this.pageSettings = new PageSettingsModel();
     }
 
     /**
@@ -272,7 +272,7 @@ public class SheetModel implements Serializable {
      *
      * @return корневой (фиктивный) узел дерева группировок. Метод никогда не возвращает null.
      */
-    public TreeNode<ColumnGroup> getColumnGroups() {
+    public TreeNode<ColumnGroupModel> getColumnGroups() {
         return colgroups;
     }
 
@@ -281,12 +281,12 @@ public class SheetModel implements Serializable {
      *
      * @param group  очередная группа колонок.
      */
-    public void addColumnGroup(final ColumnGroup group) {
+    public void addColumnGroup(final ColumnGroupModel group) {
         addColumnGroup(colgroups, group);
     }
 
-    protected TreeNode<ColumnGroup> addColumnGroup(final TreeNode<ColumnGroup> parent, final ColumnGroup group) {
-        for (TreeNode<ColumnGroup> node : parent.getChildren()) {
+    protected TreeNode<ColumnGroupModel> addColumnGroup(final TreeNode<ColumnGroupModel> parent, final ColumnGroupModel group) {
+        for (TreeNode<ColumnGroupModel> node : parent.getChildren()) {
             if (group.insideOf(node.getData()))
                 return addColumnGroup(node, group);
             if (group.intersected(node.getData()))
@@ -301,7 +301,7 @@ public class SheetModel implements Serializable {
      *
      * @return группа свойств описывающая настройки отображения страницы. Никогда не возвращает <code>null</code>.
      */
-    public PageSettings getPageSettings() {
+    public PageSettingsModel getPageSettings() {
         return pageSettings;
     }
 
@@ -362,13 +362,13 @@ public class SheetModel implements Serializable {
         result.colhidden = new boolean[colhidden.length];
         System.arraycopy(colhidden, 0, result.colhidden, 0, colhidden.length);
 
-        for (Iterator<TreeNode<ColumnGroup>> it = colgroups.traverseChildNodes(); it.hasNext(); ) {
-            final TreeNode<ColumnGroup> node = it.next();
-            final TreeNode<ColumnGroup> parent = result.colgroups.findInTree(node.getParent().getId());
+        for (Iterator<TreeNode<ColumnGroupModel>> it = colgroups.traverseChildNodes(); it.hasNext(); ) {
+            final TreeNode<ColumnGroupModel> node = it.next();
+            final TreeNode<ColumnGroupModel> parent = result.colgroups.findInTree(node.getParent().getId());
             parent.addChildNode(node.getId(), node.getData());
         }
 
-        result.pageSettings = (PageSettings)pageSettings.clone();
+        result.pageSettings = (PageSettingsModel)pageSettings.clone();
 
         for (Section section : sections) {
             result.sections.add( section.cloneSection(target) );
