@@ -5,10 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.echosoft.framework.reports.model.Report;
 import org.echosoft.framework.reports.model.SheetModel;
 import org.echosoft.framework.reports.model.el.ELContext;
@@ -60,12 +61,17 @@ public final class ExecutionContext {
     /**
      * Таблица трансляции номеров стилей ячеек шаблона в стили итогового отчета.
      */
-    public final Map<Short, HSSFCellStyle> styles;
+    public final Map<Short, CellStyle> styles;
 
     /**
      * Формируемый итоговый отчет.
      */
-    public final HSSFWorkbook wb;
+    public final Workbook wb;
+
+    /**
+     * Фабрика, отвечающая за конструирование тех или иных объектов POI с учетом формата целевого документа (XLS/XLSX).
+     */
+    public final CreationHelper creationHelper;
 
     /**
      * Обрабатываемый в настоящее время лист итогового отчета.
@@ -78,11 +84,13 @@ public final class ExecutionContext {
     public Cell cell;
 
 
-    public ExecutionContext(Report report, ELContext ctx, HSSFWorkbook wb, Map<Short,HSSFCellStyle> styles) {
+
+    public ExecutionContext(final Report report, final ELContext ctx, final Workbook wb, final Map<Short,CellStyle> styles) {
         this.elctx = ctx;
         this.report = report;
         this.sectionContext = null;
         this.wb = wb;
+        this.creationHelper = wb.getCreationHelper();
         this.styles = styles;
         this.history = new HashMap<String,SectionContext>();
         this.listeners = new ArrayList<ReportEventListener>();

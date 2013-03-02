@@ -16,20 +16,20 @@ import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hpsf.Variant;
 import org.apache.poi.hpsf.wellknown.PropertyIDMap;
 import org.apache.poi.hpsf.wellknown.SectionIDMap;
-import org.apache.poi.hssf.model.InternalSheet;
 import org.apache.poi.hssf.record.PaletteRecord;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
-import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.PrintSetup;
+import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.echosoft.common.model.TreeNode;
 import org.echosoft.common.query.Query;
@@ -62,7 +62,7 @@ import org.echosoft.framework.reports.util.POIUtils;
 
 /**
  * Формирует итоговый отчет по его модели и на основании данных указанных пользователем в качестве параметров.<br/>
- * Результатом работы данного построителя является экземпляр {@link HSSFWorkbook} соответствующий формату Excel-2003.
+ * Результатом работы данного построителя является экземпляр {@link Workbook} соответствующий формату не ниже Excel-2003.
  *
  * @author Anton Sharapov
  */
@@ -91,12 +91,12 @@ public class ExcelReportProcessor implements ReportProcessor {
      * @throws ReportProcessingException в случае каких-либо проблем.
      */
     @Override
-    public HSSFWorkbook process(Report report, final ELContext ctx) throws ReportProcessingException {
+    public Workbook process(Report report, final ELContext ctx) throws ReportProcessingException {
         ExecutionContext ectx = null;
         try {
             report = new Report(null, report); // копируем модель отчета, т.к. в процессе формирования отчета она может измениться.
             final HSSFWorkbook wb = makeWorkbook(report, ctx);
-            final Map<Short, HSSFCellStyle> styles = applyStyles(report, wb);
+            final Map<Short, CellStyle> styles = applyStyles(report, wb);
             ectx = new ExecutionContext(report, ctx, wb, styles);
             ctx.getVariables().put(VAR_CONTEXT, ectx);
             final String user = report.getUser()!=null ? (String)report.getUser().getValue(ctx) : null;
@@ -120,7 +120,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                 }
             }
             if (!activeSheetSpecified) {
-                final HSSFSheet sheet = wb.createSheet();
+                final Sheet sheet = wb.createSheet();
                 final int index = wb.getSheetIndex(sheet);
                 wb.setActiveSheet(index);
                 wb.setSelectedTab(index);
@@ -227,13 +227,13 @@ public class ExcelReportProcessor implements ReportProcessor {
         return new HSSFWorkbook(fs,true);
     }
 
-    protected Map<Short, HSSFCellStyle> applyStyles(final Report report, final HSSFWorkbook wb) {
+    protected Map<Short, CellStyle> applyStyles(final Report report, final HSSFWorkbook wb) {
         final StylePalette palette = report.getPalette();
-        final Map<Short, HSSFCellStyle> styles = new HashMap<Short, HSSFCellStyle>();
+        final Map<Short, CellStyle> styles = new HashMap<Short, CellStyle>();
 
         if (report.getTemplate()!=null) {
             for (final short styleIndex : palette.getStyles().keySet()) {
-                final HSSFCellStyle style = wb.getCellStyleAt(styleIndex);
+                final CellStyle style = wb.getCellStyleAt(styleIndex);
                 if (style==null)
                     throw new RuntimeException("Inconsistent report template. Style not found: "+styleIndex);
                 styles.put(styleIndex, style);
@@ -248,7 +248,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         }
 
         final Map<Short, Font> fonts = new HashMap<Short, Font>();
-        final HSSFDataFormat formatter = wb.createDataFormat();
+        final DataFormat formatter = wb.createDataFormat();
         for (final FontModel font : palette.getFonts().values()) {
             final Font f = POIUtils.ensureFontExists(wb, font);
             fonts.put(font.getId(), f);
@@ -262,7 +262,7 @@ public class ExcelReportProcessor implements ReportProcessor {
             final short rbc = style.getRightBorderColor() != null ? style.getRightBorderColor().getId() : 0;
             final short tbc = style.getTopBorderColor() != null ? style.getTopBorderColor().getId() : 0;
 
-            final HSSFCellStyle s = wb.createCellStyle();
+            final CellStyle s = wb.createCellStyle();
             s.setAlignment(style.getAlignment());
             s.setBorderBottom(style.getBorderBottom());
             s.setBorderLeft(style.getBorderLeft());
@@ -296,11 +296,11 @@ public class ExcelReportProcessor implements ReportProcessor {
         if (ectx.sheet.isRendered()) {
             ectx.wsheet = ectx.wb.createSheet( (String)sheet.getTitle().getValue(ectx.elctx) );
             ectx.wsheet.setRowSumsBelow(false);
-            //ectx.wsheet.setAlternativeExpression(false);  // TODO: мы использовали этот метод т.к. setRowSumBelow() не работал в должной мере, но судя по коду POI это исправили еще 4 года назад
+            //ectx.wsheet.setAlternativeExpression(false);  // TODO: мы использовали этот метод т.к. setRowSumBelow() не работал в должной мере, но судя по коду, в POI это исправили еще 4 года назад
 
             final int sheetIdx = ectx.wb.getSheetIndex(ectx.wsheet);
             ectx.wb.setSheetHidden(sheetIdx, sheet.isHidden());
-            if (sheet.isProtected() && ectx.report.getPassword()!=null && ectx.wb.isWriteProtected()) {
+            if (sheet.isProtected() && ectx.report.getPassword()!=null /*&& ectx.wb.isWriteProtected()*/) {
                 ectx.wsheet.protectSheet( (String)ectx.report.getPassword().getValue(ectx.elctx) );
             }
             for (final Section section : sheet.getSections()) {
@@ -334,10 +334,10 @@ public class ExcelReportProcessor implements ReportProcessor {
         sheet.getFooter().setLeft(pageSettings.getFooter().getLeft());
         sheet.getFooter().setCenter(pageSettings.getFooter().getCenter());
         sheet.getFooter().setRight(pageSettings.getFooter().getRight());
-        sheet.setMargin(InternalSheet.TopMargin, pageSettings.getMargins().getTop());
-        sheet.setMargin(InternalSheet.RightMargin, pageSettings.getMargins().getRight());
-        sheet.setMargin(InternalSheet.BottomMargin, pageSettings.getMargins().getBottom());
-        sheet.setMargin(InternalSheet.LeftMargin, pageSettings.getMargins().getLeft());
+        sheet.setMargin(Sheet.TopMargin, pageSettings.getMargins().getTop());
+        sheet.setMargin(Sheet.RightMargin, pageSettings.getMargins().getRight());
+        sheet.setMargin(Sheet.BottomMargin, pageSettings.getMargins().getBottom());
+        sheet.setMargin(Sheet.LeftMargin, pageSettings.getMargins().getLeft());
         processPrintSetup(sheet.getPrintSetup(), pageSettings.getPrintSetup());
         sheet.setFitToPage(pageSettings.isFitToPage());
         sheet.setHorizontallyCenter(pageSettings.isHorizontallyCenter());
@@ -608,8 +608,8 @@ public class ExcelReportProcessor implements ReportProcessor {
                 final CellModel cm = cells.get(i);
                 if (cm == null)
                     continue;
-                final HSSFCellStyle style = ectx.styles.get(cm.getStyle());
-                ectx.cell = row.createCell(i, HSSFCell.CELL_TYPE_BLANK);
+                final CellStyle style = ectx.styles.get(cm.getStyle());
+                ectx.cell = row.createCell(i, Cell.CELL_TYPE_BLANK);
                 if (style!=null)
                     ectx.cell.setCellStyle(style);
                 event.setRendered(false);
@@ -635,38 +635,38 @@ public class ExcelReportProcessor implements ReportProcessor {
      */
     protected void renderCell(final ExecutionContext ectx, final Object value) {
         if (value == null) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_BLANK);
+            ectx.cell.setCellType(Cell.CELL_TYPE_BLANK);
         } else
         if (value instanceof Date) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
+            ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue((Date) value);
         } else
         if (value instanceof Calendar) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
+            ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue((Calendar) value);
         } else
         if (value instanceof Double) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
+            ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue((Double)value);
         } else
         if (value instanceof Number) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
+            ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue(((Number) value).doubleValue());
         } else
         if (value instanceof Boolean) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_BOOLEAN);
+            ectx.cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
             ectx.cell.setCellValue((Boolean) value);
         } else
-        if (value instanceof HSSFRichTextString) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-            ectx.cell.setCellValue((HSSFRichTextString) value);
+        if (value instanceof RichTextString) {
+            ectx.cell.setCellType(Cell.CELL_TYPE_STRING);
+            ectx.cell.setCellValue((RichTextString) value);
         } else {
             final String text = value.toString();
-            if (ectx.cell.getCellType() == HSSFCell.CELL_TYPE_FORMULA) {
+            if (ectx.cell.getCellType() == Cell.CELL_TYPE_FORMULA) {
                 ectx.cell.setCellFormula(text);
             } else
             if (text.startsWith(FORMULA)) {
-                ectx.cell.setCellType(HSSFCell.CELL_TYPE_FORMULA);
+                ectx.cell.setCellType(Cell.CELL_TYPE_FORMULA);
                 ectx.cell.setCellFormula(text.substring(FORMULA_LENGTH));
             } else
             if (text.startsWith(MACROS)) {
@@ -687,8 +687,8 @@ public class ExcelReportProcessor implements ReportProcessor {
                     throw new IllegalArgumentException("Unable to find custom function [" + name + "] at row:" + ectx.cell.getRowIndex() + ", cell:" + ectx.cell.getColumnIndex());
                 func.call(ectx, args);
             } else {
-                ectx.cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-                ectx.cell.setCellValue(new HSSFRichTextString(text));
+                ectx.cell.setCellType(Cell.CELL_TYPE_STRING);
+                ectx.cell.setCellValue(ectx.creationHelper.createRichTextString(text));
             }
         }
     }
