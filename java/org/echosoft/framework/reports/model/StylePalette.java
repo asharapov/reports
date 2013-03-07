@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -17,6 +18,20 @@ import org.apache.poi.ss.usermodel.Workbook;
  * @author Anton Sharapov
  */
 public class StylePalette implements Serializable, Cloneable {
+
+    private static ColorModel getColorModel(final short colorIndex, final Map<Short, ColorModel> models, final HSSFPalette palette) {
+        ColorModel color = models.get(colorIndex);
+        if (color==null) {
+            final HSSFColor c = palette.getColor(colorIndex);
+            if (c!=null) {
+                color = new ColorModel(colorIndex, c.getTriplet());
+                models.put(colorIndex, color);
+            }
+        }
+        return color;
+    }
+
+
 
     private Map<Short,ColorModel> colors;
     private Map<Short,FontModel> fonts;
@@ -32,6 +47,52 @@ public class StylePalette implements Serializable, Cloneable {
         colors = new HashMap<Short,ColorModel>();
         fonts = new HashMap<Short,FontModel>();
         styles = new HashMap<Short,CellStyleModel>();
+
+        if (palette == null)
+            return;
+
+        for (short i = 0, cnt = wb.getNumberOfFonts(); i < cnt; i++) {
+            final Font f = wb.getFontAt(i);
+            final FontModel font = new FontModel();
+            font.setId( f.getIndex() );
+            font.setBoldWeight( f.getBoldweight() );
+            font.setCharSet( f.getCharSet() );
+            font.setFontHeight( f.getFontHeight() );
+            font.setFontName( f.getFontName() );
+            font.setItalic( f.getItalic() );
+            font.setStrikeout( f.getStrikeout() );
+            font.setTypeOffset( f.getTypeOffset() );
+            font.setUnderline( f.getUnderline() );
+            font.setColor( getColorModel(f.getColor(), colors, palette) );
+            fonts.put(i, font);
+        }
+
+        for (short i = 0, cnt = wb.getNumCellStyles(); i < cnt; i++) {
+            final HSSFCellStyle s = wb.getCellStyleAt(i);
+            final CellStyleModel style = new CellStyleModel();
+            style.setId( s.getIndex() );
+            style.setAlignment( s.getAlignment() );
+            style.setBorderBottom( s.getBorderBottom() );
+            style.setBorderLeft( s.getBorderLeft() );
+            style.setBorderRight( s.getBorderRight() );
+            style.setBorderTop( s.getBorderTop() );
+            style.setBottomBorderColor( getColorModel(s.getBottomBorderColor()) );
+            style.setDataFormat( s.getDataFormatString() );
+            style.setFillBackgroundColor( getColorModel(s.getFillBackgroundColor()) );
+            style.setFillForegroundColor( getColorModel(s.getFillForegroundColor()) );
+            style.setFillPattern( s.getFillPattern() );
+            style.setHidden( s.getHidden() );
+            style.setIndention( s.getIndention() );
+            style.setLeftBorderColor( getColorModel(s.getLeftBorderColor()) );
+            style.setLocked( s.getLocked() );
+            style.setRightBorderColor( getColorModel(s.getRightBorderColor()) );
+            style.setRotation( s.getRotation() );
+            style.setTopBorderColor( getColorModel(s.getTopBorderColor()) );
+            style.setVerticalAlignment( s.getVerticalAlignment() );
+            style.setWrapText( s.getWrapText() );
+            style.setFont( fonts.get(s.getFontIndex()) );
+            styles.put(s.getIndex(), style);
+        }
     }
 
     /**
@@ -104,8 +165,7 @@ public class StylePalette implements Serializable, Cloneable {
         if (color==null) {
             final HSSFColor c = palette.getColor(colorIndex);
             if (c!=null) {
-                final short[] triplet = c.getTriplet();
-                color = new ColorModel(colorIndex, (byte)triplet[0], (byte)triplet[1], (byte)triplet[2]);
+                color = new ColorModel(colorIndex, c.getTriplet());
                 colors.put(colorIndex, color);
             }
         }
