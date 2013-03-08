@@ -58,6 +58,9 @@ public class ColorModel implements Serializable, Cloneable {
         return blue;
     }
 
+    public byte[] toByteArray() {
+        return new byte[]{red, green, blue};
+    }
 
     public String toHexString() {
         final char[] result = new char[6];

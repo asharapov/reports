@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.echosoft.common.utils.StringUtil;
 import org.echosoft.framework.reports.macros.Macros;
 import org.echosoft.framework.reports.macros.MacrosRegistry;
@@ -88,7 +88,7 @@ public class Report implements Serializable {
      */
     private final Map<String, DataProviderHolder> providers;
 
-    public Report(String id, HSSFWorkbook wb) {
+    public Report(String id, final Workbook wb) {
         id = StringUtil.trim(id);
         if (id==null)
             throw new IllegalArgumentException("Report identifier must be specified");

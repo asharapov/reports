@@ -10,10 +10,10 @@ import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.Entry;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.echosoft.common.io.FastStringTokenizer;
 import org.echosoft.common.utils.Any;
 import org.echosoft.common.utils.StringUtil;
@@ -64,25 +64,18 @@ public class ReportModelParser {
      */
     public static Report parse(final InputStream template, final InputStream structure) throws Exception {
         // загружаем шаблон отчета ...
-        //   в некоторых случаях придется обращаться к потоку дважды, так что сначала сохраним данные в буфер.
-        final POIFSFileSystem fs = new POIFSFileSystem(template);
-        final HSSFWorkbook wb = new HSSFWorkbook( fs, true );
-        //final Workbook wb = WorkbookFactory.create(template);
-
-
+        final Workbook wb = WorkbookFactory.create(template);
         // загружаем информацию о структуре отчета
         // (подробное описание структуры шаблона отчета)
         final Document doc = XMLUtil.loadDocument(structure);
         final Element root = doc.getDocumentElement();
-
         // формируем заголовок отчета и начинаем подгружать его содержимое ...
         final Report report = new Report(StringUtil.trim(root.getAttribute("id")), wb);
         try {
             report.setTitle(StringUtil.trim(root.getAttribute("title")));
-            report.setUser( new BaseExpression(StringUtil.getNonEmpty(root.getAttribute("user"),"user")) );
-            report.setPassword( new BaseExpression(StringUtil.trim(root.getAttribute("password"))) );
-
-            for (Iterator<Element> i = XMLUtil.getChildElements(root); i.hasNext();) {
+            report.setUser(new BaseExpression(StringUtil.getNonEmpty(root.getAttribute("user"), "user")));
+            report.setPassword(new BaseExpression(StringUtil.trim(root.getAttribute("password"))));
+            for (Iterator<Element> i = XMLUtil.getChildElements(root); i.hasNext(); ) {
                 final Element element = i.next();
                 final String tagName = element.getTagName();
                 if ("description".equals(tagName)) {
@@ -111,40 +104,41 @@ public class ReportModelParser {
                 } else
                     throw new RuntimeException("Unknown element: " + tagName);
             }
-
             final boolean preserveTemplate = Any.asBoolean(StringUtil.trim(root.getAttribute("preserveTemplate")), false);
-            if (preserveTemplate) {
-                for (int i=wb.getNumberOfSheets(); i>0; i--) {
+            if (preserveTemplate && (wb instanceof HSSFWorkbook)) {
+                // ВНИМАНИЕ: данная опция пока работает только для формата Excel 2003 !!!
+                for (int i = wb.getNumberOfSheets(); i > 0; i--) {
                     wb.removeSheetAt(wb.getNumberOfSheets() - 1);
                 }
-                final byte[] data = wb.getBytes();
+                final HSSFWorkbook hwb = (HSSFWorkbook) wb;
+                final byte[] data = hwb.getBytes();
                 final String[] shouldBeDropped = {"Workbook", "WORKBOOK", SummaryInformation.DEFAULT_STREAM_NAME, DocumentSummaryInformation.DEFAULT_STREAM_NAME};
                 for (String entryName : shouldBeDropped) {
                     try {
-                    final Entry entry = fs.getRoot().getEntry(entryName);
-                    if (entry!=null) {
-                        if (!entry.delete())
-                            Logs.reports.warn("unable to delete POIFS section: '"+entryName+"'  ("+entry+")");
-                    }
+                        final Entry entry = hwb.getRootDirectory().getEntry(entryName);
+                        if (entry != null) {
+                            if (!entry.delete())
+                                Logs.reports.warn("unable to delete POIFS section: '" + entryName + "'  (" + entry + ")");
+                        }
                     } catch (FileNotFoundException ffe) {
                         // Секция с указанным именем отсутствует в иерархии. Просто перейдем к следующей в списке ... 
                     }
                 }
-                fs.createDocument(new ByteArrayInputStream(data), "Workbook");
+                hwb.getRootDirectory().createDocument("Workbook", new ByteArrayInputStream(data));
                 final ByteArrayOutputStream buf = new ByteArrayOutputStream(4096);
-                fs.writeFilesystem(buf);
-                report.setTemplate( buf.toByteArray() );
+                hwb.getRootDirectory().getFileSystem().writeFilesystem(buf);
+                report.setTemplate(buf.toByteArray());
             }
             return report;
         } catch (Exception e) {
-            throw new Exception("Unable to parse report ["+report.getId()+"] model: "+e.getMessage(), e);
+            throw new Exception("Unable to parse report [" + report.getId() + "] model: " + e.getMessage(), e);
         }
     }
 
 
     private static void parseDescription(final Report report, final Element element) {
         final ReportDescription desc = report.getDescription();
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext();) {
+        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
             if ("company".equals(tagName)) {
@@ -181,7 +175,7 @@ public class ReportModelParser {
         if (id == null || predicate == null)
             throw new RuntimeException("Mandatory attributes not specified: " + element);
         final FilteredDataProviderHolder result = new FilteredDataProviderHolder(id);
-        result.setPredicate( new BaseExpression(predicate) );
+        result.setPredicate(new BaseExpression(predicate));
         report.getProviders().put(id, result);
     }
 
@@ -192,7 +186,7 @@ public class ReportModelParser {
             throw new RuntimeException("Mandatory attributes not specified: " + element);
         final ListDataProviderHolder result = new ListDataProviderHolder(id);
         result.setData(new BaseExpression(data));
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext();) {
+        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
             if ("filter".equals(tagName)) {
@@ -223,7 +217,7 @@ public class ReportModelParser {
         final SQLDataProviderHolder result = new SQLDataProviderHolder(id);
         result.setDataSource(new BaseExpression(ds));
         result.setProcessor(new BaseExpression(processor));
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext();) {
+        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
             if ("filter".equals(tagName)) {
@@ -262,7 +256,7 @@ public class ReportModelParser {
         final ClassDataProviderHolder result = new ClassDataProviderHolder(id);
         result.setObject(new BaseExpression(object));
         result.setMethodName(new BaseExpression(method));
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext();) {
+        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
             if ("filter".equals(tagName)) {
@@ -296,26 +290,25 @@ public class ReportModelParser {
         sheet.setRendered(Any.asBoolean(StringUtil.trim(element.getAttribute("rendered")), true));
         sheet.setProtected(Any.asBoolean(StringUtil.trim(element.getAttribute("protected")), false));
         final String cgs = StringUtil.trim(element.getAttribute("group-columns"));
-        if (cgs!=null) {
-            for (Iterator<String> it = new FastStringTokenizer(cgs,',', (char)0); it.hasNext(); ) {
+        if (cgs != null) {
+            for (Iterator<String> it = new FastStringTokenizer(cgs, ',', (char) 0); it.hasNext(); ) {
                 final String token = StringUtil.trim(it.next());
-                if (token==null)
+                if (token == null)
                     continue;
                 final String[] cnames = StringUtil.split(token, '-');
-                if (cnames.length!=2 || cnames[0].length()==0 || cnames[1].length()==0)
-                    throw new IllegalArgumentException("Incorrect value for attribute 'column-groups': "+cgs);
+                if (cnames.length != 2 || cnames[0].length() == 0 || cnames[1].length() == 0)
+                    throw new IllegalArgumentException("Incorrect value for attribute 'column-groups': " + cgs);
                 final int c1 = POIUtils.getColumnNumber(cnames[0]);
                 final int c2 = POIUtils.getColumnNumber(cnames[1]);
-                sheet.addColumnGroup( new ColumnGroupModel(c1, c2) );
+                sheet.addColumnGroup(new ColumnGroupModel(c1, c2));
             }
         }
         copyPageSettings(sheet.getPageSettings(), esheet);
         final String zoomstr = StringUtil.trim(element.getAttribute("zoom"));
-        if (zoomstr!=null)
-            sheet.getPageSettings().setZoom(Any.asInt(zoomstr,100));
-
+        if (zoomstr != null)
+            sheet.getPageSettings().setZoom(Any.asInt(zoomstr, 100));
         int offset = 0;
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext();) {
+        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
             if ("plain-section".equals(tagName)) {
@@ -341,7 +334,6 @@ public class ReportModelParser {
             } else
                 throw new RuntimeException("Unknown element: " + tagName);
         }
-
         final int colcount = sheet.getColumnsCount();
         final int[] width = new int[colcount];
         final boolean[] hidden = new boolean[colcount];
@@ -404,7 +396,7 @@ public class ReportModelParser {
         final int height = Any.asInt(element.getAttribute("height"), 1);
         section.setTemplate(new AreaModel(sheet, offset, height, report.getPalette()));
         section.getTemplate().setHidden(section.isHidden());
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext();) {
+        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
             if ("section-listener".equals(tagName)) {
@@ -432,7 +424,7 @@ public class ReportModelParser {
         section.setIndentedColumns(colnames);
         final int rowHeight = Any.asInt(element.getAttribute("rowHeight"), 1);
         int height = 0;
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext();) {
+        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
             if ("section-listener".equals(tagName)) {
@@ -463,11 +455,11 @@ public class ReportModelParser {
         if (pid != null)
             section.setDataProvider(report.getProviders().get(pid));
         final String pu = StringUtil.trim(element.getAttribute("provider-usage"));
-        section.setProviderUsage( pu!=null ? ProviderUsage.valueOf(pu.toUpperCase()) : null );
+        section.setProviderUsage(pu != null ? ProviderUsage.valueOf(pu.toUpperCase()) : null);
         final String[] colnames = Any.asStringArray(StringUtil.trim(element.getAttribute("indentColumns")), null);
         section.setIndentedColumns(colnames);
         int height = 0;
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext();) {
+        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
             if ("section-listener".equals(tagName)) {
@@ -508,16 +500,16 @@ public class ReportModelParser {
         group.setCollapsible(Any.asBoolean(StringUtil.trim(element.getAttribute("collapsible")), true));
         group.setCollapsed(Any.asBoolean(StringUtil.trim(element.getAttribute("collapsed")), false));
         group.setHidden(Any.asBoolean(StringUtil.trim(element.getAttribute("hidden")), false));
-        group.setSkipEmptyGroups(Any.asBoolean(StringUtil.trim(element.getAttribute("skipEmptyGroups")),false));
+        group.setSkipEmptyGroups(Any.asBoolean(StringUtil.trim(element.getAttribute("skipEmptyGroups")), false));
         final int height = Any.asInt(StringUtil.trim(element.getAttribute("height")), 1);
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext();) {
+        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
             if ("group-style".equals(tagName)) {
                 final GroupStyle style = new GroupStyle();
-                style.setLevel( Any.asInt(StringUtil.trim(el.getAttribute("level")), 0) );
-                style.setDefault( Any.asBoolean(StringUtil.trim(el.getAttribute("default")), false) );
-                style.setTemplate( new AreaModel(sheet, offset, height, report.getPalette()) );
+                style.setLevel(Any.asInt(StringUtil.trim(el.getAttribute("level")), 0));
+                style.setDefault(Any.asBoolean(StringUtil.trim(el.getAttribute("default")), false));
+                style.setTemplate(new AreaModel(sheet, offset, height, report.getPalette()));
                 style.getTemplate().setHidden(group.isHidden());
                 group.addStyle(style);
                 offset += height;
@@ -549,7 +541,7 @@ public class ReportModelParser {
         final String instance = StringUtil.trim(element.getAttribute("instance"));
         if (className == null && instance == null)
             throw new RuntimeException("Listener's class or instance must be specified");
-        section.getSectionListeners().add( new SectionEventListenerHolder(new BaseExpression(className), new BaseExpression(instance)) );
+        section.getSectionListeners().add(new SectionEventListenerHolder(new BaseExpression(className), new BaseExpression(instance)));
     }
 
     private static void parseCellEventListener(final Section section, final Element element) {
@@ -557,7 +549,6 @@ public class ReportModelParser {
         final String instance = StringUtil.trim(element.getAttribute("instance"));
         if (className == null && instance == null)
             throw new RuntimeException("Listener's class or instance must be specified");
-        section.getCellListeners().add( new CellEventListenerHolder(new BaseExpression(className), new BaseExpression(instance)) );
+        section.getCellListeners().add(new CellEventListenerHolder(new BaseExpression(className), new BaseExpression(instance)));
     }
-
 }

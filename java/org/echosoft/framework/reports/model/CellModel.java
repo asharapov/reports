@@ -53,7 +53,7 @@ public class CellModel implements Serializable, Cloneable {
     public CellModel(final Cell cell, final StylePalette palette) {
         expr = ExpressionFactory.makeExpression(cell);
         type = cell.getCellType();
-        final CellStyleModel s = palette.ensureStyleRegistered(cell.getCellStyle());
+        final CellStyleModel s = palette.getStyleModel(cell.getCellStyle().getIndex());
         style = s.getId();
         dataFormat = s.getDataFormat();
     }
