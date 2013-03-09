@@ -16,15 +16,10 @@ import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hpsf.Variant;
 import org.apache.poi.hpsf.wellknown.PropertyIDMap;
 import org.apache.poi.hpsf.wellknown.SectionIDMap;
-import org.apache.poi.hssf.record.PaletteRecord;
-import org.apache.poi.hssf.usermodel.HSSFPalette;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.DataFormat;
-import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
@@ -37,11 +32,8 @@ import org.echosoft.common.query.providers.DataProvider;
 import org.echosoft.framework.reports.macros.Macros;
 import org.echosoft.framework.reports.model.AreaModel;
 import org.echosoft.framework.reports.model.CellModel;
-import org.echosoft.framework.reports.model.CellStyleModel;
-import org.echosoft.framework.reports.model.ColorModel;
 import org.echosoft.framework.reports.model.ColumnGroupModel;
 import org.echosoft.framework.reports.model.CompositeSection;
-import org.echosoft.framework.reports.model.FontModel;
 import org.echosoft.framework.reports.model.GroupStyle;
 import org.echosoft.framework.reports.model.GroupingSection;
 import org.echosoft.framework.reports.model.PageSettingsModel;
@@ -51,14 +43,12 @@ import org.echosoft.framework.reports.model.Report;
 import org.echosoft.framework.reports.model.RowModel;
 import org.echosoft.framework.reports.model.Section;
 import org.echosoft.framework.reports.model.SheetModel;
-import org.echosoft.framework.reports.model.StylePalette;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.events.CellEvent;
 import org.echosoft.framework.reports.model.events.CellEventListener;
 import org.echosoft.framework.reports.model.events.ReportEventListener;
 import org.echosoft.framework.reports.model.events.SectionEventListener;
 import org.echosoft.framework.reports.model.providers.ProviderUsage;
-import org.echosoft.framework.reports.util.POIUtils;
 
 /**
  * Формирует итоговый отчет по его модели и на основании данных указанных пользователем в качестве параметров.<br/>
@@ -95,15 +85,15 @@ public class ExcelReportProcessor implements ReportProcessor {
         ExecutionContext ectx = null;
         try {
             report = new Report(null, report); // копируем модель отчета, т.к. в процессе формирования отчета она может измениться.
-            final HSSFWorkbook wb = makeWorkbook(report, ctx);
+            final Workbook wb = makeWorkbook(report, ctx);
             final Map<Short, CellStyle> styles = applyStyles(report, wb);
             ectx = new ExecutionContext(report, ctx, wb, styles);
             ctx.getVariables().put(VAR_CONTEXT, ectx);
-            final String user = report.getUser()!=null ? (String)report.getUser().getValue(ctx) : null;
-            final String password = report.getPassword()!= null ?(String)report.getPassword().getValue(ctx) : null;
-            if (user!=null && password!=null) {
-                wb.writeProtectWorkbook(password, user);
-            }
+//            final String user = report.getUser()!=null ? (String)report.getUser().getValue(ctx) : null;
+//            final String password = report.getPassword()!= null ?(String)report.getPassword().getValue(ctx) : null;
+//            if (user!=null && password!=null) {
+//                wb.writeProtectWorkbook(password, user);
+//            }
             for (final ReportEventListener listener : ectx.listeners) {
                 listener.beforeReport(ectx);
             }
@@ -227,65 +217,20 @@ public class ExcelReportProcessor implements ReportProcessor {
         return new HSSFWorkbook(fs,true);
     }
 
-    protected Map<Short, CellStyle> applyStyles(final Report report, final HSSFWorkbook wb) {
-        final StylePalette palette = report.getPalette();
-        final Map<Short, CellStyle> styles = new HashMap<Short, CellStyle>();
-
-        if (report.getTemplate()!=null) {
-            for (final short styleIndex : palette.getStyles().keySet()) {
+    protected Map<Short, CellStyle> applyStyles(final Report report, final Workbook wb) {
+        if (report.getTemplate() != null && (wb instanceof HSSFWorkbook)) {
+            // ВНИМАНИЕ: данная опция пока работает только для формата Excel 2003 !!!
+            final Map<Short, CellStyle> styles = new HashMap<Short, CellStyle>();
+            for (final short styleIndex : report.getPalette().getStyles().keySet()) {
                 final CellStyle style = wb.getCellStyleAt(styleIndex);
-                if (style==null)
-                    throw new RuntimeException("Inconsistent report template. Style not found: "+styleIndex);
+                if (style == null)
+                    throw new RuntimeException("Inconsistent report template. Style not found: " + styleIndex);
                 styles.put(styleIndex, style);
             }
             return styles;
+        } else {
+            return report.getPalette().applyTo(wb);
         }
-        if (palette.getColors().size() > PaletteRecord.STANDARD_PALETTE_SIZE)
-            throw new RuntimeException("too many colors on report");
-        final HSSFPalette pal = wb.getCustomPalette();
-        for (final ColorModel color : palette.getColors().values()) {
-            pal.setColorAtIndex(color.getId(), color.getRed(), color.getGreen(), color.getBlue());
-        }
-
-        final Map<Short, Font> fonts = new HashMap<Short, Font>();
-        final DataFormat formatter = wb.createDataFormat();
-        for (final FontModel font : palette.getFonts().values()) {
-            final Font f = POIUtils.ensureFontExists(wb, font);
-            fonts.put(font.getId(), f);
-        }
-
-        for (final CellStyleModel style : palette.getStyles().values()) {
-            final short bbc = style.getBottomBorderColor() != null ? style.getBottomBorderColor().getId() : 0;
-            final short fbc = style.getFillBackgroundColor() != null ? style.getFillBackgroundColor().getId() : 0;
-            final short ffc = style.getFillForegroundColor() != null ? style.getFillForegroundColor().getId() : 0;
-            final short lbc = style.getLeftBorderColor() != null ? style.getLeftBorderColor().getId() : 0;
-            final short rbc = style.getRightBorderColor() != null ? style.getRightBorderColor().getId() : 0;
-            final short tbc = style.getTopBorderColor() != null ? style.getTopBorderColor().getId() : 0;
-
-            final CellStyle s = wb.createCellStyle();
-            s.setAlignment(style.getAlignment());
-            s.setBorderBottom(style.getBorderBottom());
-            s.setBorderLeft(style.getBorderLeft());
-            s.setBorderRight(style.getBorderRight());
-            s.setBorderTop(style.getBorderTop());
-            s.setBottomBorderColor(bbc);
-            s.setDataFormat(formatter.getFormat(style.getDataFormat()));
-            s.setFillBackgroundColor(fbc);
-            s.setFillForegroundColor(ffc);
-            s.setFillPattern(style.getFillPattern());
-            s.setHidden(style.isHidden());
-            s.setIndention(style.getIndention());
-            s.setLeftBorderColor(lbc);
-            s.setLocked(style.isLocked());
-            s.setRightBorderColor(rbc);
-            s.setRotation(style.getRotation());
-            s.setTopBorderColor(tbc);
-            s.setVerticalAlignment(style.getVerticalAlignment());
-            s.setWrapText(style.isWrapText());
-            s.setFont(fonts.get(style.getFont().getId()));
-            styles.put(style.getId(), s);
-        }
-        return styles;
     }
 
     protected void processSheet(final ExecutionContext ectx, final SheetModel sheet) throws Exception {

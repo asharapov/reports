@@ -4,16 +4,20 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.poi.hssf.record.PaletteRecord;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.echosoft.framework.reports.util.POIUtils;
 
 /**
  * Содержит полный реестр стилей ячеек используемых в макете отчета.
@@ -96,41 +100,16 @@ public class StylePalette implements Serializable, Cloneable {
     }
 
     private ColorModel ensureColorRegistered(final XSSFColor color, final XSSFWorkbook wb, final Map<Integer, ColorModel> hashedColors) {
-        final byte[] rgb = resolveColor0(wb, color);
+        final byte[] rgb = POIUtils.decodeXSSFColor(wb, color);
         if (rgb == null)
             return null;
         final int hash = ColorModel.getHash(rgb);
         ColorModel result = hashedColors.get(hash);
         if (result == null) {
-            result = new ColorModel((short)(hashedColors.size() + 1), rgb);
+            result = new ColorModel((short) (hashedColors.size() + 8), rgb);    // 0x08 - минимально допустимый индекс цвета в формате HSSF (а 0x40 - максимально допустимый)
             hashedColors.put(hash, result);
         }
         return result;
-    }
-
-    private static byte[] resolveColor0(final XSSFWorkbook wb, XSSFColor color) {
-        if (color == null)
-            return null;
-
-        if (color.getCTColor().isSetTheme()) {
-            final int theme = color.getTheme();
-            switch (theme) {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                    //handle bug: MSExcel does not follow own definitions
-                    double tint = color.getTint();
-                    final XSSFColor clr = wb.getTheme().getThemeColor(theme ^ 1);
-                    if (clr != null) {
-                        clr.setTint(tint);
-                        color = clr;
-                    }
-                    break;
-            }
-        }
-
-        return color.getRgbWithTint();
     }
 
     private void init(final HSSFWorkbook wb) {
@@ -198,7 +177,6 @@ public class StylePalette implements Serializable, Cloneable {
     }
 
 
-
     /**
      * Возвращает описание указанного стиля из шаблона документа.
      *
@@ -235,6 +213,121 @@ public class StylePalette implements Serializable, Cloneable {
     public Map<Short, ColorModel> getColors() {
         return colors;
     }
+
+
+    /**
+     * Копирует все стили из данной модели в целевой документ.
+     *
+     * @param wb целевой документ куда должны быть перенесены все цвета, шрифты и стили данной модели.
+     * @return таблица трансляции кодой стилей модели в стили целевого документа (в процессе создания стилей в целевом документе у них меняется индекс).
+     */
+    public Map<Short, CellStyle> applyTo(final Workbook wb) {
+        if (wb instanceof HSSFWorkbook) {
+            return applyTo((HSSFWorkbook) wb);
+        } else
+        if (wb instanceof XSSFWorkbook) {
+            return applyTo((XSSFWorkbook) wb);
+        } else
+            throw new IllegalArgumentException("Unknown workbook implementation: " + wb);
+    }
+
+    private Map<Short, CellStyle> applyTo(final HSSFWorkbook wb) {
+        final Map<Short, CellStyle> result = new HashMap<Short, CellStyle>();
+
+        if (colors.size() > PaletteRecord.STANDARD_PALETTE_SIZE)
+            throw new RuntimeException("Too many colors in report for HSSF format");
+        final HSSFPalette pal = wb.getCustomPalette();
+        for (final ColorModel color : colors.values()) {
+            pal.setColorAtIndex(color.getId(), color.getRed(), color.getGreen(), color.getBlue());
+        }
+
+        final Map<Short, Font> fontsmap = new HashMap<Short, Font>();
+        for (final FontModel font : fonts.values()) {
+            final Font f = POIUtils.ensureFontExists(wb, font);
+            fontsmap.put(font.getId(), f);
+        }
+
+        final DataFormat formatter = wb.createDataFormat();
+        for (final CellStyleModel style : styles.values()) {
+            final short tbc = style.getTopBorderColor() != null ? style.getTopBorderColor().getId() : 0;
+            final short rbc = style.getRightBorderColor() != null ? style.getRightBorderColor().getId() : 0;
+            final short bbc = style.getBottomBorderColor() != null ? style.getBottomBorderColor().getId() : 0;
+            final short lbc = style.getLeftBorderColor() != null ? style.getLeftBorderColor().getId() : 0;
+            final short fbc = style.getFillBackgroundColor() != null ? style.getFillBackgroundColor().getId() : 0;
+            final short ffc = style.getFillForegroundColor() != null ? style.getFillForegroundColor().getId() : 0;
+
+            final CellStyle s = wb.createCellStyle();
+            s.setAlignment(style.getAlignment());
+            s.setVerticalAlignment(style.getVerticalAlignment());
+            s.setDataFormat(formatter.getFormat(style.getDataFormat()));
+            s.setHidden(style.isHidden());
+            s.setIndention(style.getIndention());
+            s.setLocked(style.isLocked());
+            s.setRotation(style.getRotation());
+            s.setWrapText(style.isWrapText());
+            s.setBorderTop(style.getBorderTop());
+            s.setBorderRight(style.getBorderRight());
+            s.setBorderBottom(style.getBorderBottom());
+            s.setBorderLeft(style.getBorderLeft());
+            s.setFillPattern(style.getFillPattern());
+            s.setFillForegroundColor(ffc);
+            s.setFillBackgroundColor(fbc);
+            s.setTopBorderColor(tbc);
+            s.setRightBorderColor(rbc);
+            s.setBottomBorderColor(bbc);
+            s.setLeftBorderColor(lbc);
+            s.setFont(fontsmap.get(style.getFont().getId()));
+            result.put(style.getId(), s);
+        }
+
+        return result;
+    }
+
+    private Map<Short, CellStyle> applyTo(final XSSFWorkbook wb) {
+        final Map<Short, CellStyle> result = new HashMap<Short, CellStyle>();
+
+        final Map<Short, Font> fontsmap = new HashMap<Short, Font>();
+        for (final FontModel font : fonts.values()) {
+            final Font f = POIUtils.ensureFontExists(wb, font);
+            fontsmap.put(font.getId(), f);
+        }
+
+        final DataFormat formatter = wb.createDataFormat();
+        for (final CellStyleModel style : styles.values()) {
+            final XSSFColor tbc = style.getTopBorderColor() != null ? new XSSFColor(style.getTopBorderColor().toByteArray()) : null;
+            final XSSFColor rbc = style.getRightBorderColor() != null ? new XSSFColor(style.getRightBorderColor().toByteArray()) : null;
+            final XSSFColor bbc = style.getBottomBorderColor() != null ? new XSSFColor(style.getBottomBorderColor().toByteArray()) : null;
+            final XSSFColor lbc = style.getLeftBorderColor() != null ? new XSSFColor(style.getLeftBorderColor().toByteArray()) : null;
+            final XSSFColor ffc = style.getFillForegroundColor() != null ? new XSSFColor(style.getFillForegroundColor().toByteArray()) : null;
+            final XSSFColor fbc = style.getFillBackgroundColor() != null ? new XSSFColor(style.getFillBackgroundColor().toByteArray()) : null;
+
+            final XSSFCellStyle s = wb.createCellStyle();
+            s.setAlignment(style.getAlignment());
+            s.setVerticalAlignment(style.getVerticalAlignment());
+            s.setDataFormat(formatter.getFormat(style.getDataFormat()));
+            s.setHidden(style.isHidden());
+            s.setIndention(style.getIndention());
+            s.setLocked(style.isLocked());
+            s.setRotation(style.getRotation());
+            s.setWrapText(style.isWrapText());
+            s.setBorderTop(style.getBorderTop());
+            s.setBorderRight(style.getBorderRight());
+            s.setBorderBottom(style.getBorderBottom());
+            s.setBorderLeft(style.getBorderLeft());
+            s.setFillPattern(style.getFillPattern());
+            s.setFillForegroundColor(ffc);
+            s.setFillBackgroundColor(fbc);
+            s.setTopBorderColor(tbc);
+            s.setRightBorderColor(rbc);
+            s.setBottomBorderColor(bbc);
+            s.setLeftBorderColor(lbc);
+            s.setFont(fontsmap.get(style.getFont().getId()));
+            result.put(style.getId(), s);
+        }
+
+        return result;
+    }
+
 
     @Override
     public Object clone() throws CloneNotSupportedException {
