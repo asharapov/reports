@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 /**
  * Общие настройки отображения страниц документа.
+ *
  * @author Anton Sharapov
  */
 public class PageSettingsModel implements Serializable, Cloneable {
@@ -49,6 +50,7 @@ public class PageSettingsModel implements Serializable, Cloneable {
      */
     private Integer zoom;
 
+
     public PageSettingsModel() {
         this.header = new HeaderModel();
         this.footer = new HeaderModel();
@@ -86,7 +88,8 @@ public class PageSettingsModel implements Serializable, Cloneable {
 
     /**
      * Возвращает величины отступов по краям листа при печати.
-     * @return  отступы по краям листа при печати. Измеряются в дюймах.
+     *
+     * @return отступы по краям листа при печати. Измеряются в дюймах.
      */
     public MarginsModel getMargins() {
         return margins;
@@ -95,58 +98,62 @@ public class PageSettingsModel implements Serializable, Cloneable {
 
     /**
      * Возвращает масштаб отображения листа или <code>null</code> если принудительное масштабирование должно быть выключено.
-     * @return  Масштаб отображения листа в процентах. Число в диапазоне 1..400 или <code>null</code>.
-     * Значение данного свойства по умолчанию: <code>null</code>.
+     *
+     * @return Масштаб отображения листа в процентах. Число в диапазоне 1..400 или <code>null</code>.
+     *         Значение данного свойства по умолчанию: <code>null</code>.
      */
     public Integer getZoom() {
         return zoom;
     }
     public void setZoom(final Integer zoomInPercents) {
-        if (zoomInPercents!=null && (zoomInPercents<1 || zoomInPercents>400))
-            throw new IllegalArgumentException("Illegal zoom value: "+zoomInPercents);
+        if (zoomInPercents != null && (zoomInPercents < 1 || zoomInPercents > 400))
+            throw new IllegalArgumentException("Illegal zoom value: " + zoomInPercents);
         this.zoom = zoomInPercents;
     }
 
     /**
      * Определяет будет ли автоматически вычисляться масштаб страницы таким образом чтобы она занимала страницу целиком.
+     *
      * @return <code>true</code> если автоматическое масштабирование должно быть включено>
      */
     public boolean isFitToPage() {
         return fitToPage;
     }
-    public void setFitToPage(boolean fitToPage) {
+    public void setFitToPage(final boolean fitToPage) {
         this.fitToPage = fitToPage;
     }
 
     /**
      * Определяет будет ли содержимое страницы при печати отцентрованно по горизонтали.
+     *
      * @return <code>true</code> если центрирование по горизонтали должно быть включено.
      */
     public boolean isHorizontallyCenter() {
         return horizontallyCenter;
     }
-    public void setHorizontallyCenter(boolean horizontallyCenter) {
+    public void setHorizontallyCenter(final boolean horizontallyCenter) {
         this.horizontallyCenter = horizontallyCenter;
     }
 
     /**
      * Определяет будет ли содержимое страницы при печати отцентровано по вертикали.
+     *
      * @return <code>true</code> если центрирование по вертикали должно быть включено.
      */
     public boolean isVerticallyCenter() {
         return verticallyCenter;
     }
-    public void setVerticallyCenter(boolean verticallyCenter) {
+    public void setVerticallyCenter(final boolean verticallyCenter) {
         this.verticallyCenter = verticallyCenter;
     }
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        final PageSettingsModel result = (PageSettingsModel)super.clone();
-        result.header = (HeaderModel)header.clone();
-        result.footer = (HeaderModel)footer.clone();
-        result.printSetup = (PrintSetupModel)printSetup.clone();
-        result.margins = (MarginsModel)margins.clone();
+        final PageSettingsModel result = (PageSettingsModel) super.clone();
+        result.header = (HeaderModel) header.clone();
+        result.footer = (HeaderModel) footer.clone();
+        result.printSetup = (PrintSetupModel) printSetup.clone();
+        result.margins = (MarginsModel) margins.clone();
         return result;
     }
 }

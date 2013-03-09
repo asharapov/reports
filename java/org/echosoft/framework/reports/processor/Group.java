@@ -17,29 +17,30 @@ import org.echosoft.framework.reports.model.GroupModel;
  * При этом каждая такая группа строк предваряется отдельной строкой-заголовком (реально такая строка-заголовок может
  * занимать более одной строки на листе excel документа. Пример:
  * <table border="1" align="center">
- *  <tr><td colspan="3">группа&nbsp;1</td></tr>
- *  <tr><td>r1</td><td></td><td></td></tr>
- *  <tr><td>r2</td><td></td><td></td></tr>
- *  <tr><td colspan="3">группа&nbsp;2</td></tr>
- *  <tr><td>r3</td><td></td><td></td></tr>
+ * <tr><td colspan="3">группа&nbsp;1</td></tr>
+ * <tr><td>r1</td><td></td><td></td></tr>
+ * <tr><td>r2</td><td></td><td></td></tr>
+ * <tr><td colspan="3">группа&nbsp;2</td></tr>
+ * <tr><td>r3</td><td></td><td></td></tr>
  * </table>
  * Вышеприведенный пример иллюстрирует разбиение трех попавших в отчет строк на две группы в соответствии с некоторым критерием.
  * Часто используется группировка одновременно по двум и более критериям:
  * <table border="1" align="center">
- *  <tr><td colspan="3">группа&nbsp;1</td></tr>
- *  <tr><td colspan="3">&nbsp;подгруппа&nbsp;1.1</td></tr>
- *  <tr><td>r1</td><td></td><td></td></tr>
- *  <tr><td>r2</td><td></td><td></td></tr>
- *  <tr><td colspan="3">&nbsp;подгруппа&nbsp;1.2</td></tr>
- *  <tr><td>r3</td><td></td><td></td></tr>
- *  <tr><td>r4</td><td></td><td></td></tr>
- *  <tr><td colspan="3">группа&nbsp;2</td></tr>
- *  <tr><td colspan="3">&nbsp;подгруппа&nbsp;2.1</td></tr>
- *  <tr><td>r5</td><td></td><td></td></tr>
+ * <tr><td colspan="3">группа&nbsp;1</td></tr>
+ * <tr><td colspan="3">&nbsp;подгруппа&nbsp;1.1</td></tr>
+ * <tr><td>r1</td><td></td><td></td></tr>
+ * <tr><td>r2</td><td></td><td></td></tr>
+ * <tr><td colspan="3">&nbsp;подгруппа&nbsp;1.2</td></tr>
+ * <tr><td>r3</td><td></td><td></td></tr>
+ * <tr><td>r4</td><td></td><td></td></tr>
+ * <tr><td colspan="3">группа&nbsp;2</td></tr>
+ * <tr><td colspan="3">&nbsp;подгруппа&nbsp;2.1</td></tr>
+ * <tr><td>r5</td><td></td><td></td></tr>
  * </table>
+ *
+ * @author Anton Sharapov
  * @see org.echosoft.framework.reports.model.GroupingSection
  * @see org.echosoft.framework.reports.model.GroupModel
- * @author Anton Sharapov
  */
 public final class Group {
 
@@ -49,8 +50,8 @@ public final class Group {
      * <ul>
      * <li> Группировочная "строка" может описываться более чем одним шаблоном (стилем представления)</li>
      * <li>
-     *  Группировочные "строки" могут реально занимать более одной строки на листе итогового excel документа,
-     *  но все стили для данной группировки (если их задано более одного) должны использовать одинаковое количество строк в excel документе.
+     * Группировочные "строки" могут реально занимать более одной строки на листе итогового excel документа,
+     * но все стили для данной группировки (если их задано более одного) должны использовать одинаковое количество строк в excel документе.
      * </li>
      * </ul>
      * Не может быть <code>null</code>.
@@ -108,32 +109,32 @@ public final class Group {
     public final Integer level;
 
 
-    public Group(GroupModel model, Object bean, int startRow, int depth) throws Exception {
+    public Group(final GroupModel model, final Object bean, final int startRow, final int depth) throws Exception {
         this.model = model;
         this.bean = bean;
         this.startRow = startRow;
         this.depth = depth;
         this.children = new ArrayList<Group>();
         this.records = new ArrayList<Integer>();
-        this.discriminator = model.getDiscriminatorField()!=null
-                                ? BeanUtil.getProperty(bean, model.getDiscriminatorField())
-                                : null;
-        final Object lev = model.getLevelField()!=null ? BeanUtil.getProperty(bean, model.getLevelField()) : null;
-        this.level = lev!=null ? ((Number)lev).intValue() : null;
+        this.discriminator = model.getDiscriminatorField() != null
+                ? BeanUtil.getProperty(bean, model.getDiscriminatorField())
+                : null;
+        final Object lev = model.getLevelField() != null ? BeanUtil.getProperty(bean, model.getLevelField()) : null;
+        this.level = lev != null ? ((Number) lev).intValue() : null;
     }
 
     /**
      * Проверяет указанный объект с данными (полученный из источника данных секции) на вхождение в данную группу.
      *
      * @param bean очередной бин полученный из источника данных секции. Содержит данные для отрисовки соответствующей строки в отчете.
-     * @return  <code>true</code> если указанный бин, полученный из источника данных секции входит в указанную группу.
-     *  (предполагается что проверка на вхождение этого бина во все родительские группы была уже успешно выполнена).
+     * @return <code>true</code> если указанный бин, полученный из источника данных секции входит в указанную группу.
+     *         (предполагается что проверка на вхождение этого бина во все родительские группы была уже успешно выполнена).
      * @throws Exception в случае каких-либо проблем.
      */
     public boolean acceptBean(final Object bean) throws Exception {
-        if (model.getDiscriminatorField()!=null) {
+        if (model.getDiscriminatorField() != null) {
             final Object value = BeanUtil.getProperty(bean, model.getDiscriminatorField());
-            return this.discriminator!=null ? this.discriminator.equals(value) : value==null;
+            return this.discriminator != null ? this.discriminator.equals(value) : value == null;
         } else
             return true;  // эта группа - итоговая позиция, она включает в себя все объекты из источника данных.
     }
@@ -143,20 +144,21 @@ public final class Group {
      * групп оно не увеличивается по сравнению с этим же свойством данной (родительской) группы.
      *
      * @return <code>true</code> если для всех дочерних групп значение поля {@link #depth} должно быть больше значения
-     * этого поля на 1.
+     *         этого поля на 1.
      */
     public boolean incrementsDepth() {
-        return model.getDiscriminatorField()!=null;
+        return model.getDiscriminatorField() != null;
     }
 
     /**
      * Возвращает <code>true</code> если данная группа удовлетворяет всем критериям указанным в ее модели.
      * На данный момент к таковым относится проверка значения дискриминатора группы.
+     *
      * @return <code>true</code> если данная группа удовлетворяет критериям указанным в ее модели.
-     * @see GroupModel#isSkipEmptyGroups() 
+     * @see GroupModel#isSkipEmptyGroups()
      */
     public boolean isValid() {
-        return discriminator!=null || model.getDiscriminatorField()==null || !model.isSkipEmptyGroups();
+        return discriminator != null || model.getDiscriminatorField() == null || !model.isSkipEmptyGroups();
     }
 
 

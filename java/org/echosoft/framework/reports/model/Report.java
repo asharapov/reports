@@ -20,7 +20,7 @@ import org.echosoft.framework.reports.model.providers.DataProviderHolder;
  * на каждом из которых может присутствовать произвольное количество разделов.
  * Каждый из таких разделов работает со своим источником данных и может представлять данные в виде
  * некоторых списочных форм различной сложности.</p>
- * 
+ *
  * @author Anton Sharapov
  */
 public class Report implements Serializable {
@@ -57,7 +57,7 @@ public class Report implements Serializable {
     /**
      * Логин, который надо указать пользователю работающему с отчетом построенным на основе данного шаблона чтобы изменить данные
      * на тех листах отчета которые были помечены как защищенные (см. {@link SheetModel#isProtected()}).
-     * <strong>Внимание!</strong> защита от внесения изменений работает не на всех процессорах электронных таблиц!. 
+     * <strong>Внимание!</strong> защита от внесения изменений работает не на всех процессорах электронных таблиц!.
      */
     private Expression user;
 
@@ -73,7 +73,7 @@ public class Report implements Serializable {
      * включаться все элементы файловой системы POI присутствующие в шаблоне отчета за исключением собственно секций отвечающих
      * за рабочую книгу (Workbook) документа и ее свойства.<br/>
      * Включение или не включение этой информации в итоговый отчет регулируется свойством <code>preserveTemplateData</code> в дескрипторе отчета.
-     * По умолчанию эта информация в итоговый отчет не включается. 
+     * По умолчанию эта информация в итоговый отчет не включается.
      */
     private byte[] template;
 
@@ -107,59 +107,60 @@ public class Report implements Serializable {
      */
     private final Map<String, DataProviderHolder> providers;
 
+
     public Report(String id, final Workbook wb) {
         id = StringUtil.trim(id);
-        if (id==null)
+        if (id == null)
             throw new IllegalArgumentException("Report identifier must be specified");
         this.id = id;
         this.target = TargetType.HSSF;
         this.description = new ReportDescription();
         this.sheets = new ArrayList<SheetModel>();
         this.palette = new StylePalette(wb);
-        this.macros = new HashMap<String,Macros>();
+        this.macros = new HashMap<String, Macros>();
         this.listeners = new ArrayList<ReportEventListenerHolder>();
-        this.providers = new HashMap<String,DataProviderHolder>();
+        this.providers = new HashMap<String, DataProviderHolder>();
     }
 
     /**
      * Полностью копирует модель отчета взяв за образец модель, переданную в аргументе.
      *
-     * @param id   идентификатор отчета.
-     * @param src  модель отчета используемая в качестве образца.
-     * @throws CloneNotSupportedException  в случае проблем с клонированием какого-нибудь элемента листа.
+     * @param id  идентификатор отчета.
+     * @param src модель отчета используемая в качестве образца.
+     * @throws CloneNotSupportedException в случае проблем с клонированием какого-нибудь элемента листа.
      */
-    public Report(String id, Report src) throws CloneNotSupportedException {
+    public Report(String id, final Report src) throws CloneNotSupportedException {
         id = StringUtil.trim(id);
-        if (src==null)
+        if (src == null)
             throw new IllegalArgumentException("All arguments must be specified");
-        this.id = id!=null ? id : src.id;
+        this.id = id != null ? id : src.id;
         title = src.title;
         target = src.target;
         user = src.user;
         password = src.password;
         template = src.template;
-        description = (ReportDescription)src.description.clone();
-        palette = (StylePalette)src.palette.clone();
-        macros = new HashMap<String,Macros>();
+        description = (ReportDescription) src.description.clone();
+        palette = (StylePalette) src.palette.clone();
+        macros = new HashMap<String, Macros>();
         listeners = new ArrayList<ReportEventListenerHolder>();
-        providers = new HashMap<String,DataProviderHolder>();
+        providers = new HashMap<String, DataProviderHolder>();
         macros.putAll(src.macros);
         for (ReportEventListenerHolder listener : src.listeners) {
-            listeners.add( (ReportEventListenerHolder)listener.clone() );
+            listeners.add((ReportEventListenerHolder) listener.clone());
         }
-        for (Map.Entry<String,DataProviderHolder> entry : src.providers.entrySet()) {
-            providers.put(entry.getKey(), (DataProviderHolder)entry.getValue().clone());
+        for (Map.Entry<String, DataProviderHolder> entry : src.providers.entrySet()) {
+            providers.put(entry.getKey(), (DataProviderHolder) entry.getValue().clone());
         }
         sheets = new ArrayList<SheetModel>();
         for (SheetModel sheet : src.sheets) {
-            sheets.add( sheet.cloneSheet(this) );
+            sheets.add(sheet.cloneSheet(this));
         }
     }
 
     /**
      * Возвращает идентификатор отчета.
      *
-     * @return  идентификатор отчета.
+     * @return идентификатор отчета.
      */
     public String getId() {
         return id;
@@ -175,9 +176,9 @@ public class Report implements Serializable {
     /**
      * Устанавливает краткое название отчета.
      *
-     * @param title  новое название отчета.
+     * @param title новое название отчета.
      */
-    public void setTitle(String title) {
+    public void setTitle(final String title) {
         this.title = title;
     }
 
@@ -204,6 +205,7 @@ public class Report implements Serializable {
      * Возвращает логин, который надо указать пользователю перед измением данных в тех листах сгенерированного отчета которые были помечены как "защищенные"
      * (см. {@link SheetModel#isProtected()}).
      * <strong>Внимание!</strong> защита от внесения изменений работает не на всех процессорах электронных таблиц!.
+     *
      * @return выражение, вычисленный результат которого используется для определения имени пользователя, которому разрешена правка защищенных листов отчета.
      */
     public Expression getUser() {
@@ -214,9 +216,10 @@ public class Report implements Serializable {
      * Определяет логин, который надо указать пользователю перед измением данных в тех листах сгенерированного отчета которые были помечены как "защищенные"
      * (см. {@link SheetModel#isProtected()}).
      * <strong>Внимание!</strong> защита от внесения изменений работает не на всех процессорах электронных таблиц!.
-     * @param user  выражение, вычисленный результат которого используется для определения имени пользователя, которому разрешена правка защищенных листов отчета.
+     *
+     * @param user выражение, вычисленный результат которого используется для определения имени пользователя, которому разрешена правка защищенных листов отчета.
      */
-    public void setUser(Expression user) {
+    public void setUser(final Expression user) {
         this.user = user;
     }
 
@@ -224,6 +227,7 @@ public class Report implements Serializable {
      * Возвращает пароль, который надо указать пользователю перед измением данных в тех листах сгенерированного отчета которые были помечены как "защищенные"
      * (см. {@link SheetModel#isProtected()}).
      * <strong>Внимание!</strong> защита от внесения изменений работает не на всех процессорах электронных таблиц!.
+     *
      * @return выражение, вычисленный результат которого используется для определения пароля, к логину пользователя которому разрешена правка защищенных листов отчета.
      */
     public Expression getPassword() {
@@ -233,9 +237,9 @@ public class Report implements Serializable {
     /**
      * Устанавливает пароль которым должен быть защищен сгенерированный документ.
      *
-     * @param password  строка пароля или <code>null</code>.
+     * @param password строка пароля или <code>null</code>.
      */
-    public void setPassword(Expression password) {
+    public void setPassword(final Expression password) {
         this.password = password;
     }
 
@@ -246,12 +250,13 @@ public class Report implements Serializable {
      * за рабочую книгу (Workbook) документа и ее свойства.<br/>
      * Включение или не включение этой информации в итоговый отчет регулируется свойством <code>preserveTemplateData</code> в дескрипторе отчета.
      * По умолчанию эта информация в итоговый отчет не включается.
+     *
      * @return Дополнительные секции данных из шаблона отчета которые должны включаться в каждый генерируемый экземпляр отчета.
      */
     public byte[] getTemplate() {
         return template;
     }
-    public void setTemplate(byte[] template) {
+    public void setTemplate(final byte[] template) {
         this.template = template;
     }
 
@@ -259,7 +264,7 @@ public class Report implements Serializable {
      * Возвращает дополнительную информацию, которая при построении отчета будет транслирована в соответствующие
      * свойства документа excel.
      *
-     * @return  дополнительное описание отчета.
+     * @return дополнительное описание отчета.
      */
     public ReportDescription getDescription() {
         return description;
@@ -278,14 +283,14 @@ public class Report implements Serializable {
     /**
      * Осуществляет поиск секции по всему отчету.
      *
-     * @param sectionId  идентификатор секции.
-     * @return  информация об указанной секции или null если секция с таким идентификатором отсутствует в отчете.
+     * @param sectionId идентификатор секции.
+     * @return информация об указанной секции или null если секция с таким идентификатором отсутствует в отчете.
      */
-    public Section findSectionById(String sectionId) {
+    public Section findSectionById(final String sectionId) {
         Section result;
         for (SheetModel sheet : sheets) {
             result = sheet.findSectionById(sectionId);
-            if (result!=null)
+            if (result != null)
                 return result;
         }
         return null;
@@ -294,8 +299,8 @@ public class Report implements Serializable {
     /**
      * Осуществляет поиск листа отчета по его идентификатору.
      *
-     * @param sheetId  идентификатор отчета. Не может быть пустой строкой или null.
-     * @return  информация об искомом листе отчета или <code>null</code> если лист с таким идентификатором отсутствует в отчете.
+     * @param sheetId идентификатор отчета. Не может быть пустой строкой или null.
+     * @return информация об искомом листе отчета или <code>null</code> если лист с таким идентификатором отсутствует в отчете.
      */
     public SheetModel findSheetById(final String sheetId) {
         for (SheetModel sheet : sheets) {
@@ -309,7 +314,7 @@ public class Report implements Serializable {
      * Возвращает список всех листов в отчете строго в той последовательности в которой они
      * должны быть представлены в итоговом отчете.
      *
-     * @return  список листов отчета.
+     * @return список листов отчета.
      */
     public List<SheetModel> getSheets() {
         return sheets;
@@ -321,7 +326,7 @@ public class Report implements Serializable {
      *
      * @return все локальные макро-функции зарегистрированные для данного вида отчетов.
      */
-    public Map<String,Macros> getLocalMacros() {
+    public Map<String, Macros> getLocalMacros() {
         return macros;
     }
 
@@ -330,12 +335,12 @@ public class Report implements Serializable {
      * только для данного отчета. Если таковая функция не была найдена то поиск осуществляется в глобальном
      * {@link MacrosRegistry реестре} макрофункций.
      *
-     * @param name  имя функции (чуствительно к регистру).
-     * @return  Соответствующая функция или <code>null</code>.
+     * @param name имя функции (чуствительно к регистру).
+     * @return Соответствующая функция или <code>null</code>.
      */
-    public Macros getMacros(String name) {
+    public Macros getMacros(final String name) {
         Macros result = macros.get(name);
-        if (result==null) {
+        if (result == null) {
             result = MacrosRegistry.getMacros(name);
         }
         return result;
@@ -354,16 +359,15 @@ public class Report implements Serializable {
     /**
      * Перечень всех поставщиков данных, которые используются в отчете.
      *
-     * @return  все поставщики данных используемые в отчете.
+     * @return все поставщики данных используемые в отчете.
      */
-    public Map<String,DataProviderHolder> getProviders() {
+    public Map<String, DataProviderHolder> getProviders() {
         return providers;
     }
 
 
-
     @Override
     public String toString() {
-        return "[Report{id:"+id+", title:"+title+"}]";
+        return "[Report{id:" + id + ", title:" + title + "}]";
     }
 }

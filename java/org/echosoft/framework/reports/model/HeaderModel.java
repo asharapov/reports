@@ -16,46 +16,51 @@ public class HeaderModel implements Serializable, Cloneable {
     public String getLeft() {
         return left;
     }
-    public void setLeft(String left) {
+    public void setLeft(final String left) {
         this.left = left;
     }
 
     public String getCenter() {
         return center;
     }
-    public void setCenter(String center) {
+    public void setCenter(final String center) {
         this.center = center;
     }
 
     public String getRight() {
         return right;
     }
-    public void setRight(String right) {
+    public void setRight(final String right) {
         this.right = right;
     }
 
+    @Override
     public int hashCode() {
-        if (left!=null) {
+        if (left != null) {
             return left.hashCode();
         } else
-        if (center!=null) {
+        if (center != null) {
             return center.hashCode();
         } else
-        if (right!=null) {
+        if (right != null) {
             return right.hashCode();
         } else
             return 0;
     }
-    public boolean equals(Object obj) {
-        if (obj==null || !getClass().equals(obj.getClass()))
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null || !getClass().equals(obj.getClass()))
             return false;
-        final HeaderModel other = (HeaderModel)obj;
-        return (left!=null ? left.equals(other.left) : other.left==null) &&
-               (center!=null ? center.equals(other.center) : other.center==null) &&
-               (right!=null ? right.equals(other.right) : other.right==null);
+        final HeaderModel other = (HeaderModel) obj;
+        return (left != null ? left.equals(other.left) : other.left == null) &&
+                (center != null ? center.equals(other.center) : other.center == null) &&
+                (right != null ? right.equals(other.right) : other.right == null);
     }
+
+    @Override
     public String toString() {
-        return "[Header{left:"+left+", center:"+center+", right:"+right+"}]";
+        return "[Header{left:" + left + ", center:" + center + ", right:" + right + "}]";
     }
 
     @Override

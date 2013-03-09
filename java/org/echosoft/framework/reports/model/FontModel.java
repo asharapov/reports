@@ -28,7 +28,7 @@ public class FontModel implements Serializable, Cloneable {
      * Возвращает идентификатор шрифта в шаблоне отчета.
      * Каждому шрифту что используется в отчете соответствует свой идентификатор.
      *
-     * @return  идентификатор шрифта в шаблоне отчета.
+     * @return идентификатор шрифта в шаблоне отчета.
      */
     public short getId() {
         return id;
@@ -69,7 +69,7 @@ public class FontModel implements Serializable, Cloneable {
         return fontName;
     }
     public void setFontName(String fontName) {
-        if (fontName==null)
+        if (fontName == null)
             throw new RuntimeException("font name must be specified");
         this.fontName = fontName;
     }
@@ -105,25 +105,30 @@ public class FontModel implements Serializable, Cloneable {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        final FontModel result = (FontModel)super.clone();
-        if (color!=null)
-            result.color = (ColorModel)color.clone();
+        final FontModel result = (FontModel) super.clone();
+        if (color != null)
+            result.color = (ColorModel) color.clone();
         return result;
     }
 
+    @Override
     public int hashCode() {
         return id;
     }
-    public boolean equals(Object obj) {
-        if (obj==null || !(FontModel.class.equals(obj.getClass())))
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null || !(FontModel.class.equals(obj.getClass())))
             return false;
-        final FontModel other = (FontModel)obj;
-        return id==other.id &&
-                (color!=null ? color.equals(other.color) : other.color==null) &&
-                boldWeight==other.boldWeight && charSet==other.charSet &&
-                fontHeight==other.fontHeight && fontName.equals(other.fontName) && italic==other.italic &&
-                strikeout==other.strikeout && typeOffset==other.typeOffset && underline==other.underline;
+        final FontModel other = (FontModel) obj;
+        return id == other.id &&
+                (color != null ? color.equals(other.color) : other.color == null) &&
+                boldWeight == other.boldWeight && charSet == other.charSet &&
+                fontHeight == other.fontHeight && fontName.equals(other.fontName) && italic == other.italic &&
+                strikeout == other.strikeout && typeOffset == other.typeOffset && underline == other.underline;
     }
+
+    @Override
     public String toString() {
         final StringBuilder out = new StringBuilder(128);
         out.append("[Font{id:").append(id).append(", font:").append(fontName).append(" ").append(fontHeight)
@@ -132,5 +137,4 @@ public class FontModel implements Serializable, Cloneable {
                 .append(strikeout).append(", underline:").append(underline).append("}]");
         return out.toString();
     }
-
 }

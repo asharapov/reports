@@ -20,6 +20,7 @@ public class CellModel implements Serializable, Cloneable {
 
     /**
      * Тип данных в ячейке.
+     *
      * @see org.apache.poi.ss.usermodel.Cell#getCellType()
      */
     private int type;
@@ -33,22 +34,23 @@ public class CellModel implements Serializable, Cloneable {
 
     /**
      * Клонирует массив ячеек отчета.
-     * @param src  исходный массив ячеек.
-     * @return  массив каждый элемент которого является клоном элемента с тем же индексом в массиве переданном на вход данного метода.
-     * @throws CloneNotSupportedException  поднимается в случае возникновения каких-либо проблем с клонированием объектов.
+     *
+     * @param src исходный массив ячеек.
+     * @return массив каждый элемент которого является клоном элемента с тем же индексом в массиве переданном на вход данного метода.
+     * @throws CloneNotSupportedException поднимается в случае возникновения каких-либо проблем с клонированием объектов.
      */
     public static CellModel[] cloneArray(final CellModel[] src) throws CloneNotSupportedException {
         final CellModel[] dst = new CellModel[src.length];
-        for (int i=src.length-1; i>=0; i--) {
+        for (int i = src.length - 1; i >= 0; i--) {
             final CellModel c = src[i];
-            dst[i] = c!=null ? (CellModel)c.clone() : null;
+            dst[i] = c != null ? (CellModel) c.clone() : null;
         }
         return dst;
     }
 
     /**
-     * @param cell  ячейка из шаблона отчета.
-     * @param palette  реестр всех стилей используемых в данном отчете.
+     * @param cell    ячейка из шаблона отчета.
+     * @param palette реестр всех стилей используемых в данном отчете.
      */
     public CellModel(final Cell cell, final StylePalette palette) {
         expr = ExpressionFactory.makeExpression(cell);
@@ -68,7 +70,7 @@ public class CellModel implements Serializable, Cloneable {
     }
 
     /**
-     * @return  Выражение, на основе которого вычисляется содержимое данной ячейки.
+     * @return Выражение, на основе которого вычисляется содержимое данной ячейки.
      */
     public Expression getExpression() {
         return expr;
@@ -76,15 +78,16 @@ public class CellModel implements Serializable, Cloneable {
 
     /**
      * Устанавливает новое содержимое в ячейке.
-     * @param expr  выражение, определяющее содержимое данной ячейки. Не может быть <code>null</code>.
+     *
+     * @param expr выражение, определяющее содержимое данной ячейки. Не может быть <code>null</code>.
      */
     public void setExpression(Expression expr) {
-        this.expr = expr!=null ? expr : ExpressionFactory.EMPTY_EXPRESSION;
+        this.expr = expr != null ? expr : ExpressionFactory.EMPTY_EXPRESSION;
     }
 
     /**
      * @return Тип данных в ячейке.
-     * @see org.apache.poi.ss.usermodel.Cell#getCellType()
+     * @see Cell#getCellType()
      */
     public int getType() {
         return type;
@@ -92,8 +95,9 @@ public class CellModel implements Serializable, Cloneable {
 
     /**
      * Устанавливает новый тип содержимого ячейки.
-     * @param type  новый тип содержимого ячейки.
-     * @see org.apache.poi.ss.usermodel.Cell#getCellType()
+     *
+     * @param type новый тип содержимого ячейки.
+     * @see Cell#getCellType()
      */
     public void setType(int type) {
         this.type = type;
@@ -101,7 +105,8 @@ public class CellModel implements Serializable, Cloneable {
 
     /**
      * Стиль отображения ячейки.
-     * @return  Стиль отображения ячейки.
+     *
+     * @return Стиль отображения ячейки.
      * @see StylePalette
      */
     public short getStyle() {
@@ -120,7 +125,6 @@ public class CellModel implements Serializable, Cloneable {
 
     @Override
     public String toString() {
-        return "[Cell{expr:"+expr+", type:"+type+", style:"+style+", fmt:"+dataFormat+"}]";
+        return "[Cell{expr:" + expr + ", type:" + type + ", style:" + style + ", fmt:" + dataFormat + "}]";
     }
-
 }

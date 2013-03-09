@@ -13,10 +13,10 @@ import org.echosoft.framework.reports.model.providers.DataProviderHolder;
  * <p>Базовое описание одного секции на отчетном листе.</p>
  * В каждом типе секций используются свои алгоритмы построения отчета.
  *
+ * @author Anton Sharapov
  * @see PlainSection
  * @see GroupingSection
  * @see CompositeSection
- * @author Anton Sharapov
  */
 public abstract class Section implements Serializable, Cloneable {
 
@@ -71,7 +71,7 @@ public abstract class Section implements Serializable, Cloneable {
 
     public Section(String id) {
         id = StringUtil.trim(id);
-        if (id==null)
+        if (id == null)
             throw new IllegalArgumentException("Report section identifier must be specified");
         this.id = id;
         this.rendered = true;
@@ -80,7 +80,7 @@ public abstract class Section implements Serializable, Cloneable {
     }
 
     /**
-     * @return  идентификатор секции.
+     * @return идентификатор секции.
      */
     public String getId() {
         return id;
@@ -89,12 +89,12 @@ public abstract class Section implements Serializable, Cloneable {
     /**
      * Имеет смысл только при когда {@link #collapsible} = true.
      *
-     * @return  true  если все строки данной секции могут быть свернутыми.
+     * @return true  если все строки данной секции могут быть свернутыми.
      */
     public boolean isCollapsible() {
         return collapsible;
     }
-    public void setCollapsible(boolean collapsible) {
+    public void setCollapsible(final boolean collapsible) {
         this.collapsible = collapsible;
     }
 
@@ -104,7 +104,7 @@ public abstract class Section implements Serializable, Cloneable {
     public boolean isCollapsed() {
         return collapsed;
     }
-    public void setCollapsed(boolean collapsed) {
+    public void setCollapsed(final boolean collapsed) {
         this.collapsed = collapsed;
     }
 
@@ -114,7 +114,7 @@ public abstract class Section implements Serializable, Cloneable {
     public boolean isHidden() {
         return hidden;
     }
-    public void setHidden(boolean hidden) {
+    public void setHidden(final boolean hidden) {
         this.hidden = hidden;
     }
 
@@ -122,12 +122,12 @@ public abstract class Section implements Serializable, Cloneable {
      * Определяет должна ли данная секция как-либо быть представленной в итоговом отчете.
      *
      * @return true если данная секция должна быть отображена в итоговом отчете (значение по умолчанию), false -
-     *      если секция должна быть проигнорирована при построении отчета.
+     *         если секция должна быть проигнорирована при построении отчета.
      */
     public boolean isRendered() {
         return rendered;
     }
-    public void setRendered(boolean rendered) {
+    public void setRendered(final boolean rendered) {
         this.rendered = rendered;
     }
 
@@ -151,12 +151,12 @@ public abstract class Section implements Serializable, Cloneable {
     }
 
     /**
-     * @return  Источник данных для секции.
+     * @return Источник данных для секции.
      */
     public DataProviderHolder getDataProvider() {
         return provider;
     }
-    public void setDataProvider(DataProviderHolder provider) {
+    public void setDataProvider(final DataProviderHolder provider) {
         this.provider = provider;
     }
 
@@ -168,41 +168,41 @@ public abstract class Section implements Serializable, Cloneable {
     /**
      * Возвращает количество колонок отведенных на описание данной секции.
      *
-     * @return  количество колонок отведенных на описание секции.
+     * @return количество колонок отведенных на описание секции.
      */
     public abstract int getTemplateColumnsCount();
 
     /**
      * Выполняет глубокое копирование данной секции.
      *
-     * @param target  ссылка на модель отчета в который будет импортирована создаваемая копия секции.
+     * @param target ссылка на модель отчета в который будет импортирована создаваемая копия секции.
      * Необходим для выполнения данной операции во избежание избыточного клонирования тех структур отчета, которые могут
      * использоваться разными секциями одного и того же отчета одновременно. К таковым структурам можно отнести:
      * <li> поставщики данных
      * <li> обработчики ошибок
-     * <li> таблицы стилей ячеек секций. 
-     * @return  глубокую копию данной секции.
-     * @throws CloneNotSupportedException  в случае проблем с клонированием какого-нибудь элемента секции.
+     * <li> таблицы стилей ячеек секций.
+     * @return глубокую копию данной секции.
+     * @throws CloneNotSupportedException в случае проблем с клонированием какого-нибудь элемента секции.
      */
-    public Section cloneSection(Report target) throws CloneNotSupportedException {
-        if (target==null)
+    public Section cloneSection(final Report target) throws CloneNotSupportedException {
+        if (target == null)
             throw new IllegalArgumentException("Target report model must be specified");
-        final Section result = (Section)super.clone();
+        final Section result = (Section) super.clone();
         result.sectionListeners = new ArrayList<SectionEventListenerHolder>();
         for (SectionEventListenerHolder listener : sectionListeners) {
-            result.sectionListeners.add( (SectionEventListenerHolder)listener.clone() );
+            result.sectionListeners.add((SectionEventListenerHolder) listener.clone());
         }
         result.cellListeners = new ArrayList<CellEventListenerHolder>();
         for (CellEventListenerHolder listener : cellListeners) {
-            result.cellListeners.add( (CellEventListenerHolder)listener.clone() );
+            result.cellListeners.add((CellEventListenerHolder) listener.clone());
         }
-        if (provider!=null)
+        if (provider != null)
             result.provider = target.getProviders().get(provider.getId());
         return result;
     }
 
+    @Override
     public String toString() {
-        return "[Section{id:"+id+"}]";
+        return "[Section{id:" + id + "}]";
     }
-
 }

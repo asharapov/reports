@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 /**
  * Содержит величины отступов по краям листа (измеряется в дюймах).
+ *
  * @author Anton Sharapov
  */
 public class MarginsModel implements Serializable, Cloneable {
@@ -37,28 +38,28 @@ public class MarginsModel implements Serializable, Cloneable {
     public double getTop() {
         return top;
     }
-    public void setTop(double top) {
+    public void setTop(final double top) {
         this.top = top;
     }
 
     public double getRight() {
         return right;
     }
-    public void setRight(double right) {
+    public void setRight(final double right) {
         this.right = right;
     }
 
     public double getBottom() {
         return bottom;
     }
-    public void setBottom(double bottom) {
+    public void setBottom(final double bottom) {
         this.bottom = bottom;
     }
 
     public double getLeft() {
         return left;
     }
-    public void setLeft(double left) {
+    public void setLeft(final double left) {
         this.left = left;
     }
 
@@ -73,13 +74,13 @@ public class MarginsModel implements Serializable, Cloneable {
 
     @Override
     public boolean equals(final Object obj) {
-        if (obj==null || !getClass().equals(obj.getClass()))
+        if (obj == null || !getClass().equals(obj.getClass()))
             return false;
-        final MarginsModel other = (MarginsModel)obj;
+        final MarginsModel other = (MarginsModel) obj;
         return top == other.top &&
-               right == other.right &&
-               bottom == other.bottom &&
-               left == other.bottom;
+                right == other.right &&
+                bottom == other.bottom &&
+                left == other.bottom;
     }
 
     @Override
@@ -89,6 +90,6 @@ public class MarginsModel implements Serializable, Cloneable {
 
     @Override
     public String toString() {
-        return "[Margins{top:"+top+", right:"+right+", bottom:"+bottom+", left:"+left+"}]";
+        return "[Margins{top:" + top + ", right:" + right + ", bottom:" + bottom + ", left:" + left + "}]";
     }
 }

@@ -48,7 +48,7 @@ public final class SectionContext {
     public BeanIterator beanIterator;
 
     /**
-     *  Текущая обрабатываемая запись полученная от поставщика данных.
+     * Текущая обрабатываемая запись полученная от поставщика данных.
      */
     public Object bean;
 
@@ -78,7 +78,8 @@ public final class SectionContext {
     /**
      * Переменные окружения время жизни которых ограничено временем обработки данной секции.
      */
-    private Map<String,Object> env;
+    private Map<String, Object> env;
+
 
     public SectionContext(final SectionContext parent, final Section section, final int firstRow, final ELContext elctx) {
         this.parent = parent;
@@ -101,23 +102,24 @@ public final class SectionContext {
 
     /**
      * Возвращает значение переменной окружения время жизни которой ограничено временем обработки данной секции.
-     * @param name  имя переменной.
-     * @return  значение переменной или <code>null</code> если она не определена.
+     *
+     * @param name имя переменной.
+     * @return значение переменной или <code>null</code> если она не определена.
      */
     @SuppressWarnings("unchecked")
     public <T> T getVariable(final String name) {
-        return env!=null ? (T)env.get(name) : null;
+        return env != null ? (T) env.get(name) : null;
     }
 
     /**
      * Устанавливает значение переменной окружения время жизни которой ограничено временем обработки данной секции.
+     *
      * @param name  имя переменной.
-     * @param value  значение переменной.
+     * @param value значение переменной.
      */
     public void putVariable(final String name, final Object value) {
-        if (env==null)
-            env = new HashMap<String,Object>();
+        if (env == null)
+            env = new HashMap<String, Object>();
         env.put(name, value);
     }
-
 }

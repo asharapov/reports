@@ -266,15 +266,15 @@ public class PrintSetupModel implements Serializable, Cloneable {
 
     @Override
     public int hashCode() {
-        return paperSize + 31*scale;
+        return paperSize + 31 * scale;
     }
 
     @Override
     public boolean equals(final Object obj) {
-        if (obj==null || !getClass().equals(obj.getClass()))
+        if (obj == null || !getClass().equals(obj.getClass()))
             return false;
-        final PrintSetupModel other = (PrintSetupModel)obj;
-        return  copies == other.copies &&
+        final PrintSetupModel other = (PrintSetupModel) obj;
+        return copies == other.copies &&
                 draft == other.draft &&
                 fitHeight == other.fitHeight &&
                 fitWidth == other.fitWidth &&
@@ -298,5 +298,4 @@ public class PrintSetupModel implements Serializable, Cloneable {
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
-
 }

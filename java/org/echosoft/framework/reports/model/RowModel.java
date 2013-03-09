@@ -36,7 +36,8 @@ public class RowModel implements Serializable, Cloneable {
     /**
      * Возвращает информацию о ячейках данной строки. Если какая-то ячейка отсутствует в шаблоне то
      * вместо нее возвращается <code>null</code>.
-     * @return  Список ячеек строки. Список не может быть <code>null</code>.
+     *
+     * @return Список ячеек строки. Список не может быть <code>null</code>.
      */
     public List<CellModel> getCells() {
         return cells;
@@ -44,7 +45,8 @@ public class RowModel implements Serializable, Cloneable {
 
     /**
      * Возвращает высоту строки в twips (1/20 point) или -1 если следует использовать высоту по умолчанию.
-     * @return  высота строки.
+     *
+     * @return высота строки.
      */
     public short getHeight() {
         return height;
@@ -52,15 +54,17 @@ public class RowModel implements Serializable, Cloneable {
 
     /**
      * Устанавливает высоту строки в 1/20 точки (point).
-     * @param height  для установки высоты по умолчанию следут указать -1.
+     *
+     * @param height для установки высоты по умолчанию следут указать -1.
      */
-    public void setHeight(short height) {
+    public void setHeight(final short height) {
         this.height = height;
     }
 
     /**
      * Определяет следует ли показывать эту строку пользователю или она должна быть скрытой.
-     * @return  Возвращает <code>true</code> если строка должна быть скрытой от пользователя.
+     *
+     * @return Возвращает <code>true</code> если строка должна быть скрытой от пользователя.
      */
     public boolean isHidden() {
         return hidden;
@@ -68,18 +72,19 @@ public class RowModel implements Serializable, Cloneable {
 
     /**
      * Устанавливает признак видимости данной строки пользователю.
-     * @param hidden  <code>true</code> если строка должна быть скрытой от пользователя.
+     *
+     * @param hidden <code>true</code> если строка должна быть скрытой от пользователя.
      */
-    public void setHidden(boolean hidden) {
+    public void setHidden(final boolean hidden) {
         this.hidden = hidden;
     }
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        final RowModel result = (RowModel)super.clone();
+        final RowModel result = (RowModel) super.clone();
         result.cells = new ArrayList<CellModel>(cells.size());
         for (CellModel cm : cells) {
-            result.cells.add( cm!=null ? (CellModel)cm.clone() : null );
+            result.cells.add(cm != null ? (CellModel) cm.clone() : null);
         }
         return result;
     }
