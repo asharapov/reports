@@ -73,6 +73,13 @@ public class ReportModelParser {
         final Report report = new Report(StringUtil.trim(root.getAttribute("id")), wb);
         try {
             report.setTitle(StringUtil.trim(root.getAttribute("title")));
+            final String targetName = StringUtil.trim(root.getAttribute("target"));
+            final Report.TargetType target = targetName != null
+                    ? Report.TargetType.findByName(targetName, null)
+                    : Report.TargetType.HSSF;
+            if (target == null)
+                throw new RuntimeException("Unknown target type: " + targetName);
+            report.setTarget(target);
             report.setUser(new BaseExpression(StringUtil.getNonEmpty(root.getAttribute("user"), "user")));
             report.setPassword(new BaseExpression(StringUtil.trim(root.getAttribute("password"))));
             for (Iterator<Element> i = XMLUtil.getChildElements(root); i.hasNext(); ) {

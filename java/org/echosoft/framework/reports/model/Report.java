@@ -26,6 +26,20 @@ import org.echosoft.framework.reports.model.providers.DataProviderHolder;
 public class Report implements Serializable {
 
     /**
+     * Перечень возможных форматов в которых может генерироваться отчет.
+     */
+    public static enum TargetType {
+        HSSF, XSSF;
+        public static TargetType findByName(final String name, final TargetType defaultType) {
+            for (TargetType type : values()) {
+                if (type.name().equals(name))
+                    return type;
+            }
+            return defaultType;
+        }
+    }
+
+    /**
      * Идентификатор отчета.
      */
     private final String id;
@@ -34,6 +48,11 @@ public class Report implements Serializable {
      * Краткое название отчета.
      */
     private String title;
+
+    /**
+     * Формат в котором требуется сгенерировать данный отчет.
+     */
+    private TargetType target;
 
     /**
      * Логин, который надо указать пользователю работающему с отчетом построенным на основе данного шаблона чтобы изменить данные
@@ -93,6 +112,7 @@ public class Report implements Serializable {
         if (id==null)
             throw new IllegalArgumentException("Report identifier must be specified");
         this.id = id;
+        this.target = TargetType.HSSF;
         this.description = new ReportDescription();
         this.sheets = new ArrayList<SheetModel>();
         this.palette = new StylePalette(wb);
@@ -114,6 +134,7 @@ public class Report implements Serializable {
             throw new IllegalArgumentException("All arguments must be specified");
         this.id = id!=null ? id : src.id;
         title = src.title;
+        target = src.target;
         user = src.user;
         password = src.password;
         template = src.template;
@@ -158,6 +179,24 @@ public class Report implements Serializable {
      */
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    /**
+     * Возвращает формат в котором требуется сгенерировать отчет.
+     *
+     * @return целевой формат. По умолчанию используется {@link TargetType#HSSF}.
+     */
+    public TargetType getTarget() {
+        return target;
+    }
+
+    /**
+     * Позволяет указать формат в котором требуется сгенерировать данный отчет.
+     *
+     * @param target целевой формат. Если <code>null</code> то будет использоваться значение по умолчанию.
+     */
+    public void setTarget(final TargetType target) {
+        this.target = target != null ? target : TargetType.HSSF;
     }
 
 

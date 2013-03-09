@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.poi.POIXMLProperties;
 import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hpsf.MutableProperty;
 import org.apache.poi.hpsf.MutablePropertySet;
@@ -17,6 +18,7 @@ import org.apache.poi.hpsf.Variant;
 import org.apache.poi.hpsf.wellknown.PropertyIDMap;
 import org.apache.poi.hpsf.wellknown.SectionIDMap;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.util.Nullable;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -26,6 +28,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.echosoft.common.model.TreeNode;
 import org.echosoft.common.query.Query;
 import org.echosoft.common.query.providers.DataProvider;
@@ -89,11 +92,6 @@ public class ExcelReportProcessor implements ReportProcessor {
             final Map<Short, CellStyle> styles = applyStyles(report, wb);
             ectx = new ExecutionContext(report, ctx, wb, styles);
             ctx.getVariables().put(VAR_CONTEXT, ectx);
-//            final String user = report.getUser()!=null ? (String)report.getUser().getValue(ctx) : null;
-//            final String password = report.getPassword()!= null ?(String)report.getPassword().getValue(ctx) : null;
-//            if (user!=null && password!=null) {
-//                wb.writeProtectWorkbook(password, user);
-//            }
             for (final ReportEventListener listener : ectx.listeners) {
                 listener.beforeReport(ectx);
             }
@@ -124,97 +122,155 @@ public class ExcelReportProcessor implements ReportProcessor {
         }
     }
 
-    protected HSSFWorkbook makeWorkbook(final Report report, final ELContext ctx) throws Exception {
-        final byte[] emptyWorkbookData = new HSSFWorkbook().getBytes();
-        final POIFSFileSystem fs;
-        if (report.getTemplate()!=null) {
-            fs = new POIFSFileSystem( new ByteArrayInputStream(report.getTemplate()) );
-        } else {
-            fs = new POIFSFileSystem();
-            fs.createDocument(new ByteArrayInputStream(emptyWorkbookData), "Workbook");
-        }
+    protected Workbook makeWorkbook(final Report report, final ELContext ctx) throws Exception {
+        switch (report.getTarget()) {
+            case XSSF: {
+                final XSSFWorkbook wb = new XSSFWorkbook();
+                final POIXMLProperties props = wb.getProperties();
+                props.getCoreProperties().setCreated(new Nullable<Date>(new Date()));
+                final String application = report.getDescription().getApplication(ctx);
+                if (application != null) {
+                    props.getExtendedProperties().getUnderlyingProperties().setApplication(application);
+                }
+                final String author = report.getDescription().getAuthor(ctx);
+                if (author != null) {
+                    props.getCoreProperties().setCreator(author);
+                }
+                final String version = report.getDescription().getVersion(ctx);
+                if (version != null) {
+                    props.getExtendedProperties().getUnderlyingProperties().setAppVersion(version);
+                }
+                final String title = report.getDescription().getTitle(ctx);
+                if (title != null) {
+                    props.getCoreProperties().setTitle(title);
+                }
+                final String subject = report.getDescription().getSubject(ctx);
+                if (subject != null) {
+                    props.getCoreProperties().setSubjectProperty(subject);
+                }
+                final String comments = report.getDescription().getComments(ctx);
+                if (comments != null) {
+                    props.getCoreProperties().setDescription(comments);
+                }
+                final String company = report.getDescription().getCompany(ctx);
+                if (company != null) {
+                    props.getExtendedProperties().getUnderlyingProperties().setCompany(company);
+                }
+                final String category = report.getDescription().getCategory(ctx);
+                if (category != null) {
+                    props.getCoreProperties().setCategory(category);
+                }
+                // специфичные для XSSF настройки ...
+                final String user = report.getUser()!=null ? (String)report.getUser().getValue(ctx) : null;
+                final String password = report.getPassword()!= null ?(String)report.getPassword().getValue(ctx) : null;
+                if (user!=null && password!=null) {
+                    wb.lockWindows();
+                    wb.lockRevision();
+                    wb.lockStructure();
+                }
+                return wb;
+            }
+            case HSSF:
+            default: {
+                final POIFSFileSystem fs;
+                if (report.getTemplate()!=null) {
+                    fs = new POIFSFileSystem( new ByteArrayInputStream(report.getTemplate()) );
+                } else {
+                    final byte[] emptyWorkbookData = new HSSFWorkbook().getBytes();
+                    fs = new POIFSFileSystem();
+                    fs.createDocument(new ByteArrayInputStream(emptyWorkbookData), "Workbook");
+                }
 
-        final MutablePropertySet siProperties = new MutablePropertySet();
-        final MutableSection siSection = (MutableSection) siProperties.getSections().get(0);
-        siSection.setFormatID(SectionIDMap.SUMMARY_INFORMATION_ID);
-        final MutableProperty p0 = new MutableProperty();
-        p0.setID(PropertyIDMap.PID_CREATE_DTM);
-        p0.setType(Variant.VT_FILETIME);
-        p0.setValue(new Date());
-        siSection.setProperty(p0);
+                final MutablePropertySet siProperties = new MutablePropertySet();
+                final MutableSection siSection = (MutableSection) siProperties.getSections().get(0);
+                siSection.setFormatID(SectionIDMap.SUMMARY_INFORMATION_ID);
+                final MutableProperty p0 = new MutableProperty();
+                p0.setID(PropertyIDMap.PID_CREATE_DTM);
+                p0.setType(Variant.VT_FILETIME);
+                p0.setValue(new Date());
+                siSection.setProperty(p0);
 
-        final String application = report.getDescription().getApplication(ctx);
-        if (application != null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_APPNAME);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(application);
-            siSection.setProperty(p);
-        }
-        final String author = report.getDescription().getAuthor(ctx);
-        if (author != null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_AUTHOR);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(author);
-            siSection.setProperty(p);
-        }
-        final String version = report.getDescription().getVersion(ctx);
-        if (version != null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_REVNUMBER);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(version);
-            siSection.setProperty(p);
-        }
-        final String title = report.getDescription().getTitle(ctx);
-        if (title != null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_TITLE);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(title);
-            siSection.setProperty(p);
-        }
-        final String subject = report.getDescription().getSubject(ctx);
-        if (subject != null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_SUBJECT);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(subject);
-            siSection.setProperty(p);
-        }
-        final String comments = report.getDescription().getComments(ctx);
-        if (comments != null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_COMMENTS);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(comments);
-            siSection.setProperty(p);
-        }
+                final String application = report.getDescription().getApplication(ctx);
+                if (application != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_APPNAME);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(application);
+                    siSection.setProperty(p);
+                }
+                final String author = report.getDescription().getAuthor(ctx);
+                if (author != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_AUTHOR);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(author);
+                    siSection.setProperty(p);
+                }
+                final String version = report.getDescription().getVersion(ctx);
+                if (version != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_REVNUMBER);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(version);
+                    siSection.setProperty(p);
+                }
+                final String title = report.getDescription().getTitle(ctx);
+                if (title != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_TITLE);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(title);
+                    siSection.setProperty(p);
+                }
+                final String subject = report.getDescription().getSubject(ctx);
+                if (subject != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_SUBJECT);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(subject);
+                    siSection.setProperty(p);
+                }
+                final String comments = report.getDescription().getComments(ctx);
+                if (comments != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_COMMENTS);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(comments);
+                    siSection.setProperty(p);
+                }
 
-        final MutablePropertySet dsiProperties = new MutablePropertySet();
-        final MutableSection dsiSection = (MutableSection)dsiProperties.getSections().get(0);
-        dsiSection.setFormatID(SectionIDMap.DOCUMENT_SUMMARY_INFORMATION_ID[0]);
-        final String company = report.getDescription().getCompany(ctx);
-        if (company!=null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_COMPANY);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(company);
-            dsiSection.setProperty(p);
-        }
-        final String category = report.getDescription().getCategory(ctx);
-        if (category!=null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_CATEGORY);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(category);
-            dsiSection.setProperty(p);
-        }
+                final MutablePropertySet dsiProperties = new MutablePropertySet();
+                final MutableSection dsiSection = (MutableSection)dsiProperties.getSections().get(0);
+                dsiSection.setFormatID(SectionIDMap.DOCUMENT_SUMMARY_INFORMATION_ID[0]);
+                final String company = report.getDescription().getCompany(ctx);
+                if (company!=null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_COMPANY);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(company);
+                    dsiSection.setProperty(p);
+                }
+                final String category = report.getDescription().getCategory(ctx);
+                if (category!=null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_CATEGORY);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(category);
+                    dsiSection.setProperty(p);
+                }
 
-        fs.createDocument(siProperties.toInputStream(), SummaryInformation.DEFAULT_STREAM_NAME);
-        fs.createDocument(dsiProperties.toInputStream(), DocumentSummaryInformation.DEFAULT_STREAM_NAME);
-        return new HSSFWorkbook(fs,true);
+                fs.createDocument(siProperties.toInputStream(), SummaryInformation.DEFAULT_STREAM_NAME);
+                fs.createDocument(dsiProperties.toInputStream(), DocumentSummaryInformation.DEFAULT_STREAM_NAME);
+                final HSSFWorkbook wb = new HSSFWorkbook(fs,true);
+                // специфичные для HSSF настройки ...
+                final String user = report.getUser()!=null ? (String)report.getUser().getValue(ctx) : null;
+                final String password = report.getPassword()!= null ?(String)report.getPassword().getValue(ctx) : null;
+                if (user!=null && password!=null) {
+                    wb.writeProtectWorkbook(password, user);
+                }
+                return wb;
+            }
+        }
     }
 
     protected Map<Short, CellStyle> applyStyles(final Report report, final Workbook wb) {

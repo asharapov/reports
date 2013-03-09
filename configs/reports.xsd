@@ -52,6 +52,13 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="target" type="TargetType" default="HSSF">
+      <xs:annotation>
+        <xs:documentation>
+          Формат в котором будет генерироваться данный отчет.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="ReportDescription">
@@ -413,6 +420,24 @@
     <xs:attribute name="value" type="Expression" use="required"/>
   </xs:complexType>
 
+
+  <xs:simpleType name="TargetType">
+    <xs:annotation>
+      <xs:documentation>Определяет формат в котором будет сгенерирован итоговый отчет</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:Name">
+      <xs:enumeration value="HSSF">
+        <xs:annotation>
+          <xs:documentation>Формат Office 2003 с использованием библиотеки Apache POI</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="XSSF">
+        <xs:annotation>
+          <xs:documentation>Формат Office 2007 с использованием библиотеки Apache POI</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
 
   <xs:simpleType name="SQLProcessorType">
     <xs:annotation>
