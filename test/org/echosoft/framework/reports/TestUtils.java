@@ -24,46 +24,48 @@ import org.w3c.dom.Element;
 
 /**
  * Ряд вспомогательных методов используемых при тестировании отчетов.
- * 
+ *
  * @author Anton Sharapov
  */
 public class TestUtils {
 
     private static final String DOCS_PATH = "/org/echosoft/framework/reports/data/";
 
-    public static InputStream openFileStream(String docName) {
-        return TestUtils.class.getResourceAsStream(DOCS_PATH+docName);
+    public static InputStream openFileStream(final String docName) {
+        return TestUtils.class.getResourceAsStream(DOCS_PATH + docName);
     }
 
-    public static HSSFWorkbook loadExcelDocument(String docName) throws IOException {
+    public static HSSFWorkbook loadExcelDocument(final String docName) throws IOException {
         final InputStream in = openFileStream(docName);
-        return in!=null ? new HSSFWorkbook(in) : null;
+        return in != null ? new HSSFWorkbook(in) : null;
     }
 
-    public static Report loadReport(String reportName) throws Exception {
-        final InputStream wb = TestUtils.openFileStream(reportName+".xls");
-        final InputStream cfg = TestUtils.openFileStream(reportName+".xml");
+    public static Report loadReport(final String reportName) throws Exception {
+        InputStream wb = TestUtils.openFileStream(reportName + ".xls");
+        if (wb == null)
+            wb = TestUtils.openFileStream(reportName + ".xlsx");
+        final InputStream cfg = TestUtils.openFileStream(reportName + ".xml");
         return ReportModelParser.parse(wb, cfg);
     }
 
-    public static List<Invoice> loadInvoices(String dsName) throws Exception {
+    public static List<Invoice> loadInvoices(final String dsName) throws Exception {
         final List<Invoice> result = new ArrayList<Invoice>();
-        final Document doc = XMLUtil.loadDocument( openFileStream(dsName) );
+        final Document doc = XMLUtil.loadDocument(openFileStream(dsName));
         final Element root = doc.getDocumentElement();
         for (Iterator<Element> i = XMLUtil.getChildElements(root); i.hasNext(); ) {
             final Element element = i.next();
             final String tagName = element.getTagName();
             if ("invoice".equals(tagName)) {
-                result.add( parseInvoice(element) );
+                result.add(parseInvoice(element));
             } else
-                throw new RuntimeException("Unsupported element: "+tagName);
+                throw new RuntimeException("Unsupported element: " + tagName);
         }
         return result;
     }
 
-    public static List<Payment> loadPayments(String dsName) throws Exception {
+    public static List<Payment> loadPayments(final String dsName) throws Exception {
         final List<Payment> result = new ArrayList<Payment>();
-        final Document doc = XMLUtil.loadDocument( openFileStream(dsName) );
+        final Document doc = XMLUtil.loadDocument(openFileStream(dsName));
         final Element root = doc.getDocumentElement();
         for (Iterator<Element> i = XMLUtil.getChildElements(root); i.hasNext(); ) {
             final Element element = i.next();
@@ -71,12 +73,12 @@ public class TestUtils {
             if ("activity".equals(tagName)) {
                 parseActivity(result, element);
             } else
-                throw new RuntimeException("Unsupported element: "+tagName);
+                throw new RuntimeException("Unsupported element: " + tagName);
         }
         return result;
     }
 
-    private static void parseActivity(List<Payment> result, Element element) {
+    private static void parseActivity(final List<Payment> result, final Element element) {
         final String id = StringUtil.trim(element.getAttribute("id"));
         final String pid = StringUtil.trim(element.getAttribute("pid"));
         final String name = StringUtil.trim(element.getAttribute("name"));
@@ -87,15 +89,14 @@ public class TestUtils {
             final String tagName = el.getTagName();
             if ("activity".equals(tagName)) {
                 parseActivity(result, el);
-            } else
-            if ("company".equals(tagName)) {
+            } else if ("company".equals(tagName)) {
                 parseCompany(result, activity, el);
             } else
-                throw new RuntimeException("Unsupported element: "+tagName);
+                throw new RuntimeException("Unsupported element: " + tagName);
         }
     }
 
-    private static void parseCompany(List<Payment> result, Activity activity, Element element) {
+    private static void parseCompany(final List<Payment> result, final Activity activity, final Element element) {
         final String id = StringUtil.trim(element.getAttribute("id"));
         final String name = StringUtil.trim(element.getAttribute("name"));
         final String director = StringUtil.trim(element.getAttribute("director"));
@@ -106,11 +107,11 @@ public class TestUtils {
             if ("project".equals(tagName)) {
                 parseProject(result, activity, company, el);
             } else
-                throw new RuntimeException("Unsupported element: "+tagName);
+                throw new RuntimeException("Unsupported element: " + tagName);
         }
     }
 
-    private static void parseProject(List<Payment> result, Activity activity, Company company, Element element) {
+    private static void parseProject(final List<Payment> result, final Activity activity, final Company company, final Element element) {
         final String id = StringUtil.trim(element.getAttribute("id"));
         final String name = StringUtil.trim(element.getAttribute("name"));
         final boolean active = Any.asBoolean(StringUtil.trim(element.getAttribute("active")));
@@ -121,13 +122,13 @@ public class TestUtils {
             final String tagName = el.getTagName();
             if ("invoice".equals(tagName)) {
                 final Invoice invoice = parseInvoice(el);
-                result.add( new Payment(activity, company, project, invoice) );
+                result.add(new Payment(activity, company, project, invoice));
             } else
-                throw new RuntimeException("Unsupported element: "+tagName);
+                throw new RuntimeException("Unsupported element: " + tagName);
         }
     }
 
-    private static Invoice parseInvoice(Element element) {
+    private static Invoice parseInvoice(final Element element) {
         final String id = StringUtil.trim(element.getAttribute("id"));
         final String name = StringUtil.trim(element.getAttribute("name"));
         final String contragent = StringUtil.trim(element.getAttribute("contragent"));

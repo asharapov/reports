@@ -99,7 +99,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                 processSheet(ectx, sheet);
             }
             boolean activeSheetSpecified = false;
-            for (int i=0, cnt=wb.getNumberOfSheets(); i<cnt; i++) {
+            for (int i = 0, cnt = wb.getNumberOfSheets(); i < cnt; i++) {
                 if (!wb.isSheetHidden(i) && !wb.isSheetVeryHidden(i)) {
                     wb.setActiveSheet(i);
                     wb.setSelectedTab(i);
@@ -118,7 +118,7 @@ public class ExcelReportProcessor implements ReportProcessor {
             }
             return wb;
         } catch (Exception e) {
-            throw new ReportProcessingException(e.getMessage()+"\n"+ectx, e, ectx);
+            throw new ReportProcessingException(e.getMessage() + "\n" + ectx, e, ectx);
         }
     }
 
@@ -295,14 +295,14 @@ public class ExcelReportProcessor implements ReportProcessor {
             listener.beforeSheet(ectx);
         }
         if (ectx.sheet.isRendered()) {
-            ectx.wsheet = ectx.wb.createSheet( (String)sheet.getTitle().getValue(ectx.elctx) );
+            ectx.wsheet = ectx.wb.createSheet((String) sheet.getTitle().getValue(ectx.elctx));
             ectx.wsheet.setRowSumsBelow(false);
             //ectx.wsheet.setAlternativeExpression(false);  // TODO: мы использовали этот метод т.к. setRowSumBelow() не работал в должной мере, но судя по коду, в POI это исправили еще 4 года назад
 
             final int sheetIdx = ectx.wb.getSheetIndex(ectx.wsheet);
             ectx.wb.setSheetHidden(sheetIdx, sheet.isHidden());
-            if (sheet.isProtected() && ectx.report.getPassword()!=null /*&& ectx.wb.isWriteProtected()*/) {
-                ectx.wsheet.protectSheet( (String)ectx.report.getPassword().getValue(ectx.elctx) );
+            if (sheet.isProtected() && ectx.report.getPassword() != null /*&& ectx.wb.isWriteProtected()*/) {
+                ectx.wsheet.protectSheet((String) ectx.report.getPassword().getValue(ectx.elctx));
             }
             for (final Section section : sheet.getSections()) {
                 processSection(ectx, section);
@@ -315,7 +315,7 @@ public class ExcelReportProcessor implements ReportProcessor {
             for (int i = 0; i < hidden.length; i++) {
                 ectx.wsheet.setColumnHidden(i, hidden[i]);
             }
-            for (Iterator<TreeNode<ColumnGroupModel>> i = sheet.getColumnGroups().traverseChildNodes(); i.hasNext();) {
+            for (Iterator<TreeNode<ColumnGroupModel>> i = sheet.getColumnGroups().traverseChildNodes(); i.hasNext(); ) {
                 final ColumnGroupModel group = i.next().getData();
                 ectx.wsheet.groupColumn(group.getFirstColumn(), (short) group.getLastColumn());
             }
@@ -389,7 +389,7 @@ public class ExcelReportProcessor implements ReportProcessor {
             if (section instanceof GroupingSection) {
                 processGroupingSection(ectx);
             } else
-                throw new RuntimeException("Unsupported section type: "+section.getClass());
+                throw new RuntimeException("Unsupported section type: " + section.getClass());
 
             final int lastRow = ectx.getLastRowNum();
             if (section.isHidden()) {
@@ -397,7 +397,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                     ectx.wsheet.getRow(i).setZeroHeight(true);
                 }
             }
-            if (section.isCollapsible() && lastRow>firstRow) {
+            if (section.isCollapsible() && lastRow > firstRow) {
                 ectx.wsheet.groupRow(firstRow, lastRow);
                 ectx.wsheet.setRowGroupCollapsed(firstRow, section.isCollapsed());
             }
@@ -414,7 +414,7 @@ public class ExcelReportProcessor implements ReportProcessor {
 
     protected void processPlainSection(final ExecutionContext ectx) throws Exception {
         final SectionContext sctx = ectx.sectionContext;
-        final PlainSection section = (PlainSection)sctx.section;
+        final PlainSection section = (PlainSection) sctx.section;
         DataProvider provider = null;
         Query query = null;
         if (section.getDataProvider() != null) {
@@ -448,7 +448,7 @@ public class ExcelReportProcessor implements ReportProcessor {
 
     protected void processGroupingSection(final ExecutionContext ectx) throws Exception {
         final SectionContext sctx = ectx.sectionContext;
-        final GroupingSection section = (GroupingSection)sctx.section;
+        final GroupingSection section = (GroupingSection) sctx.section;
         DataProvider provider = null;
         Query query = null;
         if (section.getDataProvider() != null) {
@@ -491,7 +491,7 @@ public class ExcelReportProcessor implements ReportProcessor {
 
     protected void processCompositeSection(final ExecutionContext ectx) throws Exception {
         final SectionContext sctx = ectx.sectionContext;
-        final CompositeSection section = (CompositeSection)sctx.section;
+        final CompositeSection section = (CompositeSection) sctx.section;
         DataProvider provider = null;
         Query query = null;
         if (section.getDataProvider() != null) {
@@ -500,7 +500,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         }
 
         final ProviderUsage providerUsage = section.getProviderUsage();
-        if (provider!=null && providerUsage!=ProviderUsage.DECLARE_ONLY) {
+        if (provider != null && providerUsage != ProviderUsage.DECLARE_ONLY) {
             sctx.gm = new GroupManager(section.getGroups()) {
                 public void renderCurrentGroup(final ExecutionContext ctx) throws Exception {
                     renderGroup(ctx, getCurrentGroup());
@@ -508,8 +508,8 @@ public class ExcelReportProcessor implements ReportProcessor {
             };
             sctx.beanIterator = provider.execute(query);
             try {
-                while(sctx.beanIterator.hasNext()) {
-                    sctx.bean = ProviderUsage.PREFETCH_RECORDS==providerUsage ? sctx.beanIterator.readAhead() : sctx.beanIterator.next();
+                while (sctx.beanIterator.hasNext()) {
+                    sctx.bean = ProviderUsage.PREFETCH_RECORDS == providerUsage ? sctx.beanIterator.readAhead() : sctx.beanIterator.next();
                     ectx.elctx.setRowModel(sctx.bean);
                     ectx.elctx.getVariables().put(VAR_RECORD, sctx.record);
                     sctx.gm.initRecord(ectx, sctx.bean);
@@ -531,13 +531,13 @@ public class ExcelReportProcessor implements ReportProcessor {
             sctx.gm.finalizeAllGroups(ectx);
             sctx.gm = null;
         } else {
-            sctx.beanIterator = provider!=null ? provider.execute(query) : null;
+            sctx.beanIterator = provider != null ? provider.execute(query) : null;
             try {
                 for (final Section childSection : section.getSections()) {
                     processSection(ectx, childSection);
                 }
             } finally {
-                if (sctx.beanIterator!=null) {
+                if (sctx.beanIterator != null) {
                     sctx.beanIterator.close();
                     sctx.beanIterator = null;
                 }
@@ -556,13 +556,13 @@ public class ExcelReportProcessor implements ReportProcessor {
         final Object prevBean = ectx.elctx.getRowModel();
         ectx.elctx.setRowModel(group.bean);
 
-        final GroupStyle style = group.level!=null ? group.model.getStyleByLevel(group.level) : group.model.getDefaultStyle();
+        final GroupStyle style = group.level != null ? group.model.getStyleByLevel(group.level) : group.model.getDefaultStyle();
         renderArea(ectx, style.getTemplate(), group.startRow);
 
         final int firstRow = group.startRow + 1;
         final int lastRow = ectx.wsheet.getLastRowNum();
-        if (group.model.isCollapsible() && lastRow>=firstRow) {
-            ectx.wsheet.groupRow(firstRow, lastRow );
+        if (group.model.isCollapsible() && lastRow >= firstRow) {
+            ectx.wsheet.groupRow(firstRow, lastRow);
             if (group.model.isCollapsed()) {
                 ectx.wsheet.setRowGroupCollapsed(firstRow, group.model.isCollapsed());
             }
@@ -611,7 +611,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                     continue;
                 final CellStyle style = ectx.styles.get(cm.getStyle());
                 ectx.cell = row.createCell(i, Cell.CELL_TYPE_BLANK);
-                if (style!=null)
+                if (style != null)
                     ectx.cell.setCellStyle(style);
                 event.setRendered(false);
                 event.setCellValue(cm.getExpression().getValue(ectx.elctx));
@@ -648,7 +648,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         } else
         if (value instanceof Double) {
             ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            ectx.cell.setCellValue((Double)value);
+            ectx.cell.setCellValue((Double) value);
         } else
         if (value instanceof Number) {
             ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
@@ -678,7 +678,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                     final int fi = text.lastIndexOf(')');
                     if (fi < si)
                         throw new IllegalArgumentException("Illegal custom function call [" + text + "] at row:" + ectx.cell.getRowIndex() + ", cell:" + ectx.cell.getColumnIndex());
-                    args =  text.substring(si + 1, fi);
+                    args = text.substring(si + 1, fi);
                 } else {
                     name = text.substring(MACROS_LENGTH);
                     args = null;

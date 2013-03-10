@@ -2,6 +2,9 @@ package org.echosoft.framework.reports.model;
 
 import java.io.Serializable;
 
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.FontUnderline;
+
 /**
  * Описывает шрифт в отчете.
  *
@@ -10,15 +13,15 @@ import java.io.Serializable;
 public class FontModel implements Serializable, Cloneable {
 
     private short id;
-    private short boldWeight;
-    private int charSet;
-    private ColorModel color;
-    private short fontHeight;
     private String fontName;
+    private short fontHeight;
+    private int charSet;
+    private short boldWeight;
     private boolean italic;
     private boolean strikeout;
     private short typeOffset;
     private byte underline;
+    private ColorModel color;
 
     public FontModel() {
         fontName = "Arial";
@@ -33,42 +36,42 @@ public class FontModel implements Serializable, Cloneable {
     public short getId() {
         return id;
     }
-    public void setId(short id) {
+    public void setId(final short id) {
         this.id = id;
     }
 
     public short getBoldWeight() {
         return boldWeight;
     }
-    public void setBoldWeight(short boldWeight) {
+    public void setBoldWeight(final short boldWeight) {
         this.boldWeight = boldWeight;
     }
 
     public int getCharSet() {
         return charSet;
     }
-    public void setCharSet(int charSet) {
+    public void setCharSet(final int charSet) {
         this.charSet = charSet;
     }
 
     public ColorModel getColor() {
         return color;
     }
-    public void setColor(ColorModel color) {
+    public void setColor(final ColorModel color) {
         this.color = color;
     }
 
     public short getFontHeight() {
         return fontHeight;
     }
-    public void setFontHeight(short fontHeight) {
+    public void setFontHeight(final short fontHeight) {
         this.fontHeight = fontHeight;
     }
 
     public String getFontName() {
         return fontName;
     }
-    public void setFontName(String fontName) {
+    public void setFontName(final String fontName) {
         if (fontName == null)
             throw new RuntimeException("font name must be specified");
         this.fontName = fontName;
@@ -77,28 +80,28 @@ public class FontModel implements Serializable, Cloneable {
     public boolean isItalic() {
         return italic;
     }
-    public void setItalic(boolean italic) {
+    public void setItalic(final boolean italic) {
         this.italic = italic;
     }
 
     public boolean isStrikeout() {
         return strikeout;
     }
-    public void setStrikeout(boolean strikeout) {
+    public void setStrikeout(final boolean strikeout) {
         this.strikeout = strikeout;
     }
 
     public short getTypeOffset() {
         return typeOffset;
     }
-    public void setTypeOffset(short typeOffset) {
+    public void setTypeOffset(final short typeOffset) {
         this.typeOffset = typeOffset;
     }
 
     public byte getUnderline() {
         return underline;
     }
-    public void setUnderline(byte underline) {
+    public void setUnderline(final byte underline) {
         this.underline = underline;
     }
 
@@ -123,18 +126,50 @@ public class FontModel implements Serializable, Cloneable {
         final FontModel other = (FontModel) obj;
         return id == other.id &&
                 (color != null ? color.equals(other.color) : other.color == null) &&
-                boldWeight == other.boldWeight && charSet == other.charSet &&
-                fontHeight == other.fontHeight && fontName.equals(other.fontName) && italic == other.italic &&
+                fontName.equals(other.fontName) &&
+                fontHeight == other.fontHeight &&
+                charSet == other.charSet &&
+                boldWeight == other.boldWeight && italic == other.italic &&
                 strikeout == other.strikeout && typeOffset == other.typeOffset && underline == other.underline;
     }
 
     @Override
     public String toString() {
-        final StringBuilder out = new StringBuilder(128);
-        out.append("[Font{id:").append(id).append(", font:").append(fontName).append(" ").append(fontHeight)
-                .append(", color:").append(color != null ? color.toHexString() : "null")
-                .append(", weight:").append(boldWeight).append(", italic:").append(italic).append(", strikeout:")
-                .append(strikeout).append(", underline:").append(underline).append("}]");
-        return out.toString();
+        final StringBuilder buf = new StringBuilder(64);
+        buf.append("[Font{id:").append(id).append(", name:").append(fontName).append(' ').append(fontHeight/20).append("pt");
+        if (boldWeight == Font.BOLDWEIGHT_BOLD)
+            buf.append(", bold");
+        if (italic)
+            buf.append(", italic");
+        if (strikeout)
+            buf.append(", strikeout");
+        switch (underline) {
+            case 1:
+                buf.append(", underline: single");
+                break;
+            case 2:
+                buf.append(", underline: double");
+                break;
+            case 3:
+                buf.append(", underline: single_acc");
+                break;
+            case 4:
+                buf.append(", underline: double_acc");
+                break;
+            default:
+        }
+        switch (typeOffset) {
+            case Font.SS_SUB:
+                buf.append(", offset:sub");
+                break;
+            case Font.SS_SUPER:
+                buf.append(", offset:super");
+                break;
+            default:
+        }
+        if (color != null)
+            buf.append(", color:").append(color.toHexString());
+        buf.append("}]");
+        return buf.toString();
     }
 }

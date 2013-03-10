@@ -53,10 +53,10 @@ public class StylePalette implements Serializable, Cloneable {
                 throw new IllegalStateException("Reference to nonexistent font at index: " + i);
             final FontModel font = new FontModel();
             font.setId(f.getIndex());
-            font.setBoldWeight(f.getBoldweight());
+            font.setFontName(f.getFontName());
             font.setCharSet(f.getCharSet());
             font.setFontHeight(f.getFontHeight());
-            font.setFontName(f.getFontName());
+            font.setBoldWeight(f.getBoldweight());
             font.setItalic(f.getItalic());
             font.setStrikeout(f.getStrikeout());
             font.setTypeOffset(f.getTypeOffset());
@@ -69,24 +69,24 @@ public class StylePalette implements Serializable, Cloneable {
             final CellStyleModel style = new CellStyleModel();
             style.setId(s.getIndex());
             style.setAlignment(s.getAlignment());
-            style.setBorderBottom(s.getBorderBottom());
-            style.setBorderLeft(s.getBorderLeft());
-            style.setBorderRight(s.getBorderRight());
-            style.setBorderTop(s.getBorderTop());
-            style.setBottomBorderColor(ensureColorRegistered(s.getBottomBorderXSSFColor(), wb, hashedColors));
+            style.setVerticalAlignment(s.getVerticalAlignment());
             style.setDataFormat(s.getDataFormatString());
-            style.setFillBackgroundColor(ensureColorRegistered(s.getFillBackgroundXSSFColor(), wb, hashedColors));
-            style.setFillForegroundColor(ensureColorRegistered(s.getFillForegroundXSSFColor(), wb, hashedColors));
-            style.setFillPattern(s.getFillPattern());
             style.setHidden(s.getHidden());
             style.setIndention(s.getIndention());
-            style.setLeftBorderColor(ensureColorRegistered(s.getLeftBorderXSSFColor(), wb, hashedColors));
             style.setLocked(s.getLocked());
-            style.setRightBorderColor(ensureColorRegistered(s.getRightBorderXSSFColor(), wb, hashedColors));
             style.setRotation(s.getRotation());
-            style.setTopBorderColor(ensureColorRegistered(s.getTopBorderXSSFColor(), wb, hashedColors));
-            style.setVerticalAlignment(s.getVerticalAlignment());
             style.setWrapText(s.getWrapText());
+            style.setBorderTop(s.getBorderTop());
+            style.setBorderRight(s.getBorderRight());
+            style.setBorderBottom(s.getBorderBottom());
+            style.setBorderLeft(s.getBorderLeft());
+            style.setTopBorderColor(ensureColorRegistered(s.getTopBorderXSSFColor(), wb, hashedColors));
+            style.setRightBorderColor(ensureColorRegistered(s.getRightBorderXSSFColor(), wb, hashedColors));
+            style.setBottomBorderColor(ensureColorRegistered(s.getBottomBorderXSSFColor(), wb, hashedColors));
+            style.setLeftBorderColor(ensureColorRegistered(s.getLeftBorderXSSFColor(), wb, hashedColors));
+            style.setFillPattern(s.getFillPattern());
+            style.setFillForegroundColor(ensureColorRegistered(s.getFillForegroundXSSFColor(), wb, hashedColors));
+            style.setFillBackgroundColor(ensureColorRegistered(s.getFillBackgroundXSSFColor(), wb, hashedColors));
             final FontModel font = fonts.get(s.getFontIndex());
             if (font == null)
                 throw new IllegalStateException("Reference to nonexistent font at index: " + s.getFontIndex());
@@ -119,24 +119,24 @@ public class StylePalette implements Serializable, Cloneable {
             final CellStyleModel style = new CellStyleModel();
             style.setId(s.getIndex());
             style.setAlignment(s.getAlignment());
-            style.setBorderBottom(s.getBorderBottom());
-            style.setBorderLeft(s.getBorderLeft());
-            style.setBorderRight(s.getBorderRight());
-            style.setBorderTop(s.getBorderTop());
-            style.setBottomBorderColor(ensureColorRegistered(s.getBottomBorderColor(), palette));
+            style.setVerticalAlignment(s.getVerticalAlignment());
             style.setDataFormat(s.getDataFormatString());
-            style.setFillBackgroundColor(ensureColorRegistered(s.getFillBackgroundColor(), palette));
-            style.setFillForegroundColor(ensureColorRegistered(s.getFillForegroundColor(), palette));
-            style.setFillPattern(s.getFillPattern());
             style.setHidden(s.getHidden());
             style.setIndention(s.getIndention());
-            style.setLeftBorderColor(ensureColorRegistered(s.getLeftBorderColor(), palette));
             style.setLocked(s.getLocked());
-            style.setRightBorderColor(ensureColorRegistered(s.getRightBorderColor(), palette));
             style.setRotation(s.getRotation());
-            style.setTopBorderColor(ensureColorRegistered(s.getTopBorderColor(), palette));
-            style.setVerticalAlignment(s.getVerticalAlignment());
             style.setWrapText(s.getWrapText());
+            style.setBorderTop(s.getBorderTop());
+            style.setBorderRight(s.getBorderRight());
+            style.setBorderBottom(s.getBorderBottom());
+            style.setBorderLeft(s.getBorderLeft());
+            style.setTopBorderColor(ensureColorRegistered(s.getTopBorderColor(), palette));
+            style.setRightBorderColor(ensureColorRegistered(s.getRightBorderColor(), palette));
+            style.setBottomBorderColor(ensureColorRegistered(s.getBottomBorderColor(), palette));
+            style.setLeftBorderColor(ensureColorRegistered(s.getLeftBorderColor(), palette));
+            style.setFillPattern(s.getFillPattern());
+            style.setFillForegroundColor(ensureColorRegistered(s.getFillForegroundColor(), palette));
+            style.setFillBackgroundColor(ensureColorRegistered(s.getFillBackgroundColor(), palette));
             style.setFont(ensureFontRegistered(s.getFontIndex(), wb, palette));
             styles.put(s.getIndex(), style);
         }
@@ -294,12 +294,12 @@ public class StylePalette implements Serializable, Cloneable {
 
         final DataFormat formatter = wb.createDataFormat();
         for (final CellStyleModel style : styles.values()) {
-            final XSSFColor tbc = style.getTopBorderColor() != null ? new XSSFColor(style.getTopBorderColor().toByteArray()) : null;
-            final XSSFColor rbc = style.getRightBorderColor() != null ? new XSSFColor(style.getRightBorderColor().toByteArray()) : null;
-            final XSSFColor bbc = style.getBottomBorderColor() != null ? new XSSFColor(style.getBottomBorderColor().toByteArray()) : null;
-            final XSSFColor lbc = style.getLeftBorderColor() != null ? new XSSFColor(style.getLeftBorderColor().toByteArray()) : null;
-            final XSSFColor ffc = style.getFillForegroundColor() != null ? new XSSFColor(style.getFillForegroundColor().toByteArray()) : null;
-            final XSSFColor fbc = style.getFillBackgroundColor() != null ? new XSSFColor(style.getFillBackgroundColor().toByteArray()) : null;
+            final XSSFColor tbc = style.getTopBorderColor() != null ? POIUtils.makeXSSFColor(style.getTopBorderColor()) : null;
+            final XSSFColor rbc = style.getRightBorderColor() != null ? POIUtils.makeXSSFColor(style.getRightBorderColor()) : null;
+            final XSSFColor bbc = style.getBottomBorderColor() != null ? POIUtils.makeXSSFColor(style.getBottomBorderColor()) : null;
+            final XSSFColor lbc = style.getLeftBorderColor() != null ? POIUtils.makeXSSFColor(style.getLeftBorderColor()) : null;
+            final XSSFColor ffc = style.getFillForegroundColor() != null ? POIUtils.makeXSSFColor(style.getFillForegroundColor()) : null;
+            final XSSFColor fbc = style.getFillBackgroundColor() != null ? POIUtils.makeXSSFColor(style.getFillBackgroundColor()) : null;
 
             final XSSFCellStyle s = wb.createCellStyle();
             s.setAlignment(style.getAlignment());
@@ -315,12 +315,18 @@ public class StylePalette implements Serializable, Cloneable {
             s.setBorderBottom(style.getBorderBottom());
             s.setBorderLeft(style.getBorderLeft());
             s.setFillPattern(style.getFillPattern());
-            s.setFillForegroundColor(ffc);
-            s.setFillBackgroundColor(fbc);
-            s.setTopBorderColor(tbc);
-            s.setRightBorderColor(rbc);
-            s.setBottomBorderColor(bbc);
-            s.setLeftBorderColor(lbc);
+            if (ffc != null)
+                s.setFillForegroundColor(ffc);
+            if (fbc != null)
+                s.setFillBackgroundColor(fbc);
+            if (tbc != null)
+                s.setTopBorderColor(tbc);
+            if (rbc != null)
+                s.setRightBorderColor(rbc);
+            if (bbc != null)
+                s.setBottomBorderColor(bbc);
+            if (lbc != null)
+                s.setLeftBorderColor(lbc);
             s.setFont(fontsmap.get(style.getFont().getId()));
             result.put(style.getId(), s);
         }

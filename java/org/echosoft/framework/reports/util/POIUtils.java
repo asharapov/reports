@@ -6,11 +6,13 @@ import java.util.Date;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.model.StylesTable;
@@ -290,7 +292,19 @@ public class POIUtils {
             }
         }
 
-        return color.getRgbWithTint();
+        byte[] rgb = color.getRgbWithTint();
+        // ниже рассмотрена спец. обработка случая когда обрабатываемый .xlsx документ был получен
+        // простым сохранением в новом формате из старого .xls документа без каких-либо изменений ...
+        // В других случаях, по моим наблюдениям, индексированные цвета на которых бы не работали стандартные методы POI не используются.
+        if (rgb == null && color.getCTColor().isSetIndexed()) {
+            final int  index = color.getIndexed();
+            final HSSFColor clr = HSSFColor.getIndexHash().get(index);
+            if (clr != null && IndexedColors.AUTOMATIC.index != index) {
+                final short[] rgb2 = clr.getTriplet();
+                rgb = new byte[]{(byte)rgb2[0], (byte)rgb2[1], (byte)rgb2[2]};
+            }
+        }
+        return rgb;
     }
 
     /**
@@ -317,6 +331,28 @@ public class POIUtils {
             f.setUnderline(font.getUnderline());
         }
         return f;
+    }
+
+    /**
+     * Конструирует экземпляр {@link XSSFColor} на основе сведений из нашей модели.
+     * Этот "гениальный" метод служит только для одной цели - обойти криво работающую "заплатку" в коде POI.
+     *
+     * @param color описание требуемого цвета.
+     * @return соответствующий экземпляр XSSFColor.
+     */
+    public static XSSFColor makeXSSFColor(final ColorModel color) {
+        if (color == null)
+            return null;
+        final int hash = color.getPackedValue();
+        final byte[] rgb;
+        if (hash == 0) {
+            rgb = new byte[]{-1, -1, -1};
+        } else
+        if (hash == 0xFFFFFF) {
+            rgb = new byte[]{0, 0, 0};
+        } else
+            rgb = color.toByteArray();
+        return new XSSFColor(rgb);
     }
 
     /**
@@ -351,7 +387,7 @@ public class POIUtils {
         f.setTypeOffset(font.getTypeOffset());
         f.setUnderline(font.getUnderline());
         if (font.getColor() != null)
-            f.setColor(new XSSFColor(font.getColor().toByteArray()));
+            f.setColor(makeXSSFColor(font.getColor()));
         return f;
     }
 

@@ -12,20 +12,20 @@ import org.echosoft.framework.reports.processor.ExecutionContext;
  */
 public class SimpleCellListener implements CellEventListener {
 
-    public void handle(CellEvent event) throws Exception {
+    public void handle(final CellEvent event) throws Exception {
         if (event.getCellValue() instanceof Number) {
-            final Number value = (Number)event.getCellValue();
+            final Number value = (Number) event.getCellValue();
             final Cell cell = event.getContext().cell;
-            if (value.intValue()<10) {
+            if (value.intValue() < 10) {
 //                System.out.println("row: "+cell.getRowIndex()+", cell:"+cell.getColumnIndex());
-                cell.setCellStyle( getRedStyle(event.getContext()) );
+                cell.setCellStyle(getRedStyle(event.getContext()));
             }
         }
     }
 
-    public CellStyle getRedStyle(ExecutionContext ctx) {
-        CellStyle style = (CellStyle)ctx.elctx.getVariables().get("SimpleCellListener.red");
-        if (style==null) {
+    public CellStyle getRedStyle(final ExecutionContext ctx) {
+        CellStyle style = (CellStyle) ctx.elctx.getVariables().get("SimpleCellListener.red");
+        if (style == null) {
             style = ctx.wb.createCellStyle();
             style.setFillPattern(CellStyle.SOLID_FOREGROUND);
             style.setFillForegroundColor(IndexedColors.CORAL.getIndex());
