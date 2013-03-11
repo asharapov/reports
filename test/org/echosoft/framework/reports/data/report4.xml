@@ -16,7 +16,7 @@
   <list-data-provider id="ds1" data="${env:invoices}" />
   <list-data-provider id="ds2" data="${env:payments}" />
 
-  <sheet id="sheet1" title="Ведомость-1" hidden="true">
+  <sheet id="sheet1" title="Ведомость-1" hidden="true" rendered="false">
     <plain-section id="s1.header" height="4" />
     <composite-section id="s1.data">
       <plain-section id="s1.data.header" height="2" />
@@ -26,7 +26,7 @@
     <plain-section id="s1.footer" height="1" />
   </sheet>
 
-  <sheet id="sheet2" title="Большая таблица" protected="true" zoom="60" group-columns="C-E, G-H, J-O">
+  <sheet id="sheet2" title="Большая таблица" protected="true" zoom="60" group-columns="C-E, G-H, J-O" rendered="false">
     <plain-section id="s2.header" height="1" />
     <composite-section id="s2.data">
       <plain-section id="s2.data.header" height="2" />
@@ -34,7 +34,7 @@
     </composite-section>
   </sheet>
 
-  <sheet id="sheet3" title="Работа с группировками">
+  <sheet id="sheet3" title="Работа с группировками" rendered="false">
     <plain-section id="s3.header" height="1" />
     <composite-section id="s3.data">
       <plain-section id="s3.data.header" height="2" />
@@ -55,8 +55,8 @@
         <cell-listener class="org.echosoft.framework.reports.data.beans.SimpleCellListener" />
         <group collapsible="false" />
         <group discriminatorField="activity.id" levelField="activity.level" />
-        <group discriminatorField="company.id" />
-        <group discriminatorField="project.id" collapsed="true" />
+        <group discriminatorField="company.id" collapsed="false"/>
+        <group discriminatorField="project.id" collapsed="false" />
       </grouping-section>
     </composite-section>
   </sheet>
