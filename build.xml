@@ -3,6 +3,9 @@
 
   <target name="clean" depends="init" description="remove compiled classes">
     <delete dir="build"/>
+    <delete>
+      <fileset dir="." includes="result-*.xls,result-*.xlsx"/>
+    </delete>
   </target>
 
 

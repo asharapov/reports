@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding='UTF-8'?>
-<report id="report1" title="Ведомость 1" password="123" target="XSSF"
+<report id="report4" title="Ведомость 1" password="123" target="XSSF"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://echosoft.org/java/excel-reports/reports.xsd">
 
@@ -15,8 +15,6 @@
 
   <list-data-provider id="ds1" data="${env:invoices}" />
   <list-data-provider id="ds2" data="${env:payments}" />
-
-  <report-listener class="org.echosoft.framework.reports.data.beans.SimpleReportListener" />
 
   <sheet id="sheet1" title="Ведомость-1" hidden="true">
     <plain-section id="s1.header" height="4" />
@@ -44,7 +42,7 @@
         <cell-listener class="org.echosoft.framework.reports.data.beans.SimpleCellListener" />
         <group discriminatorField="activity.id" levelField="activity.level" />
         <group discriminatorField="company.id" />
-        <group discriminatorField="project.id" collapsed="true" />
+        <group discriminatorField="project.id" collapsed="false" />
       </grouping-section>
     </composite-section>
   </sheet>

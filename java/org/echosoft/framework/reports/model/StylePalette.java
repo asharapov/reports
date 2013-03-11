@@ -314,11 +314,13 @@ public class StylePalette implements Serializable, Cloneable {
             s.setBorderRight(style.getBorderRight());
             s.setBorderBottom(style.getBorderBottom());
             s.setBorderLeft(style.getBorderLeft());
-            s.setFillPattern(style.getFillPattern());
-            if (ffc != null)
-                s.setFillForegroundColor(ffc);
-            if (fbc != null)
-                s.setFillBackgroundColor(fbc);
+            if (style.getFillPattern() != CellStyle.NO_FILL) {
+                s.setFillPattern(style.getFillPattern());
+                if (ffc != null)
+                    s.setFillForegroundColor(ffc);
+                if (fbc != null && style.getFillPattern() != CellStyle.SOLID_FOREGROUND)
+                    s.setFillBackgroundColor(fbc);
+            }
             if (tbc != null)
                 s.setTopBorderColor(tbc);
             if (rbc != null)
