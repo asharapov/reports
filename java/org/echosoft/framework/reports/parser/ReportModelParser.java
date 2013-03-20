@@ -9,11 +9,13 @@ import java.util.Iterator;
 import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.poifs.filesystem.Entry;
 import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.echosoft.common.io.FastStringTokenizer;
 import org.echosoft.common.utils.Any;
 import org.echosoft.common.utils.StringUtil;
@@ -111,30 +113,40 @@ public class ReportModelParser {
                 } else
                     throw new RuntimeException("Unknown element: " + tagName);
             }
+
             final boolean preserveTemplate = Any.asBoolean(StringUtil.trim(root.getAttribute("preserveTemplate")), false);
-            if (preserveTemplate && (wb instanceof HSSFWorkbook)) {
-                // ВНИМАНИЕ: данная опция пока работает только для формата Excel 2003 !!!
+            if (preserveTemplate) {
                 for (int i = wb.getNumberOfSheets(); i > 0; i--) {
                     wb.removeSheetAt(wb.getNumberOfSheets() - 1);
                 }
-                final HSSFWorkbook hwb = (HSSFWorkbook) wb;
-                final byte[] data = hwb.getBytes();
-                final String[] shouldBeDropped = {"Workbook", "WORKBOOK", SummaryInformation.DEFAULT_STREAM_NAME, DocumentSummaryInformation.DEFAULT_STREAM_NAME};
-                for (String entryName : shouldBeDropped) {
-                    try {
-                        final Entry entry = hwb.getRootDirectory().getEntry(entryName);
-                        if (entry != null) {
-                            if (!entry.delete())
-                                Logs.reports.warn("unable to delete POIFS section: '" + entryName + "'  (" + entry + ")");
+                if (wb instanceof HSSFWorkbook) {
+                    final HSSFWorkbook hwb = (HSSFWorkbook) wb;
+                    final byte[] data = hwb.getBytes();
+                    final String[] shouldBeDropped = {"Workbook", "WORKBOOK", SummaryInformation.DEFAULT_STREAM_NAME, DocumentSummaryInformation.DEFAULT_STREAM_NAME};
+                    for (String entryName : shouldBeDropped) {
+                        try {
+                            final Entry entry = hwb.getRootDirectory().getEntry(entryName);
+                            if (entry != null) {
+                                if (!entry.delete())
+                                    Logs.reports.warn("unable to delete POIFS section: '" + entryName + "'  (" + entry + ")");
+                            }
+                        } catch (FileNotFoundException ffe) {
+                            // Секция с указанным именем отсутствует в иерархии. Просто перейдем к следующей в списке ...
                         }
-                    } catch (FileNotFoundException ffe) {
-                        // Секция с указанным именем отсутствует в иерархии. Просто перейдем к следующей в списке ... 
                     }
-                }
-                hwb.getRootDirectory().createDocument("Workbook", new ByteArrayInputStream(data));
-                final ByteArrayOutputStream buf = new ByteArrayOutputStream(4096);
-                hwb.getRootDirectory().getFileSystem().writeFilesystem(buf);
-                report.setTemplate(buf.toByteArray());
+                    hwb.getRootDirectory().createDocument("Workbook", new ByteArrayInputStream(data));
+                    final ByteArrayOutputStream buf = new ByteArrayOutputStream(4096);
+                    hwb.getRootDirectory().getFileSystem().writeFilesystem(buf);
+                    report.setTemplate(buf.toByteArray());
+                } else
+                if (wb instanceof XSSFWorkbook) {
+                    final XSSFWorkbook xwb = (XSSFWorkbook)wb;
+                    final OPCPackage pkg = xwb.getPackage();
+                    final ByteArrayOutputStream buf = new ByteArrayOutputStream(8192);
+                    pkg.save(buf);
+                    report.setTemplate(buf.toByteArray());
+                } else
+                    throw new IllegalArgumentException("Unknown workbook implementation: " + wb);
             }
             return report;
         } catch (Exception e) {

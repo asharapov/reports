@@ -18,6 +18,7 @@ import org.apache.poi.hpsf.Variant;
 import org.apache.poi.hpsf.wellknown.PropertyIDMap;
 import org.apache.poi.hpsf.wellknown.SectionIDMap;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.util.Nullable;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
@@ -52,6 +53,7 @@ import org.echosoft.framework.reports.model.events.CellEventListener;
 import org.echosoft.framework.reports.model.events.ReportEventListener;
 import org.echosoft.framework.reports.model.events.SectionEventListener;
 import org.echosoft.framework.reports.model.providers.ProviderUsage;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheets;
 
 /**
  * Формирует итоговый отчет по его модели и на основании данных указанных пользователем в качестве параметров.<br/>
@@ -125,7 +127,16 @@ public class ExcelReportProcessor implements ReportProcessor {
     protected Workbook makeWorkbook(final Report report, final ELContext ctx) throws Exception {
         switch (report.getTarget()) {
             case XSSF: {
-                final XSSFWorkbook wb = new XSSFWorkbook();
+                final XSSFWorkbook wb;
+                if (report.getTemplate() != null) {
+                    final OPCPackage pkg = OPCPackage.open(new ByteArrayInputStream(report.getTemplate()));
+                    wb = new XSSFWorkbook(pkg);
+                    final CTSheets sheets = wb.getCTWorkbook().getSheets();
+                    while (sheets.sizeOfSheetArray() > 0)
+                        sheets.removeSheet(0);
+                } else {
+                    wb = new XSSFWorkbook();
+                }
                 final POIXMLProperties props = wb.getProperties();
                 props.getCoreProperties().setCreated(new Nullable<Date>(new Date()));
                 final String application = report.getDescription().getApplication(ctx);
@@ -173,8 +184,8 @@ public class ExcelReportProcessor implements ReportProcessor {
             case HSSF:
             default: {
                 final POIFSFileSystem fs;
-                if (report.getTemplate()!=null) {
-                    fs = new POIFSFileSystem( new ByteArrayInputStream(report.getTemplate()) );
+                if (report.getTemplate() != null) {
+                    fs = new POIFSFileSystem(new ByteArrayInputStream(report.getTemplate()));
                 } else {
                     final byte[] emptyWorkbookData = new HSSFWorkbook().getBytes();
                     fs = new POIFSFileSystem();
@@ -240,10 +251,10 @@ public class ExcelReportProcessor implements ReportProcessor {
                 }
 
                 final MutablePropertySet dsiProperties = new MutablePropertySet();
-                final MutableSection dsiSection = (MutableSection)dsiProperties.getSections().get(0);
+                final MutableSection dsiSection = (MutableSection) dsiProperties.getSections().get(0);
                 dsiSection.setFormatID(SectionIDMap.DOCUMENT_SUMMARY_INFORMATION_ID[0]);
                 final String company = report.getDescription().getCompany(ctx);
-                if (company!=null) {
+                if (company != null) {
                     final MutableProperty p = new MutableProperty();
                     p.setID(PropertyIDMap.PID_COMPANY);
                     p.setType(Variant.VT_LPWSTR);
@@ -251,7 +262,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                     dsiSection.setProperty(p);
                 }
                 final String category = report.getDescription().getCategory(ctx);
-                if (category!=null) {
+                if (category != null) {
                     final MutableProperty p = new MutableProperty();
                     p.setID(PropertyIDMap.PID_CATEGORY);
                     p.setType(Variant.VT_LPWSTR);
@@ -261,11 +272,11 @@ public class ExcelReportProcessor implements ReportProcessor {
 
                 fs.createDocument(siProperties.toInputStream(), SummaryInformation.DEFAULT_STREAM_NAME);
                 fs.createDocument(dsiProperties.toInputStream(), DocumentSummaryInformation.DEFAULT_STREAM_NAME);
-                final HSSFWorkbook wb = new HSSFWorkbook(fs,true);
+                final HSSFWorkbook wb = new HSSFWorkbook(fs, true);
                 // специфичные для HSSF настройки ...
-                final String user = report.getUser()!=null ? (String)report.getUser().getValue(ctx) : null;
-                final String password = report.getPassword()!= null ?(String)report.getPassword().getValue(ctx) : null;
-                if (user!=null && password!=null) {
+                final String user = report.getUser() != null ? (String) report.getUser().getValue(ctx) : null;
+                final String password = report.getPassword() != null ? (String) report.getPassword().getValue(ctx) : null;
+                if (user != null && password != null) {
                     wb.writeProtectWorkbook(password, user);
                 }
                 return wb;
@@ -274,8 +285,7 @@ public class ExcelReportProcessor implements ReportProcessor {
     }
 
     protected Map<Short, CellStyle> applyStyles(final Report report, final Workbook wb) {
-        if (report.getTemplate() != null && (wb instanceof HSSFWorkbook)) {
-            // ВНИМАНИЕ: данная опция пока работает только для формата Excel 2003 !!!
+        if (report.getTemplate() != null) {
             final Map<Short, CellStyle> styles = new HashMap<Short, CellStyle>();
             for (final short styleIndex : report.getPalette().getStyles().keySet()) {
                 final CellStyle style = wb.getCellStyleAt(styleIndex);
@@ -297,7 +307,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         if (ectx.sheet.isRendered()) {
             ectx.wsheet = ectx.wb.createSheet((String) sheet.getTitle().getValue(ectx.elctx));
             ectx.wsheet.setRowSumsBelow(false);
-            //ectx.wsheet.setAlternativeExpression(false);  // TODO: мы использовали этот метод т.к. setRowSumBelow() не работал в должной мере, но судя по коду, в POI это исправили еще 4 года назад
+            //ectx.wsheet.setAlternativeExpression(false);  //мы использовали этот метод т.к. setRowSumBelow() не работал в должной мере, но судя по коду, в POI это исправили еще 4 года назад
 
             final int sheetIdx = ectx.wb.getSheetIndex(ectx.wsheet);
             ectx.wb.setSheetHidden(sheetIdx, sheet.isHidden());
