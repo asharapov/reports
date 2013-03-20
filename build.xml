@@ -118,6 +118,7 @@
       <include name="**/*.xml"/>
       <include name="**/*.xsd"/>
       <include name="**/*.xls"/>
+      <include name="**/*.xlsx"/>
     </patternset>
   </target>
 

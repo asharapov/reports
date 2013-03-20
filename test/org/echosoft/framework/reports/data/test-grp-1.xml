@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding='UTF-8'?>
-<report id="test-grp-1" title="Ведомость 1" password="123" target="XSSF"
+<report id="test-grp-1" title="Ведомость 1" password="123" target="XSSF" preserveTemplate="true"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://echosoft.org/java/excel-reports/reports.xsd">
 
