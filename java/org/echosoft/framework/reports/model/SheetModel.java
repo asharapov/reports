@@ -3,7 +3,6 @@ package org.echosoft.framework.reports.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import org.echosoft.common.model.TreeNode;
@@ -68,7 +67,7 @@ public class SheetModel implements Serializable {
     /**
      * Описывает иерархию группировок колонок.
      */
-    private final TreeNode<ColumnGroupModel> colgroups;
+    private final TreeNode<String, ColumnGroupModel> colgroups;
 
     /**
      * Группа свойств, относящихся к описанию представления страницы.
@@ -92,7 +91,7 @@ public class SheetModel implements Serializable {
         this.sections = new ArrayList<Section>();
         this.colwidths = EMPTY_INT_ARRAY;
         this.colhidden = EMPTY_BOOLEAN_ARRAY;
-        this.colgroups = new TreeNode<ColumnGroupModel>("", null);
+        this.colgroups = new TreeNode<String, ColumnGroupModel>("", null);
         this.pageSettings = new PageSettingsModel();
     }
 
@@ -275,7 +274,7 @@ public class SheetModel implements Serializable {
      *
      * @return корневой (фиктивный) узел дерева группировок. Метод никогда не возвращает null.
      */
-    public TreeNode<ColumnGroupModel> getColumnGroups() {
+    public TreeNode<String, ColumnGroupModel> getColumnGroups() {
         return colgroups;
     }
 
@@ -288,8 +287,8 @@ public class SheetModel implements Serializable {
         addColumnGroup(colgroups, group);
     }
 
-    protected TreeNode<ColumnGroupModel> addColumnGroup(final TreeNode<ColumnGroupModel> parent, final ColumnGroupModel group) {
-        for (TreeNode<ColumnGroupModel> node : parent.getChildren()) {
+    protected TreeNode<String, ColumnGroupModel> addColumnGroup(final TreeNode<String, ColumnGroupModel> parent, final ColumnGroupModel group) {
+        for (TreeNode<String, ColumnGroupModel> node : parent.getChildren()) {
             if (group.insideOf(node.getData()))
                 return addColumnGroup(node, group);
             if (group.intersected(node.getData()))
@@ -364,9 +363,8 @@ public class SheetModel implements Serializable {
         result.colhidden = new boolean[colhidden.length];
         System.arraycopy(colhidden, 0, result.colhidden, 0, colhidden.length);
 
-        for (Iterator<TreeNode<ColumnGroupModel>> it = colgroups.traverseChildNodes(); it.hasNext(); ) {
-            final TreeNode<ColumnGroupModel> node = it.next();
-            final TreeNode<ColumnGroupModel> parent = result.colgroups.findInTree(node.getParent().getId());
+        for (TreeNode<String, ColumnGroupModel> node : colgroups.traverseNodes(false)) {
+            final TreeNode<String, ColumnGroupModel> parent = result.colgroups.findNodeById(node.getParent().getId(), true);
             parent.addChildNode(node.getId(), node.getData());
         }
 

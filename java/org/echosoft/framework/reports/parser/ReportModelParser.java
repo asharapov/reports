@@ -230,12 +230,10 @@ public class ReportModelParser {
     private static void parseSQLDataProvider(final Report report, final Element element) {
         final String id = StringUtil.trim(element.getAttribute("id"));
         final String ds = StringUtil.trim(element.getAttribute("datasource"));
-        final String processor = StringUtil.trim(element.getAttribute("processor"));
-        if (id == null || ds == null || processor == null)
+        if (id == null || ds == null)
             throw new RuntimeException("Mandatory attributes not specified: " + element);
         final SQLDataProviderHolder result = new SQLDataProviderHolder(id);
         result.setDataSource(new BaseExpression(ds));
-        result.setProcessor(new BaseExpression(processor));
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();

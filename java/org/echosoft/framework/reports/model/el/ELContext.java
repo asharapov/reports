@@ -21,7 +21,7 @@ public class ELContext {
     /**
      * Некоторый объект, описывающий одну строку данных (ту, которая в настоящий момент формируется в
      * выходном документе Excel).
-     * Приходит от соответствующего источника данных {@link org.echosoft.common.query.providers.DataProvider}.
+     * Приходит от соответствующего источника данных {@link org.echosoft.common.providers.DataProvider}.
      */
     protected Object bean;
 

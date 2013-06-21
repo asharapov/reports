@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -30,9 +29,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.echosoft.common.data.Query;
 import org.echosoft.common.model.TreeNode;
-import org.echosoft.common.query.Query;
-import org.echosoft.common.query.providers.DataProvider;
+import org.echosoft.common.providers.DataProvider;
 import org.echosoft.framework.reports.macros.Macros;
 import org.echosoft.framework.reports.model.AreaModel;
 import org.echosoft.framework.reports.model.CellModel;
@@ -172,9 +171,9 @@ public class ExcelReportProcessor implements ReportProcessor {
                     props.getCoreProperties().setCategory(category);
                 }
                 // специфичные для XSSF настройки ...
-                final String user = report.getUser()!=null ? (String)report.getUser().getValue(ctx) : null;
-                final String password = report.getPassword()!= null ?(String)report.getPassword().getValue(ctx) : null;
-                if (user!=null && password!=null) {
+                final String user = report.getUser() != null ? (String) report.getUser().getValue(ctx) : null;
+                final String password = report.getPassword() != null ? (String) report.getPassword().getValue(ctx) : null;
+                if (user != null && password != null) {
                     wb.lockWindows();
                     wb.lockRevision();
                     wb.lockStructure();
@@ -325,8 +324,8 @@ public class ExcelReportProcessor implements ReportProcessor {
             for (int i = 0; i < hidden.length; i++) {
                 ectx.wsheet.setColumnHidden(i, hidden[i]);
             }
-            for (Iterator<TreeNode<ColumnGroupModel>> i = sheet.getColumnGroups().traverseChildNodes(); i.hasNext(); ) {
-                final ColumnGroupModel group = i.next().getData();
+            for (TreeNode<String, ColumnGroupModel> grpNode : sheet.getColumnGroups().traverseNodes(false)) {
+                final ColumnGroupModel group = grpNode.getData();
                 ectx.wsheet.groupColumn(group.getFirstColumn(), (short) group.getLastColumn());
             }
             processPageSettings(ectx.wsheet, sheet.getPageSettings());
@@ -353,7 +352,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         sheet.setFitToPage(pageSettings.isFitToPage());
         sheet.setHorizontallyCenter(pageSettings.isHorizontallyCenter());
         sheet.setVerticallyCenter(pageSettings.isVerticallyCenter());
-        if (pageSettings.getZoom()!=null)
+        if (pageSettings.getZoom() != null)
             sheet.setZoom(pageSettings.getZoom(), 100);
     }
     private void processPrintSetup(final PrintSetup hps, final PrintSetupModel printSetup) {
@@ -392,11 +391,9 @@ public class ExcelReportProcessor implements ReportProcessor {
         if (section.isRendered()) {
             if (section instanceof CompositeSection) {
                 processCompositeSection(ectx);
-            } else
-            if (section instanceof PlainSection) {
+            } else if (section instanceof PlainSection) {
                 processPlainSection(ectx);
-            } else
-            if (section instanceof GroupingSection) {
+            } else if (section instanceof GroupingSection) {
                 processGroupingSection(ectx);
             } else
                 throw new RuntimeException("Unsupported section type: " + section.getClass());
@@ -559,7 +556,7 @@ public class ExcelReportProcessor implements ReportProcessor {
      * Отрисовывает группировочную строку в отчете.
      *
      * @param group текущая группа, которая должна быть отображена в отчете.
-     * @param ectx   контекст выполнения задачи.
+     * @param ectx  контекст выполнения задачи.
      * @throws Exception в случае каких-либо проблем.
      */
     protected void renderGroup(final ExecutionContext ectx, final Group group) throws Exception {
@@ -584,7 +581,7 @@ public class ExcelReportProcessor implements ReportProcessor {
     /**
      * Отрисовывает группу строк на основе их шаблона в отчете.
      *
-     * @param ectx      контекст выполнения задачи.
+     * @param ectx     контекст выполнения задачи.
      * @param template шаблон группы строк.
      * @param startRow номер первой строки отчета (начиная с 0) в которую надо вставлять данный контент.
      *                 Если данный параметр меньше нуля, то будет осуществляться вставка новых строк в конец листа.
@@ -641,46 +638,38 @@ public class ExcelReportProcessor implements ReportProcessor {
     /**
      * Устанавливает значение ячейки.
      *
-     * @param ectx   контекст выполнения задачи.
+     * @param ectx  контекст выполнения задачи.
      * @param value объект на основании которого устанавливается значение ячейки.
      */
     protected void renderCell(final ExecutionContext ectx, final Object value) {
         if (value == null) {
             ectx.cell.setCellType(Cell.CELL_TYPE_BLANK);
-        } else
-        if (value instanceof Date) {
+        } else if (value instanceof Date) {
             ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue((Date) value);
-        } else
-        if (value instanceof Calendar) {
+        } else if (value instanceof Calendar) {
             ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue((Calendar) value);
-        } else
-        if (value instanceof Double) {
+        } else if (value instanceof Double) {
             ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue((Double) value);
-        } else
-        if (value instanceof Number) {
+        } else if (value instanceof Number) {
             ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue(((Number) value).doubleValue());
-        } else
-        if (value instanceof Boolean) {
+        } else if (value instanceof Boolean) {
             ectx.cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
             ectx.cell.setCellValue((Boolean) value);
-        } else
-        if (value instanceof RichTextString) {
+        } else if (value instanceof RichTextString) {
             ectx.cell.setCellType(Cell.CELL_TYPE_STRING);
             ectx.cell.setCellValue((RichTextString) value);
         } else {
             final String text = value.toString();
             if (ectx.cell.getCellType() == Cell.CELL_TYPE_FORMULA) {
                 ectx.cell.setCellFormula(text);
-            } else
-            if (text.startsWith(FORMULA)) {
+            } else if (text.startsWith(FORMULA)) {
                 ectx.cell.setCellType(Cell.CELL_TYPE_FORMULA);
                 ectx.cell.setCellFormula(text.substring(FORMULA_LENGTH));
-            } else
-            if (text.startsWith(MACROS)) {
+            } else if (text.startsWith(MACROS)) {
                 final int si = text.indexOf('(', MACROS_LENGTH);
                 final String name, args;
                 if (si > 0) {
@@ -703,5 +692,4 @@ public class ExcelReportProcessor implements ReportProcessor {
             }
         }
     }
-
 }

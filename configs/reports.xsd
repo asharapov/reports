@@ -122,7 +122,9 @@
           <xs:element name="sql-ref" type="Expression"/>
         </xs:choice>
         <xs:attribute name="datasource" type="Expression" use="required"/>
-        <xs:attribute name="processor" type="SQLProcessorType" default="generic"/>
+        <xs:attribute name="processor" type="xs:string">
+          <xs:annotation><xs:documentation>Атрибут более не используется и оставлен в схеме только для совместимости со старыми версиями</xs:documentation></xs:annotation>
+        </xs:attribute>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -436,18 +438,6 @@
           <xs:documentation>Формат Office 2007 с использованием библиотеки Apache POI</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
-    </xs:restriction>
-  </xs:simpleType>
-
-  <xs:simpleType name="SQLProcessorType">
-    <xs:annotation>
-      <xs:documentation>Перечень поддерживаемых обработчиков запросов</xs:documentation>
-    </xs:annotation>
-    <xs:restriction base="xs:Name">
-      <xs:enumeration value="oracle"/>
-      <xs:enumeration value="pgsql"/>
-      <xs:enumeration value="mssql"/>
-      <xs:enumeration value="generic"/>
     </xs:restriction>
   </xs:simpleType>
 

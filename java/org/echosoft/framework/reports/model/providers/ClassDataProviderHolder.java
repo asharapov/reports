@@ -3,9 +3,9 @@ package org.echosoft.framework.reports.model.providers;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.echosoft.common.query.Query;
-import org.echosoft.common.query.providers.ClassDataProvider;
-import org.echosoft.common.query.providers.DataProvider;
+import org.echosoft.common.data.Query;
+import org.echosoft.common.providers.ClassDataProvider;
+import org.echosoft.common.providers.DataProvider;
 import org.echosoft.common.utils.ObjectUtil;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.el.Expression;
@@ -26,7 +26,7 @@ public class ClassDataProviderHolder implements DataProviderHolder {
 
     public ClassDataProviderHolder(String id) {
         this.id = id;
-        params = new HashMap<Expression,Expression>();
+        params = new HashMap<Expression, Expression>();
     }
 
     /**
@@ -65,7 +65,7 @@ public class ClassDataProviderHolder implements DataProviderHolder {
     }
 
     public void addParam(Expression name, Expression value) {
-        if (name==null || value==null)
+        if (name == null || value == null)
             throw new IllegalArgumentException("parameter key and value must be specified");
         this.params.put(name, value);
     }
@@ -78,9 +78,9 @@ public class ClassDataProviderHolder implements DataProviderHolder {
         try {
             Object object = this.object.getValue(ctx);
             if (object instanceof String) {
-                object = ObjectUtil.makeInstance((String)object, Object.class);
+                object = ObjectUtil.makeInstance((String) object, Object.class);
             }
-            String method = (String)this.methodName.getValue(ctx);
+            String method = (String) this.methodName.getValue(ctx);
             return new ClassDataProvider(object, method);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -93,20 +93,20 @@ public class ClassDataProviderHolder implements DataProviderHolder {
     @SuppressWarnings("unchecked")
     public Query getQuery(ELContext ctx) {
         try {
-            Query query = filter!=null ? (Query)filter.getValue(ctx) : null;
-            if (query!=null) {
+            Query query = filter != null ? (Query) filter.getValue(ctx) : null;
+            if (query != null) {
                 return query;
             }
 
             query = new Query();
-            if (paramsMap!=null) {
-                final Map<String,Object> params = (Map<String,Object>)paramsMap.getValue(ctx);
-                if (params!=null) {
-                    query.getNamedParams().putAll(params);
+            if (paramsMap != null) {
+                final Map<String, Object> params = (Map<String, Object>) paramsMap.getValue(ctx);
+                if (params != null) {
+                    query.addParams(params);
                 }
             }
-            for (Map.Entry<Expression,Expression> e : params.entrySet()) {
-                query.getNamedParams().put((String)e.getKey().getValue(ctx), e.getValue().getValue(ctx));
+            for (Map.Entry<Expression, Expression> e : params.entrySet()) {
+                query.addParam((String) e.getKey().getValue(ctx), e.getValue().getValue(ctx));
             }
             return query;
         } catch (Exception e) {
@@ -117,10 +117,9 @@ public class ClassDataProviderHolder implements DataProviderHolder {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        final ClassDataProviderHolder result = (ClassDataProviderHolder)super.clone();
+        final ClassDataProviderHolder result = (ClassDataProviderHolder) super.clone();
         result.params = new HashMap<Expression, Expression>(params.size());
         result.params.putAll(params);
         return result;
     }
-
 }

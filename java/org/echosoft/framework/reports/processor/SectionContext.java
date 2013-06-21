@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.echosoft.common.query.BeanIterator;
+import org.echosoft.common.providers.BeanIterator;
 import org.echosoft.framework.reports.model.Section;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.events.CellEventListener;
