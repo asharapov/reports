@@ -33,6 +33,7 @@
     <!-- generate jar with reports framework -->
     <jar jarfile="build/${app.name}-${spec.version}${spec.extraversion}.jar">
       <fileset dir="build/classes">
+        <include name="org/echosoft/common/providers/**/*.*"/>
         <include name="org/echosoft/framework/reports/**/*.*"/>
       </fileset>
       <manifest>
