@@ -3,8 +3,8 @@ package org.echosoft.common.providers;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
+import org.echosoft.common.collections.ObjectArrayIterator;
 import org.echosoft.common.data.Query;
 import org.echosoft.common.utils.StringUtil;
 
@@ -49,37 +49,33 @@ public class ClassDataProvider<T> implements DataProvider {
 
     @SuppressWarnings("unchecked")
     @Override
-    public BeanIterator<T> execute(final Query query) throws DataProviderException {
-        try {
-            final Object result;
-            // invoke method ...
-            if (paramTypes.length == 0) {  // method hasn't any arguments ...
-                result = method.invoke(object);
-            } else
-            if (paramTypes.length == 1) {  // method has one argument (should be Query) ...
-                result = method.invoke(object, query);
-            } else
-                throw new IllegalArgumentException("Unsupported method [" + method + "] arguments. ");
+    public BeanIterator<T> execute(final Query query) throws Exception {
+        final Object result;
+        // вызываем метод ...
+        if (paramTypes.length == 0) {  // это метод без параметров.
+            result = method.invoke(object);
+        } else
+        if (paramTypes.length == 1) {  // это метод с одним параметром (должен быть наследник от Query)
+            result = method.invoke(object, query);
+        } else
+            throw new IllegalArgumentException("Unsupported method [" + method + "] arguments. ");
 
-            // resolve result values...
-            if (result instanceof BeanIterator) {
-                return (BeanIterator) result;
-            } else
-            if (result instanceof List) {
-                return new ListBeanIterator<T>((List) result);
-            } else
-            if (result instanceof Object[]) {
-                return new ListBeanIterator<T>((T[]) result);
-            } else
-            if (result instanceof Iterator) {
-                return new ListDataProvider((Iterator) result).execute(query);
-            } else
-            if (result == null) {
-                return new ListBeanIterator(Collections.emptyList());
-            } else
-                throw new IllegalArgumentException("Invalid method [" + method + "] return type: " + result.getClass());
-        } catch (Exception e) {
-            throw new DataProviderException(e.getMessage(), e);
-        }
+        // анализируем полученный результат ...
+        if (result instanceof BeanIterator) {
+            return (BeanIterator) result;
+        } else
+        if (result instanceof Iterator) {
+            return new ProxyBeanIterator<T>((Iterator)result);
+        } else
+        if (result instanceof Iterable) {
+            return new ProxyBeanIterator<T>((Iterable) result);
+        } else
+        if (result instanceof Object[]) {
+            return new ProxyBeanIterator<T>(new ObjectArrayIterator((T[])result));
+        } else
+        if (result == null) {
+            return new ProxyBeanIterator<T>(Collections.<T>emptyList().iterator());
+        } else
+            throw new IllegalArgumentException("Invalid method [" + method + "] return type: " + result.getClass());
     }
 }

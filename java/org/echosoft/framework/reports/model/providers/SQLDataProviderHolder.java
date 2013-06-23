@@ -83,14 +83,15 @@ public class SQLDataProviderHolder implements DataProviderHolder {
 
     @SuppressWarnings("unchecked")
     @Override
-    public DataProvider getProvider(ELContext ctx) {
+    public DataProvider getProvider(final ELContext ctx) {
         try {
             final DataSource datasource = (DataSource) this.datasource.getValue(ctx);
 
             final String sql;
             if (this.sql != null) {
                 sql = (String) this.sql.getValue(ctx);
-            } else if (this.sqlref != null) {
+            } else
+            if (this.sqlref != null) {
                 final String ref = (String) this.sqlref.getValue(ctx);
                 final InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(ref);  //StreamUtil.getInputStream(ref);
                 if (in == null)
@@ -115,7 +116,7 @@ public class SQLDataProviderHolder implements DataProviderHolder {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Query getQuery(ELContext ctx) {
+    public Query getQuery(final ELContext ctx) {
         try {
             Query query = filter != null ? (Query) filter.getValue(ctx) : null;
             if (query != null) {

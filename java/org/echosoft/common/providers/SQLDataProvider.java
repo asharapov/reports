@@ -14,7 +14,7 @@ import org.echosoft.common.data.SortCriterion;
 import org.echosoft.common.data.sql.ParameterizedSQL;
 
 /**
- * Implementation of the {@link DataProvider} which uses direct queries to a number of supported RDBMS.
+ * Реализация {@link DataProvider} которая использует прямые обращения в реляционную БД за запрошенными данными.
  *
  * @author Anton Sharapov
  */
@@ -25,13 +25,8 @@ public class SQLDataProvider<T> implements DataProvider {
     private final DataSource dataSource;
     private final ParameterizedSQL psql;
 
-    /**
-     * Creates new instance of the sql data provider.
-     * @param dataSource  connections data source. Must be specified.
-     * @param baseSQL  base sql expression.
-     */
     public SQLDataProvider(final DataSource dataSource, final String baseSQL) {
-        if (dataSource==null)
+        if (dataSource == null)
             throw new NullPointerException("DataSource must be specified");
         if (baseSQL == null || baseSQL.trim().isEmpty())
             throw new NullPointerException("Query must be specified");
@@ -41,14 +36,8 @@ public class SQLDataProvider<T> implements DataProvider {
     }
 
 
-    /**
-     * Returns queried rows from the data provider.
-     * @param query  optional parameter which can be add additional constraints, sorting rules
-     *               or paging support for retrieved data.
-     * @return range of the sorted records from the data set.
-     * @throws DataProviderException  in case if any errors occurs.
-     */
-    public BeanIterator<T> execute(final Query query) {
+    @Override
+    public BeanIterator<T> execute(final Query query) throws Exception {
         String sql = psql.getQuery();
         final Map<String, Object> params;
         if (query != null) {
@@ -83,26 +72,28 @@ public class SQLDataProvider<T> implements DataProvider {
 
             rs = pstmt.executeQuery();
 
-            final BeanLoader<T> loader = new JdbcBeanLoader(rs.getMetaData());
+            return new JdbcBeanIterator<T>(conn, pstmt, rs);
+        } catch (Exception e) {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (Throwable th) {
+                    th.printStackTrace(System.err);
+                }
+            if (pstmt != null)
+                try {
+                    pstmt.close();
+                } catch (Throwable th) {
+                    th.printStackTrace(System.err);
+                }
+            if (conn != null)
+                try {
+                    conn.close();
+                } catch (Throwable th) {
+                    th.printStackTrace(System.err);
+                }
 
-            return new JdbcBeanIterator<T>(conn, pstmt, rs, loader);
-
-        } catch (SQLException e) {
-            if (rs!=null)
-            try {
-                rs.close();
-            } catch (Throwable th) { th.printStackTrace(System.err); }
-            if (pstmt!=null)
-            try {
-                pstmt.close();
-            } catch (Throwable th) { th.printStackTrace(System.err); }
-            if (conn!=null)
-            try {
-                conn.close();
-            } catch (Throwable th) { th.printStackTrace(System.err); }
-
-            throw new DataProviderException(e.getMessage(), e);
+            throw e;
         }
     }
-
 }

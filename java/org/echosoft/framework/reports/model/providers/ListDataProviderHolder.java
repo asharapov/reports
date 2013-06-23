@@ -25,14 +25,12 @@ public class ListDataProviderHolder implements DataProviderHolder {
     private Map<Expression, Expression> params;
 
 
-    public ListDataProviderHolder(String id) {
+    public ListDataProviderHolder(final String id) {
         this.id = id;
         params = new HashMap<Expression, Expression>();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public String getId() {
         return id;
     }
@@ -40,36 +38,34 @@ public class ListDataProviderHolder implements DataProviderHolder {
     public Expression getData() {
         return data;
     }
-    public void setData(Expression data) {
+    public void setData(final Expression data) {
         this.data = data;
     }
 
     public Expression getFilter() {
         return filter;
     }
-    public void setFilter(Expression filter) {
+    public void setFilter(final Expression filter) {
         this.filter = filter;
     }
 
     public Expression getParamsMap() {
         return paramsMap;
     }
-    public void setParamsMap(Expression paramsMap) {
+    public void setParamsMap(final Expression paramsMap) {
         this.paramsMap = paramsMap;
     }
 
-    public void addParam(Expression name, Expression value) {
+    public void addParam(final Expression name, final Expression value) {
         if (name == null || value == null)
             throw new IllegalArgumentException("parameter key and value must be specified");
         this.params.put(name, value);
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
     @SuppressWarnings("unchecked")
-    public DataProvider getProvider(ELContext ctx) {
+    @Override
+    public DataProvider getProvider(final ELContext ctx) {
         Object data;
         try {
             data = this.data.getValue(ctx);
@@ -79,7 +75,7 @@ public class ListDataProviderHolder implements DataProviderHolder {
         if (data instanceof Object[]) {
             return new ListDataProvider<Object>((Object[]) data);
         } else
-        if (data instanceof List) {
+        if (data instanceof Iterable) {
             return new ListDataProvider<Object>((List) data);
         } else
         if (data instanceof Iterator) {
@@ -91,11 +87,9 @@ public class ListDataProviderHolder implements DataProviderHolder {
             throw new RuntimeException("Invalid data type: " + data);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @SuppressWarnings("unchecked")
-    public Query getQuery(ELContext ctx) {
+    @Override
+    public Query getQuery(final ELContext ctx) {
         try {
             Query query = filter != null ? (Query) filter.getValue(ctx) : null;
             if (query != null) {

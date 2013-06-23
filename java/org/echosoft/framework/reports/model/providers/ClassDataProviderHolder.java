@@ -24,14 +24,12 @@ public class ClassDataProviderHolder implements DataProviderHolder {
     private Expression paramsMap;
     private Map<Expression, Expression> params;
 
-    public ClassDataProviderHolder(String id) {
+    public ClassDataProviderHolder(final String id) {
         this.id = id;
         params = new HashMap<Expression, Expression>();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public String getId() {
         return id;
     }
@@ -39,42 +37,40 @@ public class ClassDataProviderHolder implements DataProviderHolder {
     public Expression getObject() {
         return object;
     }
-    public void setObject(Expression object) {
+    public void setObject(final Expression object) {
         this.object = object;
     }
 
     public Expression getMethodName() {
         return methodName;
     }
-    public void setMethodName(Expression methodName) {
+    public void setMethodName(final Expression methodName) {
         this.methodName = methodName;
     }
 
     public Expression getFilter() {
         return filter;
     }
-    public void setFilter(Expression filter) {
+    public void setFilter(final Expression filter) {
         this.filter = filter;
     }
 
     public Expression getParamsMap() {
         return paramsMap;
     }
-    public void setParamsMap(Expression paramsMap) {
+    public void setParamsMap(final Expression paramsMap) {
         this.paramsMap = paramsMap;
     }
 
-    public void addParam(Expression name, Expression value) {
+    public void addParam(final Expression name, final Expression value) {
         if (name == null || value == null)
             throw new IllegalArgumentException("parameter key and value must be specified");
         this.params.put(name, value);
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
-    public DataProvider getProvider(ELContext ctx) {
+    @Override
+    public DataProvider getProvider(final ELContext ctx) {
         try {
             Object object = this.object.getValue(ctx);
             if (object instanceof String) {
@@ -87,11 +83,9 @@ public class ClassDataProviderHolder implements DataProviderHolder {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @SuppressWarnings("unchecked")
-    public Query getQuery(ELContext ctx) {
+    @Override
+    public Query getQuery(final ELContext ctx) {
         try {
             Query query = filter != null ? (Query) filter.getValue(ctx) : null;
             if (query != null) {

@@ -19,8 +19,9 @@ public interface BeanIterator<T> extends Closeable {
     /**
      * Retrieves the next bean from the dataset.
      *
-     * @return  a corresponding bean instance.
-     * @throws java.util.NoSuchElementException if dataset has no more elements.
+     * @return a corresponding bean instance.
+     * @throws java.util.NoSuchElementException
+     *          if dataset has no more elements.
      */
     public T next() throws Exception;
 
@@ -29,7 +30,8 @@ public interface BeanIterator<T> extends Closeable {
      * Returns the next element in the iteration without changing iteration state.
      *
      * @return the next element in the iteration.
-     * @throws java.util.NoSuchElementException  if iteration has no more elements.
+     * @throws java.util.NoSuchElementException
+     *          if iteration has no more elements.
      */
     public T readAhead() throws Exception;
 
@@ -38,5 +40,4 @@ public interface BeanIterator<T> extends Closeable {
      * through the dataset to allow resources to be deallocated.
      */
     public void close();
-
 }

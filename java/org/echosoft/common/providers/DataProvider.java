@@ -3,19 +3,17 @@ package org.echosoft.common.providers;
 import org.echosoft.common.data.Query;
 
 /**
- * Provides queried data using various rules, such as additional constraints on retrieving data,
- * sorting rules, paging support.
+ * Данный интерфейс должны реализовывать все поставщики данных для построителя отчетов.
+ *
  * @author Anton Sharapov
  */
 public interface DataProvider<T> {
 
     /**
-     * Returns queried rows from the data provider.
-     * @param query  optional parameter which can be add additional constraints, sorting rules
-     *               or paging support for retrieved data.
-     * @return lazy iterator through queried dataset.
-     * @throws DataProviderException  in case if any errors occurs.
+     * Выполняет поиск запрашиваемых данных. Результат поиска оформляется в виде итератора который по окончании использования должен быть обязательно закрыт.
+     *
+     * @param query опциональный параметр который может использоваться для уточнения критериев отбора или сортировки запрашиваемых данных.
+     * @return "ленивый" итератор по всем данным которые удовлетворяют заданным критериям.
      */
     public BeanIterator<T> execute(Query query) throws Exception;
-
 }

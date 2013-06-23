@@ -5,7 +5,6 @@ import java.util.NoSuchElementException;
 import org.echosoft.common.data.Query;
 import org.echosoft.common.providers.BeanIterator;
 import org.echosoft.common.providers.DataProvider;
-import org.echosoft.common.providers.DataProviderException;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.el.Expression;
 import org.echosoft.framework.reports.processor.ExecutionContext;
@@ -29,7 +28,7 @@ public class FilteredDataProviderHolder implements DataProviderHolder {
      */
     private Expression predicate;
 
-    public FilteredDataProviderHolder(String id) {
+    public FilteredDataProviderHolder(final String id) {
         this.id = id;
     }
 
@@ -56,20 +55,16 @@ public class FilteredDataProviderHolder implements DataProviderHolder {
     public DataProvider getProvider(final ELContext ctx) {
         return new DataProvider() {
             @Override
-            public BeanIterator execute(final Query query) throws DataProviderException {
-                try {
-                    final ExecutionContext ectx = (ExecutionContext) ctx.getVariables().get("context");
-                    SectionContext sctx = ectx.sectionContext.parent;
-                    while (sctx != null && sctx.beanIterator == null) {
-                        sctx = sctx.parent;
-                    }
-                    final ComparablePredicate cp = predicate != null ? (ComparablePredicate) predicate.getValue(ctx) : null;
-                    return (sctx != null && cp != null)
-                            ? new FilteredBeanIterator(sctx.beanIterator, sctx.bean, cp)
-                            : null;
-                } catch (Exception e) {
-                    throw new DataProviderException(e.getMessage(), e);
+            public BeanIterator execute(final Query query) throws Exception {
+                final ExecutionContext ectx = (ExecutionContext) ctx.getVariables().get("context");
+                SectionContext sctx = ectx.sectionContext.parent;
+                while (sctx != null && sctx.beanIterator == null) {
+                    sctx = sctx.parent;
                 }
+                final ComparablePredicate cp = predicate != null ? (ComparablePredicate) predicate.getValue(ctx) : null;
+                return (sctx != null && cp != null)
+                        ? new FilteredBeanIterator(sctx.beanIterator, sctx.bean, cp)
+                        : null;
             }
         };
     }
@@ -92,7 +87,7 @@ final class FilteredBeanIterator<T> implements BeanIterator<T> {
     private final ComparablePredicate<T> predicate;
     private boolean hasNextBean;
 
-    public FilteredBeanIterator(BeanIterator<T> iterator, T template, ComparablePredicate<T> predicate) throws Exception {
+    public FilteredBeanIterator(final BeanIterator<T> iterator, final T template, final ComparablePredicate<T> predicate) throws Exception {
         this.iterator = iterator;
         this.template = template;
         this.predicate = predicate;

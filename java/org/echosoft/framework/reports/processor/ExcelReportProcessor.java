@@ -391,9 +391,11 @@ public class ExcelReportProcessor implements ReportProcessor {
         if (section.isRendered()) {
             if (section instanceof CompositeSection) {
                 processCompositeSection(ectx);
-            } else if (section instanceof PlainSection) {
+            } else
+            if (section instanceof PlainSection) {
                 processPlainSection(ectx);
-            } else if (section instanceof GroupingSection) {
+            } else
+            if (section instanceof GroupingSection) {
                 processGroupingSection(ectx);
             } else
                 throw new RuntimeException("Unsupported section type: " + section.getClass());
@@ -644,32 +646,40 @@ public class ExcelReportProcessor implements ReportProcessor {
     protected void renderCell(final ExecutionContext ectx, final Object value) {
         if (value == null) {
             ectx.cell.setCellType(Cell.CELL_TYPE_BLANK);
-        } else if (value instanceof Date) {
+        } else
+        if (value instanceof Date) {
             ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue((Date) value);
-        } else if (value instanceof Calendar) {
+        } else
+        if (value instanceof Calendar) {
             ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue((Calendar) value);
-        } else if (value instanceof Double) {
+        } else
+        if (value instanceof Double) {
             ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue((Double) value);
-        } else if (value instanceof Number) {
+        } else
+        if (value instanceof Number) {
             ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue(((Number) value).doubleValue());
-        } else if (value instanceof Boolean) {
+        } else
+        if (value instanceof Boolean) {
             ectx.cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
             ectx.cell.setCellValue((Boolean) value);
-        } else if (value instanceof RichTextString) {
+        } else
+        if (value instanceof RichTextString) {
             ectx.cell.setCellType(Cell.CELL_TYPE_STRING);
             ectx.cell.setCellValue((RichTextString) value);
         } else {
             final String text = value.toString();
             if (ectx.cell.getCellType() == Cell.CELL_TYPE_FORMULA) {
                 ectx.cell.setCellFormula(text);
-            } else if (text.startsWith(FORMULA)) {
+            } else
+            if (text.startsWith(FORMULA)) {
                 ectx.cell.setCellType(Cell.CELL_TYPE_FORMULA);
                 ectx.cell.setCellFormula(text.substring(FORMULA_LENGTH));
-            } else if (text.startsWith(MACROS)) {
+            } else
+            if (text.startsWith(MACROS)) {
                 final int si = text.indexOf('(', MACROS_LENGTH);
                 final String name, args;
                 if (si > 0) {
