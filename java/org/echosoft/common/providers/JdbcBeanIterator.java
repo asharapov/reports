@@ -27,6 +27,7 @@ final class JdbcBeanIterator<T> implements BeanIterator<T> {
     private boolean hasNextBean;
     private T nextBean;
 
+    @SuppressWarnings("unchecked")
     public JdbcBeanIterator(final Connection conn, final Statement stmt, final ResultSet rs) {
         this(conn, stmt, rs, new JdbcBeanLoader());
     }
