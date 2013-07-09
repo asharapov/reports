@@ -308,7 +308,7 @@ public class ReportModelParser {
         sheet.setProtected(Any.asBoolean(StringUtil.trim(element.getAttribute("protected")), false));
         final String cgs = StringUtil.trim(element.getAttribute("group-columns"));
         if (cgs != null) {
-            for (Iterator<String> it = new FastStringTokenizer(cgs, ',', (char) 0); it.hasNext(); ) {
+            for (Iterator<String> it = new FastStringTokenizer(cgs, ','); it.hasNext(); ) {
                 final String token = StringUtil.trim(it.next());
                 if (token == null)
                     continue;
