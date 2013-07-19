@@ -2,7 +2,7 @@ package org.echosoft.framework.reports.model.providers;
 
 import java.io.Serializable;
 
-import org.echosoft.common.data.Query;
+import org.echosoft.common.data.db.Query;
 import org.echosoft.common.providers.DataProvider;
 import org.echosoft.framework.reports.model.el.ELContext;
 

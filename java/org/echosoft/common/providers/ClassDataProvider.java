@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import org.echosoft.common.collections.ObjectArrayIterator;
-import org.echosoft.common.data.Query;
+import org.echosoft.common.data.db.Query;
 import org.echosoft.common.utils.StringUtil;
 
 /**

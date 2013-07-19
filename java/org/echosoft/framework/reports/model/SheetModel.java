@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.echosoft.common.model.TreeNode;
+import org.echosoft.common.data.misc.TreeNode;
 import org.echosoft.common.utils.StringUtil;
 import org.echosoft.framework.reports.model.el.Expression;
 

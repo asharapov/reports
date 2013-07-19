@@ -1,6 +1,6 @@
 package org.echosoft.common.providers;
 
-import org.echosoft.common.data.Query;
+import org.echosoft.common.data.db.Query;
 
 /**
  * Данный интерфейс должны реализовывать все поставщики данных для построителя отчетов.

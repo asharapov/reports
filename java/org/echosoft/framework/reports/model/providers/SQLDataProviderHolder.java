@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.sql.DataSource;
 
-import org.echosoft.common.data.Query;
+import org.echosoft.common.data.db.Query;
 import org.echosoft.common.providers.DataProvider;
 import org.echosoft.common.providers.SQLDataProvider;
 import org.echosoft.framework.reports.model.el.ELContext;

@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.echosoft.common.data.Query;
+import org.echosoft.common.data.db.Query;
 
 /**
  * @author Anton Sharapov

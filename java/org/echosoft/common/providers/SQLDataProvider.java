@@ -3,15 +3,14 @@ package org.echosoft.common.providers;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import javax.sql.DataSource;
 
-import org.echosoft.common.data.Query;
-import org.echosoft.common.data.SortCriterion;
-import org.echosoft.common.data.sql.ParameterizedSQL;
+import org.echosoft.common.data.db.ParameterizedSQL;
+import org.echosoft.common.data.db.Query;
+import org.echosoft.common.data.db.SortCriterion;
 
 /**
  * Реализация {@link DataProvider} которая использует прямые обращения в реляционную БД за запрошенными данными.
