@@ -4,12 +4,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.echosoft.common.data.db.Query;
+import org.echosoft.common.collections.issuers.IteratorIssuer;
+import org.echosoft.common.collections.issuers.ReadAheadIssuer;
 
 /**
  * @author Anton Sharapov
  */
-public class ListDataProvider<T> implements DataProvider {
+public class ListDataProvider<T, Q> implements DataProvider<T, Q> {
 
     private final Iterable<T> collection;
     private final Iterator<T> iterator;
@@ -35,9 +36,9 @@ public class ListDataProvider<T> implements DataProvider {
     }
 
     @Override
-    public BeanIterator<T> execute(final Query query) {
+    public ReadAheadIssuer<T> execute(final Q query) {
         return collection != null
-                ? new ProxyBeanIterator<T>(collection)
-                : new ProxyBeanIterator<T>(iterator);
+                ? new IteratorIssuer<T>(collection)
+                : new IteratorIssuer<T>(iterator);
     }
 }

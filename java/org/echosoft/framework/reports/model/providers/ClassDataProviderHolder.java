@@ -1,14 +1,12 @@
 package org.echosoft.framework.reports.model.providers;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Method;
 
-import org.echosoft.common.data.db.Query;
-import org.echosoft.common.providers.ClassDataProvider;
-import org.echosoft.common.providers.DataProvider;
+import org.echosoft.common.collections.issuers.ReadAheadIssuer;
 import org.echosoft.common.utils.ObjectUtil;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.el.Expression;
+import org.echosoft.framework.reports.processor.ReportProcessingException;
 
 /**
  * Предназначен для динамического конструирования поставщиков данных на основе контекста выполнения отчета.
@@ -21,12 +19,10 @@ public class ClassDataProviderHolder implements DataProviderHolder {
     private Expression object;
     private Expression methodName;
     private Expression filter;
-    private Expression paramsMap;
-    private Map<Expression, Expression> params;
+    private Expression filterType;
 
     public ClassDataProviderHolder(final String id) {
         this.id = id;
-        params = new HashMap<Expression, Expression>();
     }
 
     @Override
@@ -55,65 +51,62 @@ public class ClassDataProviderHolder implements DataProviderHolder {
         this.filter = filter;
     }
 
-    public Expression getParamsMap() {
-        return paramsMap;
+    public Expression getFilterType() {
+        return filterType;
     }
-    public void setParamsMap(final Expression paramsMap) {
-        this.paramsMap = paramsMap;
+    public void setFilterType(final Expression filterType) {
+        this.filterType = filterType;
     }
-
-    public void addParam(final Expression name, final Expression value) {
-        if (name == null || value == null)
-            throw new IllegalArgumentException("parameter key and value must be specified");
-        this.params.put(name, value);
-    }
-
 
     @Override
-    public DataProvider getProvider(final ELContext ctx) {
-        try {
-            Object object = this.object.getValue(ctx);
-            if (object instanceof String) {
-                object = ObjectUtil.makeInstance((String) object, Object.class);
-            }
-            String method = (String) this.methodName.getValue(ctx);
-            return new ClassDataProvider(object, method);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public ReadAheadIssuer getIssuer(final ELContext ctx) throws Exception {
+        final Object data = resolveServiceData(ctx);
+        return Issuers.asIssuer(data);
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Query getQuery(final ELContext ctx) {
-        try {
-            Query query = filter != null ? (Query) filter.getValue(ctx) : null;
-            if (query != null) {
-                return query;
-            }
+    private Object resolveServiceData(final ELContext ctx) throws Exception {
+        Object service = this.object != null ? this.object.getValue(ctx) : null;
+        if (service instanceof String) {
+            service = ObjectUtil.makeInstance((String) service, Object.class);
+        }
+        if (service == null)
+            throw new ReportProcessingException("Service object not specified");
+        final Class<?> cls = service.getClass();
 
-            query = new Query();
-            if (paramsMap != null) {
-                final Map<String, Object> params = (Map<String, Object>) paramsMap.getValue(ctx);
-                if (params != null) {
-                    query.addParams(params);
-                }
-            }
-            for (Map.Entry<Expression, Expression> e : params.entrySet()) {
-                query.addParam((String) e.getKey().getValue(ctx), e.getValue().getValue(ctx));
-            }
-            return query;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        Object tmp = this.methodName != null ? this.methodName.getValue(ctx) : null;
+        if (!(tmp instanceof String))
+            throw new ReportProcessingException("Service method not specified or has invalid class: " + tmp);
+        final String methodName = (String)tmp;
+
+        final Class<?> argCls;
+        final Object arg = this.filter != null ? this.filter.getValue(ctx) : null;
+        if (arg != null) {
+            argCls = arg.getClass();
+        } else {
+            tmp = this.filterType != null ? this.filterType.getValue(ctx) : null;
+            if (tmp instanceof Class) {
+                argCls = (Class)tmp;
+            } else
+            if (tmp instanceof String) {
+                argCls = Class.forName((String)tmp);
+            } else
+            if (tmp == null) {
+                argCls = null;
+            } else
+                throw new ReportProcessingException("Invalid query type: " + tmp);
+        }
+
+        if (argCls != null) {
+            final Method method = cls.getMethod(methodName, argCls);
+            return method.invoke(service, arg);
+        } else {
+            final Method method = cls.getMethod(methodName);
+            return method.invoke(service);
         }
     }
-
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        final ClassDataProviderHolder result = (ClassDataProviderHolder) super.clone();
-        result.params = new HashMap<Expression, Expression>(params.size());
-        result.params.putAll(params);
-        return result;
+        return super.clone();
     }
 }

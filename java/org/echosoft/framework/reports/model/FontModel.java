@@ -3,7 +3,6 @@ package org.echosoft.framework.reports.model;
 import java.io.Serializable;
 
 import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.FontUnderline;
 
 /**
  * Описывает шрифт в отчете.

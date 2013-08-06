@@ -2,8 +2,7 @@ package org.echosoft.framework.reports.model.providers;
 
 import java.io.Serializable;
 
-import org.echosoft.common.data.db.Query;
-import org.echosoft.common.providers.DataProvider;
+import org.echosoft.common.collections.issuers.ReadAheadIssuer;
 import org.echosoft.framework.reports.model.el.ELContext;
 
 /**
@@ -27,20 +26,12 @@ public interface DataProviderHolder extends Serializable, Cloneable {
     public String getId();
 
     /**
-     * Возвращает источник данных полученный на основании контекста выполнения отчета.
+     * Получает данные от заданного поставшика.
      *
      * @param ctx контекст выполнения отчета.
-     * @return источник данных используемый при построении отчета.
+     * @return Итератор с данными от выбранного поставщика или <code>null</code>.
      */
-    public DataProvider getProvider(ELContext ctx);
-
-    /**
-     * Возвращает структуру, содержашую доп. аргументы для обращения к источнику данных.
-     *
-     * @param ctx контекст выполнения отчета.
-     * @return доп. информация, на основании которой источник данных выдаст требуемые для отчета данные.
-     */
-    public Query getQuery(ELContext ctx);
+    public ReadAheadIssuer getIssuer(ELContext ctx) throws Exception;
 
     public Object clone() throws CloneNotSupportedException;
 }

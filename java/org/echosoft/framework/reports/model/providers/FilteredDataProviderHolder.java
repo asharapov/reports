@@ -2,9 +2,7 @@ package org.echosoft.framework.reports.model.providers;
 
 import java.util.NoSuchElementException;
 
-import org.echosoft.common.data.db.Query;
-import org.echosoft.common.providers.BeanIterator;
-import org.echosoft.common.providers.DataProvider;
+import org.echosoft.common.collections.issuers.ReadAheadIssuer;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.el.Expression;
 import org.echosoft.framework.reports.processor.ExecutionContext;
@@ -45,81 +43,70 @@ public class FilteredDataProviderHolder implements DataProviderHolder {
     public Expression getPredicate() {
         return predicate;
     }
-    public void setPredicate(Expression predicate) {
+    public void setPredicate(final Expression predicate) {
         this.predicate = predicate;
     }
 
-
-    @SuppressWarnings("unchecked")
     @Override
-    public DataProvider getProvider(final ELContext ctx) {
-        return new DataProvider() {
-            @Override
-            public BeanIterator execute(final Query query) throws Exception {
-                final ExecutionContext ectx = (ExecutionContext) ctx.getVariables().get("context");
-                SectionContext sctx = ectx.sectionContext.parent;
-                while (sctx != null && sctx.beanIterator == null) {
-                    sctx = sctx.parent;
-                }
-                final ComparablePredicate cp = predicate != null ? (ComparablePredicate) predicate.getValue(ctx) : null;
-                return (sctx != null && cp != null)
-                        ? new FilteredBeanIterator(sctx.beanIterator, sctx.bean, cp)
-                        : null;
-            }
-        };
-    }
-
-    @Override
-    public Query getQuery(final ELContext ctx) {
-        return null;
+    public ReadAheadIssuer getIssuer(final ELContext ctx) throws Exception {
+        final ExecutionContext ectx = (ExecutionContext) ctx.getVariables().get("context");
+        SectionContext sctx = ectx.sectionContext.parent;
+        while (sctx != null && sctx.issuer == null) {
+            sctx = sctx.parent;
+        }
+        final ComparablePredicate cp = predicate != null ? (ComparablePredicate) predicate.getValue(ctx) : null;
+        return (sctx != null && cp != null)
+                ? new FilteredBeanIterator<Object>(sctx.issuer, sctx.bean, cp)
+                : null;
     }
 
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
+
+
+    private static final class FilteredBeanIterator<T> implements ReadAheadIssuer<T> {
+        private final ReadAheadIssuer<T> issuer;
+        private final T template;
+        private final ComparablePredicate<T> predicate;
+        private boolean hasNextBean;
+
+        private FilteredBeanIterator(final ReadAheadIssuer<T> issuer, final T template, final ComparablePredicate<T> predicate) throws Exception {
+            this.issuer = issuer;
+            this.template = template;
+            this.predicate = predicate;
+            checkNextObject();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return hasNextBean;
+        }
+
+        @Override
+        public T next() throws Exception {
+            if (!hasNextBean)
+                throw new NoSuchElementException();
+            T result = issuer.next();
+            checkNextObject();
+            return result;
+        }
+
+        @Override
+        public T readAhead() throws Exception {
+            if (!hasNextBean)
+                throw new NoSuchElementException();
+            return issuer.readAhead();
+        }
+
+        @Override
+        public void close() {
+        }
+
+        private void checkNextObject() throws Exception {
+            hasNextBean = issuer.hasNext() && predicate.evaluate(template, issuer.readAhead());
+        }
+    }
 }
 
-final class FilteredBeanIterator<T> implements BeanIterator<T> {
-
-    private final BeanIterator<T> iterator;
-    private final T template;
-    private final ComparablePredicate<T> predicate;
-    private boolean hasNextBean;
-
-    public FilteredBeanIterator(final BeanIterator<T> iterator, final T template, final ComparablePredicate<T> predicate) throws Exception {
-        this.iterator = iterator;
-        this.template = template;
-        this.predicate = predicate;
-        checkNextObject();
-    }
-
-    @Override
-    public boolean hasNext() {
-        return hasNextBean;
-    }
-
-    @Override
-    public T next() throws Exception {
-        if (!hasNextBean)
-            throw new NoSuchElementException();
-        T result = iterator.next();
-        checkNextObject();
-        return result;
-    }
-
-    @Override
-    public T readAhead() throws Exception {
-        if (!hasNextBean)
-            throw new NoSuchElementException();
-        return iterator.readAhead();
-    }
-
-    @Override
-    public void close() {
-    }
-
-    private void checkNextObject() throws Exception {
-        hasNextBean = iterator.hasNext() && predicate.evaluate(template, iterator.readAhead());
-    }
-}

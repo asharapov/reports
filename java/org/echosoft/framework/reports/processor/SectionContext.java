@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.echosoft.common.providers.BeanIterator;
+import org.echosoft.common.collections.issuers.ReadAheadIssuer;
 import org.echosoft.framework.reports.model.Section;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.events.CellEventListener;
@@ -45,7 +45,7 @@ public final class SectionContext {
      * Если к секции не подключен ни один поставщик данных то во все время обработки этой секции это поле будет равно <code>null</code>.<br/>
      * Данный итератор может активно использоваться при конструировании поставщика данных для дочерних секций (см. композитные секции).
      */
-    public BeanIterator beanIterator;
+    public ReadAheadIssuer issuer;
 
     /**
      * Текущая обрабатываемая запись полученная от поставщика данных.

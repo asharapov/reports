@@ -1,12 +1,16 @@
 package org.echosoft.common.providers;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.echosoft.common.collections.ObjectArrayIterator;
+import org.echosoft.common.collections.issuers.Issuer;
+import org.echosoft.common.collections.issuers.IteratorIssuer;
+import org.echosoft.common.collections.issuers.ReadAheadIssuer;
+import org.echosoft.common.collections.issuers.SimpleReadAheadIssuer;
+import org.echosoft.common.collections.iterators.ObjectArrayIterator;
 import org.echosoft.common.data.db.Query;
-import org.echosoft.common.utils.StringUtil;
 
 /**
  * Implementation of the {@link DataProvider} instance which uses dynamic invocations of the
@@ -19,29 +23,16 @@ import org.echosoft.common.utils.StringUtil;
  *
  * @author Anton Sharapov
  */
-public class ClassDataProvider<T> implements DataProvider {
+public class ClassDataProvider<T, Q> implements DataProvider<T, Q> {
 
     private final Object object;
     private final Method method;
     private final Class[] paramTypes;
 
-    public ClassDataProvider(final Object object, String methodName) {
-        if (object == null)
-            throw new NullPointerException("Object must be specified");
-        if ((methodName = StringUtil.trim(methodName)) == null)
-            throw new NullPointerException("Method must be specified");
+    public ClassDataProvider(final Object object, Method method) {
+        if (object == null || method == null)
+            throw new NullPointerException("Object and method must be specified");
         this.object = object;
-
-        Method method;
-        try {
-            method = object.getClass().getMethod(methodName, Query.class);
-        } catch (NoSuchMethodException e) {
-            try {
-                method = object.getClass().getMethod(methodName, (Class[]) null); // upcasting to Class[] required for compatibility to JSDK 5
-            } catch (NoSuchMethodException ee) {
-                throw new IllegalArgumentException("Object [" + object + "] has not appropriated method with name [" + methodName + "]");
-            }
-        }
         this.method = method;
         this.paramTypes = method.getParameterTypes();
     }
@@ -49,7 +40,7 @@ public class ClassDataProvider<T> implements DataProvider {
 
     @SuppressWarnings("unchecked")
     @Override
-    public BeanIterator<T> execute(final Query query) throws Exception {
+    public ReadAheadIssuer<T> execute(final Q query) throws Exception {
         final Object result;
         // вызываем метод ...
         if (paramTypes.length == 0) {  // это метод без параметров.
@@ -61,21 +52,26 @@ public class ClassDataProvider<T> implements DataProvider {
             throw new IllegalArgumentException("Unsupported method [" + method + "] arguments. ");
 
         // анализируем полученный результат ...
-        if (result instanceof BeanIterator) {
-            return (BeanIterator) result;
+        if (result instanceof ReadAheadIssuer) {
+            return (ReadAheadIssuer) result;
+        } else
+        if (result instanceof Issuer) {
+            return new SimpleReadAheadIssuer<T>((Issuer)result);
         } else
         if (result instanceof Iterator) {
-            return new ProxyBeanIterator<T>((Iterator)result);
+            return new IteratorIssuer<T>((Iterator)result);
         } else
         if (result instanceof Iterable) {
-            return new ProxyBeanIterator<T>((Iterable) result);
+            return new IteratorIssuer<T>((Iterable) result);
         } else
         if (result instanceof Object[]) {
-            return new ProxyBeanIterator<T>(new ObjectArrayIterator((T[])result));
+            return new IteratorIssuer<T>(new ObjectArrayIterator((T[])result));
         } else
         if (result == null) {
-            return new ProxyBeanIterator<T>(Collections.<T>emptyList().iterator());
-        } else
-            throw new IllegalArgumentException("Invalid method [" + method + "] return type: " + result.getClass());
+            return new IteratorIssuer<T>(Collections.<T>emptyList().iterator());
+        } else {
+            final Collection single = Collections.singleton(result);
+            return new IteratorIssuer<T>(single);
+        }
     }
 }

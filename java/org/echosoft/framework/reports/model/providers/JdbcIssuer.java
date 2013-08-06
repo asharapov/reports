@@ -1,4 +1,4 @@
-package org.echosoft.common.providers;
+package org.echosoft.framework.reports.model.providers;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,27 +12,28 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.echosoft.common.collections.issuers.ReadAheadIssuer;
 import org.echosoft.common.utils.StreamUtil;
 
 /**
  * @author Anton Sharapov
  */
-final class JdbcBeanIterator<T> implements BeanIterator<T> {
+public final class JdbcIssuer<T> implements ReadAheadIssuer<T> {
 
     private final Connection conn;
     private final Statement stmt;
     private final ResultSet rs;
-    private final BeanLoader<T> loader;
+    private final Loader<T> loader;
     private boolean nextCalculated;
     private boolean hasNextBean;
     private T nextBean;
 
     @SuppressWarnings("unchecked")
-    public JdbcBeanIterator(final Connection conn, final Statement stmt, final ResultSet rs) {
+    public JdbcIssuer(final Connection conn, final Statement stmt, final ResultSet rs) {
         this(conn, stmt, rs, new JdbcBeanLoader());
     }
 
-    public JdbcBeanIterator(final Connection conn, final Statement stmt, final ResultSet rs, final BeanLoader<T> loader) {
+    public JdbcIssuer(final Connection conn, final Statement stmt, final ResultSet rs, final Loader<T> loader) {
         this.conn = conn;
         this.stmt = stmt;
         this.rs = rs;
@@ -96,7 +97,12 @@ final class JdbcBeanIterator<T> implements BeanIterator<T> {
     }
 
 
-    public static final class JdbcBeanLoader implements BeanLoader {
+    public static interface Loader<T> {
+        public T load(ResultSet rs) throws Exception;
+    }
+
+
+    public static final class JdbcBeanLoader<T> implements Loader<Map<String,Object>> {
 
         @Override
         public Map<String, Object> load(final ResultSet rs) throws SQLException, IOException {

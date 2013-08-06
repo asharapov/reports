@@ -205,24 +205,9 @@ public class ReportModelParser {
             throw new RuntimeException("Mandatory attributes not specified: " + element);
         final ListDataProviderHolder result = new ListDataProviderHolder(id);
         result.setData(new BaseExpression(data));
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
-            final Element el = i.next();
-            final String tagName = el.getTagName();
-            if ("filter".equals(tagName)) {
-                final String filter = StringUtil.trim(XMLUtil.getNodeText(el));
-                result.setFilter(new BaseExpression(filter));
-            } else
-            if ("params".equals(tagName)) {
-                final String paramsMap = StringUtil.trim(XMLUtil.getNodeText(el));
-                result.setParamsMap(new BaseExpression(paramsMap));
-            } else
-            if ("param".equals(tagName)) {
-                final String name = StringUtil.trim(el.getAttribute("name"));
-                final String value = StringUtil.trim(el.getAttribute("value"));
-                if (name != null)
-                    result.addParam(new BaseExpression(name), new BaseExpression(value));
-            } else
-                throw new RuntimeException("Unknown element: " + tagName);
+        final Iterator<Element> children = XMLUtil.getChildElements(element);
+        if (children.hasNext()) {
+            throw new RuntimeException("Unsupported element: " + children.next().getTagName());
         }
         report.getProviders().put(id, result);
     }
@@ -280,15 +265,9 @@ public class ReportModelParser {
                 final String filter = StringUtil.trim(XMLUtil.getNodeText(el));
                 result.setFilter(new BaseExpression(filter));
             } else
-            if ("params".equals(tagName)) {
-                final String paramsMap = StringUtil.trim(XMLUtil.getNodeText(el));
-                result.setParamsMap(new BaseExpression(paramsMap));
-            } else
-            if ("param".equals(tagName)) {
-                final String name = StringUtil.trim(el.getAttribute("name"));
-                final String value = StringUtil.trim(el.getAttribute("value"));
-                if (name != null)
-                    result.addParam(new BaseExpression(name), new BaseExpression(value));
+            if ("filter-class".equals(tagName)) {
+                final String type = StringUtil.trim(XMLUtil.getNodeText(el));
+                result.setFilterType(new BaseExpression(type));
             } else
                 throw new RuntimeException("Unknown element: " + tagName);
         }

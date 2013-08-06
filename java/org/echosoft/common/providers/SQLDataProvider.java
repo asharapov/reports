@@ -8,16 +8,18 @@ import java.util.Iterator;
 import java.util.Map;
 import javax.sql.DataSource;
 
+import org.echosoft.common.collections.issuers.ReadAheadIssuer;
 import org.echosoft.common.data.db.ParameterizedSQL;
 import org.echosoft.common.data.db.Query;
 import org.echosoft.common.data.db.SortCriterion;
+import org.echosoft.framework.reports.model.providers.JdbcIssuer;
 
 /**
  * Реализация {@link DataProvider} которая использует прямые обращения в реляционную БД за запрошенными данными.
  *
  * @author Anton Sharapov
  */
-public class SQLDataProvider<T> implements DataProvider {
+public class SQLDataProvider<T, Q extends Query> implements DataProvider<T, Q> {
 
     public static final int DEFAULT_FETCH_SIZE = 1000;
 
@@ -36,7 +38,7 @@ public class SQLDataProvider<T> implements DataProvider {
 
 
     @Override
-    public BeanIterator<T> execute(final Query query) throws Exception {
+    public ReadAheadIssuer<T> execute(final Q query) throws Exception {
         String sql = psql.getQuery();
         final Map<String, Object> params;
         if (query != null) {
@@ -71,7 +73,7 @@ public class SQLDataProvider<T> implements DataProvider {
 
             rs = pstmt.executeQuery();
 
-            return new JdbcBeanIterator<T>(conn, pstmt, rs);
+            return new JdbcIssuer<T>(conn, pstmt, rs);
         } catch (Exception e) {
             if (rs != null)
                 try {

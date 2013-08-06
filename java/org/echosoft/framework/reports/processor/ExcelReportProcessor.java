@@ -29,7 +29,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.echosoft.common.data.db.Query;
 import org.echosoft.common.data.misc.TreeNode;
 import org.echosoft.common.providers.DataProvider;
 import org.echosoft.framework.reports.macros.Macros;
@@ -425,17 +424,17 @@ public class ExcelReportProcessor implements ReportProcessor {
         final SectionContext sctx = ectx.sectionContext;
         final PlainSection section = (PlainSection) sctx.section;
         DataProvider provider = null;
-        Query query = null;
+        Object query = null;
         if (section.getDataProvider() != null) {
             provider = section.getDataProvider().getProvider(ectx.elctx);
             query = section.getDataProvider().getQuery(ectx.elctx);
         }
 
         if (provider != null) {
-            sctx.beanIterator = provider.execute(query);
+            sctx.issuer = provider.execute(query);
             try {
-                while (sctx.beanIterator.hasNext()) {
-                    sctx.bean = sctx.beanIterator.next();
+                while (sctx.issuer.hasNext()) {
+                    sctx.bean = sctx.issuer.next();
                     ectx.elctx.setRowModel(sctx.bean);
                     ectx.elctx.getVariables().put(VAR_RECORD, sctx.record);
                     renderArea(ectx, section.getTemplate(), -1);
@@ -446,8 +445,8 @@ public class ExcelReportProcessor implements ReportProcessor {
                     sctx.record++;
                 }
             } finally {
-                sctx.beanIterator.close();
-                sctx.beanIterator = null;
+                sctx.issuer.close();
+                sctx.issuer = null;
                 sctx.bean = null;
             }
         } else {
@@ -459,7 +458,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         final SectionContext sctx = ectx.sectionContext;
         final GroupingSection section = (GroupingSection) sctx.section;
         DataProvider provider = null;
-        Query query = null;
+        Object query = null;
         if (section.getDataProvider() != null) {
             provider = section.getDataProvider().getProvider(ectx.elctx);
             query = section.getDataProvider().getQuery(ectx.elctx);
@@ -471,10 +470,10 @@ public class ExcelReportProcessor implements ReportProcessor {
                     renderGroup(ctx, getCurrentGroup());
                 }
             };
-            sctx.beanIterator = provider.execute(query);
+            sctx.issuer = provider.execute(query);
             try {
-                while (sctx.beanIterator.hasNext()) {
-                    sctx.bean = sctx.beanIterator.next();
+                while (sctx.issuer.hasNext()) {
+                    sctx.bean = sctx.issuer.next();
                     ectx.elctx.setRowModel(sctx.bean);
                     ectx.elctx.getVariables().put(VAR_RECORD, sctx.record);
                     sctx.gm.initRecord(ectx, sctx.bean);
@@ -487,8 +486,8 @@ public class ExcelReportProcessor implements ReportProcessor {
                     sctx.record++;
                 }
             } finally {
-                sctx.beanIterator.close();
-                sctx.beanIterator = null;
+                sctx.issuer.close();
+                sctx.issuer = null;
                 sctx.bean = null;
             }
             sctx.gm.finalizeAllGroups(ectx);
@@ -502,7 +501,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         final SectionContext sctx = ectx.sectionContext;
         final CompositeSection section = (CompositeSection) sctx.section;
         DataProvider provider = null;
-        Query query = null;
+        Object query = null;
         if (section.getDataProvider() != null) {
             provider = section.getDataProvider().getProvider(ectx.elctx);
             query = section.getDataProvider().getQuery(ectx.elctx);
@@ -515,10 +514,10 @@ public class ExcelReportProcessor implements ReportProcessor {
                     renderGroup(ctx, getCurrentGroup());
                 }
             };
-            sctx.beanIterator = provider.execute(query);
+            sctx.issuer = provider.execute(query);
             try {
-                while (sctx.beanIterator.hasNext()) {
-                    sctx.bean = ProviderUsage.PREFETCH_RECORDS == providerUsage ? sctx.beanIterator.readAhead() : sctx.beanIterator.next();
+                while (sctx.issuer.hasNext()) {
+                    sctx.bean = ProviderUsage.PREFETCH_RECORDS == providerUsage ? sctx.issuer.readAhead() : sctx.issuer.next();
                     ectx.elctx.setRowModel(sctx.bean);
                     ectx.elctx.getVariables().put(VAR_RECORD, sctx.record);
                     sctx.gm.initRecord(ectx, sctx.bean);
@@ -533,22 +532,22 @@ public class ExcelReportProcessor implements ReportProcessor {
                     sctx.record++;
                 }
             } finally {
-                sctx.beanIterator.close();
-                sctx.beanIterator = null;
+                sctx.issuer.close();
+                sctx.issuer = null;
                 sctx.bean = null;
             }
             sctx.gm.finalizeAllGroups(ectx);
             sctx.gm = null;
         } else {
-            sctx.beanIterator = provider != null ? provider.execute(query) : null;
+            sctx.issuer = provider != null ? provider.execute(query) : null;
             try {
                 for (final Section childSection : section.getSections()) {
                     processSection(ectx, childSection);
                 }
             } finally {
-                if (sctx.beanIterator != null) {
-                    sctx.beanIterator.close();
-                    sctx.beanIterator = null;
+                if (sctx.issuer != null) {
+                    sctx.issuer.close();
+                    sctx.issuer = null;
                 }
             }
         }
