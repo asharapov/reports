@@ -37,11 +37,11 @@ import org.echosoft.framework.reports.model.el.BaseExpression;
 import org.echosoft.framework.reports.model.events.CellEventListenerHolder;
 import org.echosoft.framework.reports.model.events.ReportEventListenerHolder;
 import org.echosoft.framework.reports.model.events.SectionEventListenerHolder;
-import org.echosoft.framework.reports.model.providers.ClassDataProviderHolder;
-import org.echosoft.framework.reports.model.providers.FilteredDataProviderHolder;
-import org.echosoft.framework.reports.model.providers.ListDataProviderHolder;
+import org.echosoft.framework.reports.model.providers.ClassDataProvider;
+import org.echosoft.framework.reports.model.providers.FilteredDataProvider;
+import org.echosoft.framework.reports.model.providers.ListDataProvider;
 import org.echosoft.framework.reports.model.providers.ProviderUsage;
-import org.echosoft.framework.reports.model.providers.SQLDataProviderHolder;
+import org.echosoft.framework.reports.model.providers.SQLDataProvider;
 import org.echosoft.framework.reports.util.Logs;
 import org.echosoft.framework.reports.util.POIUtils;
 import org.w3c.dom.Document;
@@ -193,7 +193,7 @@ public class ReportModelParser {
         final String predicate = StringUtil.trim(element.getAttribute("predicate"));
         if (id == null || predicate == null)
             throw new RuntimeException("Mandatory attributes not specified: " + element);
-        final FilteredDataProviderHolder result = new FilteredDataProviderHolder(id);
+        final FilteredDataProvider result = new FilteredDataProvider(id);
         result.setPredicate(new BaseExpression(predicate));
         report.getProviders().put(id, result);
     }
@@ -203,7 +203,7 @@ public class ReportModelParser {
         final String data = StringUtil.trim(element.getAttribute("data"));
         if (id == null || data == null)
             throw new RuntimeException("Mandatory attributes not specified: " + element);
-        final ListDataProviderHolder result = new ListDataProviderHolder(id);
+        final ListDataProvider result = new ListDataProvider(id);
         result.setData(new BaseExpression(data));
         final Iterator<Element> children = XMLUtil.getChildElements(element);
         if (children.hasNext()) {
@@ -217,14 +217,18 @@ public class ReportModelParser {
         final String ds = StringUtil.trim(element.getAttribute("datasource"));
         if (id == null || ds == null)
             throw new RuntimeException("Mandatory attributes not specified: " + element);
-        final SQLDataProviderHolder result = new SQLDataProviderHolder(id);
+        final SQLDataProvider result = new SQLDataProvider(id);
         result.setDataSource(new BaseExpression(ds));
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
-            if ("filter".equals(tagName)) {
-                final String filter = StringUtil.trim(XMLUtil.getNodeText(el));
-                result.setFilter(new BaseExpression(filter));
+            if ("sql".equals(tagName)) {
+                final String sql = StringUtil.trim(XMLUtil.getNodeText(el));
+                result.setSQL(new BaseExpression(sql));
+            } else
+            if ("sql-ref".equals(tagName)) {
+                final String sqlref = StringUtil.trim(XMLUtil.getNodeText(el));
+                result.setSQLReference(new BaseExpression(sqlref));
             } else
             if ("params".equals(tagName)) {
                 final String paramsMap = StringUtil.trim(XMLUtil.getNodeText(el));
@@ -235,14 +239,6 @@ public class ReportModelParser {
                 final String value = StringUtil.trim(el.getAttribute("value"));
                 if (name != null)
                     result.addParam(new BaseExpression(name), new BaseExpression(value));
-            } else
-            if ("sql".equals(tagName)) {
-                final String sql = StringUtil.trim(XMLUtil.getNodeText(el));
-                result.setSQL(new BaseExpression(sql));
-            } else
-            if ("sql-ref".equals(tagName)) {
-                final String sqlref = StringUtil.trim(XMLUtil.getNodeText(el));
-                result.setSQLReference(new BaseExpression(sqlref));
             } else
                 throw new RuntimeException("Unknown element: " + tagName);
         }
@@ -255,19 +251,19 @@ public class ReportModelParser {
         final String method = StringUtil.trim(element.getAttribute("method"));
         if (id == null || object == null || method == null)
             throw new RuntimeException("Mandatory attributes not specified: " + element);
-        final ClassDataProviderHolder result = new ClassDataProviderHolder(id);
+        final ClassDataProvider result = new ClassDataProvider(id);
         result.setObject(new BaseExpression(object));
         result.setMethodName(new BaseExpression(method));
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
-            if ("filter".equals(tagName)) {
-                final String filter = StringUtil.trim(XMLUtil.getNodeText(el));
-                result.setFilter(new BaseExpression(filter));
+            if ("arg".equals(tagName)) {
+                final String arg = StringUtil.trim(XMLUtil.getNodeText(el));
+                result.setArg(new BaseExpression(arg));
             } else
-            if ("filter-class".equals(tagName)) {
-                final String type = StringUtil.trim(XMLUtil.getNodeText(el));
-                result.setFilterType(new BaseExpression(type));
+            if ("arg-class".equals(tagName)) {
+                final String argClass = StringUtil.trim(XMLUtil.getNodeText(el));
+                result.setArgType(new BaseExpression(argClass));
             } else
                 throw new RuntimeException("Unknown element: " + tagName);
         }

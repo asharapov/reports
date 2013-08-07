@@ -16,7 +16,7 @@ import org.echosoft.framework.reports.model.el.ELContext;
  *
  * @author Anton Sharapov
  */
-public interface DataProviderHolder extends Serializable, Cloneable {
+public interface DataProvider extends Serializable, Cloneable {
 
     /**
      * Возвращает уникальный идентификатор поставщика данных (в рамках одного отчета).

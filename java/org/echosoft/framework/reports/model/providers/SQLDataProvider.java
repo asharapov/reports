@@ -20,7 +20,7 @@ import org.echosoft.framework.reports.processor.ReportProcessingException;
  *
  * @author Anton Sharapov
  */
-public class SQLDataProviderHolder implements DataProviderHolder {
+public class SQLDataProvider implements DataProvider {
 
     public static final int DEFAULT_FETCH_SIZE = 1000;
 
@@ -28,12 +28,11 @@ public class SQLDataProviderHolder implements DataProviderHolder {
     private Expression datasource;
     private Expression sql;
     private Expression sqlref;
-    private Expression filter;
     private Expression paramsMap;
     private Map<Expression, Expression> params;
 
 
-    public SQLDataProviderHolder(final String id) {
+    public SQLDataProvider(final String id) {
         this.id = id;
         params = new HashMap<Expression, Expression>();
     }
@@ -164,7 +163,7 @@ public class SQLDataProviderHolder implements DataProviderHolder {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        final SQLDataProviderHolder result = (SQLDataProviderHolder) super.clone();
+        final SQLDataProvider result = (SQLDataProvider) super.clone();
         result.params = new HashMap<Expression, Expression>(params.size());
         result.params.putAll(params);
         return result;

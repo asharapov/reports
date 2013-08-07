@@ -18,7 +18,7 @@ import org.echosoft.common.utils.StreamUtil;
 /**
  * @author Anton Sharapov
  */
-public final class JdbcIssuer<T> implements ReadAheadIssuer<T> {
+class JdbcIssuer<T> implements ReadAheadIssuer<T> {
 
     private final Connection conn;
     private final Statement stmt;

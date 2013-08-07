@@ -30,7 +30,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.echosoft.common.data.misc.TreeNode;
-import org.echosoft.common.providers.DataProvider;
 import org.echosoft.framework.reports.macros.Macros;
 import org.echosoft.framework.reports.model.AreaModel;
 import org.echosoft.framework.reports.model.CellModel;
@@ -50,6 +49,7 @@ import org.echosoft.framework.reports.model.events.CellEvent;
 import org.echosoft.framework.reports.model.events.CellEventListener;
 import org.echosoft.framework.reports.model.events.ReportEventListener;
 import org.echosoft.framework.reports.model.events.SectionEventListener;
+import org.echosoft.framework.reports.model.providers.DataProvider;
 import org.echosoft.framework.reports.model.providers.ProviderUsage;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheets;
 
@@ -423,15 +423,9 @@ public class ExcelReportProcessor implements ReportProcessor {
     protected void processPlainSection(final ExecutionContext ectx) throws Exception {
         final SectionContext sctx = ectx.sectionContext;
         final PlainSection section = (PlainSection) sctx.section;
-        DataProvider provider = null;
-        Object query = null;
-        if (section.getDataProvider() != null) {
-            provider = section.getDataProvider().getProvider(ectx.elctx);
-            query = section.getDataProvider().getQuery(ectx.elctx);
-        }
 
-        if (provider != null) {
-            sctx.issuer = provider.execute(query);
+        if (section.getDataProvider() != null) {
+            sctx.issuer = section.getDataProvider().getIssuer(ectx.elctx);
             try {
                 while (sctx.issuer.hasNext()) {
                     sctx.bean = sctx.issuer.next();
@@ -457,20 +451,14 @@ public class ExcelReportProcessor implements ReportProcessor {
     protected void processGroupingSection(final ExecutionContext ectx) throws Exception {
         final SectionContext sctx = ectx.sectionContext;
         final GroupingSection section = (GroupingSection) sctx.section;
-        DataProvider provider = null;
-        Object query = null;
-        if (section.getDataProvider() != null) {
-            provider = section.getDataProvider().getProvider(ectx.elctx);
-            query = section.getDataProvider().getQuery(ectx.elctx);
-        }
 
-        if (provider != null) {
+        if (section.getDataProvider() != null) {
             sctx.gm = new GroupManager(section.getGroups()) {
                 public void renderCurrentGroup(final ExecutionContext ctx) throws Exception {
                     renderGroup(ctx, getCurrentGroup());
                 }
             };
-            sctx.issuer = provider.execute(query);
+            sctx.issuer = section.getDataProvider().getIssuer(ectx.elctx);
             try {
                 while (sctx.issuer.hasNext()) {
                     sctx.bean = sctx.issuer.next();
@@ -500,21 +488,16 @@ public class ExcelReportProcessor implements ReportProcessor {
     protected void processCompositeSection(final ExecutionContext ectx) throws Exception {
         final SectionContext sctx = ectx.sectionContext;
         final CompositeSection section = (CompositeSection) sctx.section;
-        DataProvider provider = null;
-        Object query = null;
-        if (section.getDataProvider() != null) {
-            provider = section.getDataProvider().getProvider(ectx.elctx);
-            query = section.getDataProvider().getQuery(ectx.elctx);
-        }
-
+        final DataProvider provider = section.getDataProvider();
         final ProviderUsage providerUsage = section.getProviderUsage();
+
         if (provider != null && providerUsage != ProviderUsage.DECLARE_ONLY) {
             sctx.gm = new GroupManager(section.getGroups()) {
                 public void renderCurrentGroup(final ExecutionContext ctx) throws Exception {
                     renderGroup(ctx, getCurrentGroup());
                 }
             };
-            sctx.issuer = provider.execute(query);
+            sctx.issuer = provider.getIssuer(ectx.elctx);
             try {
                 while (sctx.issuer.hasNext()) {
                     sctx.bean = ProviderUsage.PREFETCH_RECORDS == providerUsage ? sctx.issuer.readAhead() : sctx.issuer.next();
@@ -539,7 +522,7 @@ public class ExcelReportProcessor implements ReportProcessor {
             sctx.gm.finalizeAllGroups(ectx);
             sctx.gm = null;
         } else {
-            sctx.issuer = provider != null ? provider.execute(query) : null;
+            sctx.issuer = provider != null ? provider.getIssuer(ectx.elctx) : null;
             try {
                 for (final Section childSection : section.getSections()) {
                     processSection(ectx, childSection);

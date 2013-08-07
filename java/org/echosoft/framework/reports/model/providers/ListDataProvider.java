@@ -9,12 +9,12 @@ import org.echosoft.framework.reports.model.el.Expression;
  *
  * @author Anton Sharapov
  */
-public class ListDataProviderHolder implements DataProviderHolder {
+public class ListDataProvider implements DataProvider {
 
     private final String id;
     private Expression data;
 
-    public ListDataProviderHolder(final String id) {
+    public ListDataProvider(final String id) {
         this.id = id;
     }
 

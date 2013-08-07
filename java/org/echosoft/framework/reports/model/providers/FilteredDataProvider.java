@@ -13,7 +13,7 @@ import org.echosoft.framework.reports.processor.SectionContext;
  *
  * @author Anton Sharapov
  */
-public class FilteredDataProviderHolder implements DataProviderHolder {
+public class FilteredDataProvider implements DataProvider {
 
     /**
      * Идентификатор поставщика данных.
@@ -26,7 +26,7 @@ public class FilteredDataProviderHolder implements DataProviderHolder {
      */
     private Expression predicate;
 
-    public FilteredDataProviderHolder(final String id) {
+    public FilteredDataProvider(final String id) {
         this.id = id;
     }
 

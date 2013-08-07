@@ -7,7 +7,7 @@ import java.util.List;
 import org.echosoft.common.utils.StringUtil;
 import org.echosoft.framework.reports.model.events.CellEventListenerHolder;
 import org.echosoft.framework.reports.model.events.SectionEventListenerHolder;
-import org.echosoft.framework.reports.model.providers.DataProviderHolder;
+import org.echosoft.framework.reports.model.providers.DataProvider;
 
 /**
  * <p>Базовое описание одного секции на отчетном листе.</p>
@@ -66,7 +66,7 @@ public abstract class Section implements Serializable, Cloneable {
     /**
      * Источник данных для данной секции.
      */
-    private DataProviderHolder provider;
+    private DataProvider provider;
 
 
     public Section(String id) {
@@ -153,10 +153,10 @@ public abstract class Section implements Serializable, Cloneable {
     /**
      * @return Источник данных для секции.
      */
-    public DataProviderHolder getDataProvider() {
+    public DataProvider getDataProvider() {
         return provider;
     }
-    public void setDataProvider(final DataProviderHolder provider) {
+    public void setDataProvider(final DataProvider provider) {
         this.provider = provider;
     }
 

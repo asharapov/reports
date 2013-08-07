@@ -12,7 +12,7 @@ import org.echosoft.framework.reports.macros.Macros;
 import org.echosoft.framework.reports.macros.MacrosRegistry;
 import org.echosoft.framework.reports.model.el.Expression;
 import org.echosoft.framework.reports.model.events.ReportEventListenerHolder;
-import org.echosoft.framework.reports.model.providers.DataProviderHolder;
+import org.echosoft.framework.reports.model.providers.DataProvider;
 
 /**
  * <p>Описывает структуру одного отчета.</p>
@@ -105,7 +105,7 @@ public class Report implements Serializable {
     /**
      * Перечень всех поставщиков данных, которые используются в отчете.
      */
-    private final Map<String, DataProviderHolder> providers;
+    private final Map<String, DataProvider> providers;
 
 
     public Report(String id, final Workbook wb) {
@@ -119,7 +119,7 @@ public class Report implements Serializable {
         this.palette = new StylePalette(wb);
         this.macros = new HashMap<String, Macros>();
         this.listeners = new ArrayList<ReportEventListenerHolder>();
-        this.providers = new HashMap<String, DataProviderHolder>();
+        this.providers = new HashMap<String, DataProvider>();
     }
 
     /**
@@ -143,13 +143,13 @@ public class Report implements Serializable {
         palette = (StylePalette) src.palette.clone();
         macros = new HashMap<String, Macros>();
         listeners = new ArrayList<ReportEventListenerHolder>();
-        providers = new HashMap<String, DataProviderHolder>();
+        providers = new HashMap<String, DataProvider>();
         macros.putAll(src.macros);
         for (ReportEventListenerHolder listener : src.listeners) {
             listeners.add((ReportEventListenerHolder) listener.clone());
         }
-        for (Map.Entry<String, DataProviderHolder> entry : src.providers.entrySet()) {
-            providers.put(entry.getKey(), (DataProviderHolder) entry.getValue().clone());
+        for (Map.Entry<String, DataProvider> entry : src.providers.entrySet()) {
+            providers.put(entry.getKey(), (DataProvider) entry.getValue().clone());
         }
         sheets = new ArrayList<SheetModel>();
         for (SheetModel sheet : src.sheets) {
@@ -361,7 +361,7 @@ public class Report implements Serializable {
      *
      * @return все поставщики данных используемые в отчете.
      */
-    public Map<String, DataProviderHolder> getProviders() {
+    public Map<String, DataProvider> getProviders() {
         return providers;
     }
 

@@ -81,15 +81,6 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="AbstractDataProvider" abstract="true">
-    <xs:choice minOccurs="0">
-      <xs:element name="filter" type="Expression"/>
-      <xs:element name="params" type="Expression"/>
-      <xs:element name="param" type="Parameter" maxOccurs="unbounded"/>
-    </xs:choice>
-    <xs:attribute name="id" type="xs:ID" use="required"/>
-  </xs:complexType>
-
   <xs:complexType name="FilteredDataProvider">
     <xs:annotation>
       <xs:documentation>
@@ -107,35 +98,29 @@
   </xs:complexType>
 
   <xs:complexType name="ListDataProvider">
-    <xs:complexContent>
-      <xs:extension base="AbstractDataProvider">
-        <xs:attribute name="data" type="Expression" use="required"/>
-      </xs:extension>
-    </xs:complexContent>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="data" type="Expression" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="SQLDataProvider">
-    <xs:complexContent>
-      <xs:extension base="AbstractDataProvider">
-        <xs:choice>
-          <xs:element name="sql" type="Expression"/>
-          <xs:element name="sql-ref" type="Expression"/>
-        </xs:choice>
-        <xs:attribute name="datasource" type="Expression" use="required"/>
-        <xs:attribute name="processor" type="xs:string">
-          <xs:annotation><xs:documentation>Атрибут более не используется и оставлен в схеме только для совместимости со старыми версиями</xs:documentation></xs:annotation>
-        </xs:attribute>
-      </xs:extension>
-    </xs:complexContent>
+    <xs:sequence>
+      <xs:choice>
+        <xs:element name="sql" type="Expression"/>
+        <xs:element name="sql-ref" type="Expression"/>
+      </xs:choice>
+      <xs:element name="params" type="Expression"/>
+      <xs:element name="param" type="Parameter" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="datasource" type="Expression" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="ClassDataProvider">
-    <xs:complexContent>
-      <xs:extension base="AbstractDataProvider">
-        <xs:attribute name="object" type="Expression" use="required"/>
-        <xs:attribute name="method" type="Expression" use="required"/>
-      </xs:extension>
-    </xs:complexContent>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="object" type="Expression" use="required"/>
+    <xs:attribute name="method" type="Expression" use="required"/>
+    <xs:attribute name="arg" type="Expression"/>
+    <xs:attribute name="arg-class" type="Expression"/>
   </xs:complexType>
 
   <xs:complexType name="ReportEventListener">

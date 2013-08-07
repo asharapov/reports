@@ -13,15 +13,15 @@ import org.echosoft.framework.reports.processor.ReportProcessingException;
  *
  * @author Anton Sharapov
  */
-public class ClassDataProviderHolder implements DataProviderHolder {
+public class ClassDataProvider implements DataProvider {
 
     private final String id;
     private Expression object;
     private Expression methodName;
-    private Expression filter;
-    private Expression filterType;
+    private Expression arg;
+    private Expression argType;
 
-    public ClassDataProviderHolder(final String id) {
+    public ClassDataProvider(final String id) {
         this.id = id;
     }
 
@@ -44,18 +44,18 @@ public class ClassDataProviderHolder implements DataProviderHolder {
         this.methodName = methodName;
     }
 
-    public Expression getFilter() {
-        return filter;
+    public Expression getArg() {
+        return arg;
     }
-    public void setFilter(final Expression filter) {
-        this.filter = filter;
+    public void setArg(final Expression arg) {
+        this.arg = arg;
     }
 
-    public Expression getFilterType() {
-        return filterType;
+    public Expression getArgType() {
+        return argType;
     }
-    public void setFilterType(final Expression filterType) {
-        this.filterType = filterType;
+    public void setArgType(final Expression argType) {
+        this.argType = argType;
     }
 
     @Override
@@ -79,11 +79,11 @@ public class ClassDataProviderHolder implements DataProviderHolder {
         final String methodName = (String)tmp;
 
         final Class<?> argCls;
-        final Object arg = this.filter != null ? this.filter.getValue(ctx) : null;
+        final Object arg = this.arg != null ? this.arg.getValue(ctx) : null;
         if (arg != null) {
             argCls = arg.getClass();
         } else {
-            tmp = this.filterType != null ? this.filterType.getValue(ctx) : null;
+            tmp = this.argType != null ? this.argType.getValue(ctx) : null;
             if (tmp instanceof Class) {
                 argCls = (Class)tmp;
             } else
