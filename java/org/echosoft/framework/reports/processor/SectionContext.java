@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.echosoft.common.query.BeanIterator;
+import org.echosoft.common.collections.issuers.ReadAheadIssuer;
 import org.echosoft.framework.reports.model.Section;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.events.CellEventListener;
@@ -45,10 +45,10 @@ public final class SectionContext {
      * Если к секции не подключен ни один поставщик данных то во все время обработки этой секции это поле будет равно <code>null</code>.<br/>
      * Данный итератор может активно использоваться при конструировании поставщика данных для дочерних секций (см. композитные секции).
      */
-    public BeanIterator beanIterator;
+    public ReadAheadIssuer issuer;
 
     /**
-     *  Текущая обрабатываемая запись полученная от поставщика данных.
+     * Текущая обрабатываемая запись полученная от поставщика данных.
      */
     public Object bean;
 
@@ -78,7 +78,8 @@ public final class SectionContext {
     /**
      * Переменные окружения время жизни которых ограничено временем обработки данной секции.
      */
-    private Map<String,Object> env;
+    private Map<String, Object> env;
+
 
     public SectionContext(final SectionContext parent, final Section section, final int firstRow, final ELContext elctx) {
         this.parent = parent;
@@ -101,23 +102,24 @@ public final class SectionContext {
 
     /**
      * Возвращает значение переменной окружения время жизни которой ограничено временем обработки данной секции.
-     * @param name  имя переменной.
-     * @return  значение переменной или <code>null</code> если она не определена.
+     *
+     * @param name имя переменной.
+     * @return значение переменной или <code>null</code> если она не определена.
      */
     @SuppressWarnings("unchecked")
     public <T> T getVariable(final String name) {
-        return env!=null ? (T)env.get(name) : null;
+        return env != null ? (T) env.get(name) : null;
     }
 
     /**
      * Устанавливает значение переменной окружения время жизни которой ограничено временем обработки данной секции.
+     *
      * @param name  имя переменной.
-     * @param value  значение переменной.
+     * @param value значение переменной.
      */
     public void putVariable(final String name, final Object value) {
-        if (env==null)
-            env = new HashMap<String,Object>();
+        if (env == null)
+            env = new HashMap<String, Object>();
         env.put(name, value);
     }
-
 }

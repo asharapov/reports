@@ -2,7 +2,7 @@ package org.echosoft.framework.reports.macros;
 
 import java.util.Arrays;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.ss.usermodel.Cell;
 import org.echosoft.common.utils.StringUtil;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.processor.SectionContext;
@@ -84,7 +84,7 @@ public class NRowsSum implements Macros {
         process(ectx.cell, sctx, colname, nth, offset);
     }
 
-    public void process(final HSSFCell cell, final SectionContext sctx, final String colname, final int nth, final int offset) {
+    public void process(final Cell cell, final SectionContext sctx, final String colname, final int nth, final int offset) {
         final StringBuilder formula = new StringBuilder(32);
         final int top = sctx.sectionFirstRow + 1 + offset;
         final int bottom = sctx.sectionFirstRow + sctx.record*sctx.section.getTemplateRowsCount();

@@ -22,6 +22,9 @@ public class GroupModel implements Serializable, Cloneable {
 
     /**
      * Используется в случае когда данную группировку требуется представить в иерархическом стиле.
+     * Должно указывать на числовое поле (унаследованное от {@link Number}.
+     * После приведения к целому положительному числу это поле служит основанием для выбора одного из
+     * альтернативных стилей оформления строки с группировкой.
      */
     private String levelField;
 
@@ -65,7 +68,7 @@ public class GroupModel implements Serializable, Cloneable {
      * один стиль. Все стили оформления данной группировки в отчете должны состоять
      * из одинакового количества строк.
      */
-    private TreeMap<Integer,GroupStyle> styles;
+    private TreeMap<Integer, GroupStyle> styles;
 
 
     private transient GroupStyle defaultStyle;
@@ -74,7 +77,7 @@ public class GroupModel implements Serializable, Cloneable {
 
     public GroupModel() {
         collapsible = true;
-        styles = new TreeMap<Integer,GroupStyle>();
+        styles = new TreeMap<Integer, GroupStyle>();
     }
 
 
@@ -124,10 +127,11 @@ public class GroupModel implements Serializable, Cloneable {
 
     /**
      * Возвращает количество строк в отчете отведенных на описание данной группы.
-     * @return  количество строк в итоговом отчете занятых одной группой.
+     *
+     * @return количество строк в итоговом отчете занятых одной группой.
      */
     public int getRowsCount() {
-        if (rowsCount==0) {
+        if (rowsCount == 0) {
             rowsCount = getDefaultStyle().getTemplate().getRowsCount();
         }
         return rowsCount;
@@ -135,10 +139,11 @@ public class GroupModel implements Serializable, Cloneable {
 
     /**
      * Возвращает количество колонок отведенных на описание данной группы.
-     * @return  количество колонок отведенных на описание группы.
+     *
+     * @return количество колонок отведенных на описание группы.
      */
     public int getColumnsCount() {
-        if (columnsCount<=0) {
+        if (columnsCount <= 0) {
             int result = 0;
             for (GroupStyle style : styles.values()) {
                 result = Math.max(result, style.getTemplate().getColumnsCount());
@@ -150,7 +155,8 @@ public class GroupModel implements Serializable, Cloneable {
 
     /**
      * Возвращает количество зарегистрированных вариантов оформления данной группировки.
-     * @return  количество вариантов оформления группировки.
+     *
+     * @return количество вариантов оформления группировки.
      */
     public int getStylesCount() {
         return styles.size();
@@ -158,10 +164,11 @@ public class GroupModel implements Serializable, Cloneable {
 
     /**
      * Регистрирует новый стиль оформления данной группы.
-     * @param style  новый стиль оформления.
+     *
+     * @param style новый стиль оформления.
      */
     public void addStyle(final GroupStyle style) {
-        if (style==null)
+        if (style == null)
             throw new IllegalArgumentException("Group style not specified");
         if (styles.containsKey(style.getLevel()))
             throw new IllegalArgumentException("Style with same level already registered");
@@ -178,12 +185,13 @@ public class GroupModel implements Serializable, Cloneable {
 
     /**
      * Отбирает стиль оформления по его уровню.
-     * @param level  отличительный признак искомого стиля оформления группировки. Не может быть меньше нуля.
-     * @return  стиль с указанным признаком (если таковой зарегистрирован в группе) или, стиль по умолчанию если искомый стиль не был найден в группе.
+     *
+     * @param level отличительный признак искомого стиля оформления группировки. Не может быть меньше нуля.
+     * @return стиль с указанным признаком (если таковой зарегистрирован в группе) или, стиль по умолчанию если искомый стиль не был найден в группе.
      */
     public GroupStyle getStyleByLevel(final int level) {
         GroupStyle style = styles.get(level);
-        if (style==null) {
+        if (style == null) {
             style = getDefaultStyle();
         }
         return style;
@@ -191,17 +199,18 @@ public class GroupModel implements Serializable, Cloneable {
 
     /**
      * Возвращает стиль по умолчанию для представления данной группировочной строки.
-     * @return  стиль представления по умолчанию.
+     *
+     * @return стиль представления по умолчанию.
      */
     public GroupStyle getDefaultStyle() {
-        if (defaultStyle==null) {
+        if (defaultStyle == null) {
             for (GroupStyle style : styles.values()) {
                 if (style.isDefault()) {
                     defaultStyle = style;
                     break;
                 }
             }
-            if (defaultStyle==null && styles.size()>0) {
+            if (defaultStyle == null && styles.size() > 0) {
                 defaultStyle = styles.values().iterator().next();
             }
         }
@@ -210,15 +219,16 @@ public class GroupModel implements Serializable, Cloneable {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        final GroupModel result = (GroupModel)super.clone();
-        result.styles = new TreeMap<Integer,GroupStyle>();
+        final GroupModel result = (GroupModel) super.clone();
+        result.styles = new TreeMap<Integer, GroupStyle>();
         for (GroupStyle style : styles.values()) {
-            result.styles.put(style.getLevel(), (GroupStyle)style.clone());
+            result.styles.put(style.getLevel(), (GroupStyle) style.clone());
         }
         return result;
     }
 
+    @Override
     public String toString() {
-        return "[GroupModel{discriminator:"+discriminatorField+", level:"+levelField+", styles:"+styles.size()+", collapsed:"+collapsed+", hidden:"+hidden+"}]";
+        return "[GroupModel{discriminator:" + discriminatorField + ", level:" + levelField + ", styles:" + styles.size() + ", collapsed:" + collapsed + ", hidden:" + hidden + "}]";
     }
 }

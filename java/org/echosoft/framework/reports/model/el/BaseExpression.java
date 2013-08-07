@@ -4,8 +4,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.poi.hssf.usermodel.HSSFRichTextString;
-import org.echosoft.common.io.FastStringWriter;
+import org.apache.poi.ss.usermodel.RichTextString;
 import org.echosoft.common.utils.BeanUtil;
 
 /**
@@ -24,14 +23,14 @@ public class BaseExpression implements Expression {
     protected final boolean staticExpr;
 
     public static BaseExpression makeExpression(final Object expression) {
-        return expression!=null ? new BaseExpression(expression) : null;
+        return expression != null ? new BaseExpression(expression) : null;
     }
 
     public BaseExpression(final Object expression) {
         this.expression = expression;
         this.chunks = new ArrayList<Chunk>(1);
         init(expression);
-        this.staticExpr = (chunks.size()==1) && (chunks.get(0) instanceof StaticChunk);
+        this.staticExpr = (chunks.size() == 1) && (chunks.get(0) instanceof StaticChunk);
     }
 
     public Object getRawValue() {
@@ -40,8 +39,9 @@ public class BaseExpression implements Expression {
 
     /**
      * @return true  если выражение является полностью статичным, т.е. не содержит ссылок на
-     * параметры в том или ином пространстве имен контекста.
+     *         параметры в том или ином пространстве имен контекста.
      */
+    @Override
     public boolean isStatic() {
         return staticExpr;
     }
@@ -51,19 +51,20 @@ public class BaseExpression implements Expression {
      *
      * @param context текущий контекст выполнения.
      * @return содержимое ячейки отчета.
-     * @throws Exception  в случае возникновения каких-либо проблем.
+     * @throws Exception в случае возникновения каких-либо проблем.
      */
+    @Override
     public Object getValue(final ELContext context) throws Exception {
         final int size = chunks.size();
         if (size == 1)
             return chunks.get(0).evaluate(context);
 
-        final FastStringWriter out = new FastStringWriter();
+        final StringBuilder out = new StringBuilder();
         for (int i = 0; i < size; i++) {
             final Chunk chunk = chunks.get(i);
             final Object value = chunk.evaluate(context);
-            if (value!=null)
-                out.write( value.toString() );
+            if (value != null)
+                out.append(value.toString());
         }
         return out.toString();
     }
@@ -72,17 +73,16 @@ public class BaseExpression implements Expression {
     protected void init(final Object expression) {
         final String text;
         if (expression instanceof String) {
-            text = (String)expression;
-        } else
-        if (expression instanceof HSSFRichTextString) {
-            text = ((HSSFRichTextString)expression).getString();
+            text = (String) expression;
+        } else if (expression instanceof RichTextString) {
+            text = ((RichTextString) expression).getString();
         } else {
-            chunks.add( new StaticChunk(expression) );
+            chunks.add(new StaticChunk(expression));
             return;
         }
 
-        if (text.indexOf(START_MARK) < 0) {
-            chunks.add( new StaticChunk(expression) );
+        if (!text.contains(START_MARK)) {
+            chunks.add(new StaticChunk(expression));
             return;
         }
 
@@ -92,16 +92,16 @@ public class BaseExpression implements Expression {
             j = (i >= 0) ? text.indexOf(END_MARK, i) : -2;
             if (j > i) {
                 if (i > a)
-                    chunks.add( new StaticChunk(text.substring(a,i)) );
+                    chunks.add(new StaticChunk(text.substring(a, i)));
 
                 String expr = text.substring(i + START_MARK_LEN, j).trim();
                 MessageFormat formatter = null;
-                if (expr.indexOf('(')==0) {
-                    final int endPos = expr.indexOf(')',0);
+                if (expr.indexOf('(') == 0) {
+                    final int endPos = expr.indexOf(')', 0);
                     String pattern = expr.substring(1, endPos).trim();
-                    if (pattern.length()>0)
+                    if (pattern.length() > 0)
                         formatter = new MessageFormat("{0," + pattern + "}");
-                    expr = expr.substring(endPos+1).trim();
+                    expr = expr.substring(endPos + 1).trim();
                 }
                 chunks.add(new PatternChunk(formatter, expr));
 
@@ -114,22 +114,23 @@ public class BaseExpression implements Expression {
         }
     }
 
-
+    @Override
     public int hashCode() {
-        return expression!=null ? expression.hashCode() : 0;
+        return expression != null ? expression.hashCode() : 0;
     }
 
+    @Override
     public boolean equals(final Object obj) {
-        if (obj==null || !obj.getClass().equals(BaseExpression.class))
+        if (obj == null || !obj.getClass().equals(BaseExpression.class))
             return false;
-        final BaseExpression other = (BaseExpression)obj;
-        return expression!=null ? expression.equals(other.expression) : other.expression==null;
+        final BaseExpression other = (BaseExpression) obj;
+        return expression != null ? expression.equals(other.expression) : other.expression == null;
     }
 
+    @Override
     public String toString() {
-        return expression!=null ? expression.toString() : "<null>";
+        return expression != null ? expression.toString() : "<null>";
     }
-
 
 
     private static interface Chunk {
@@ -143,46 +144,48 @@ public class BaseExpression implements Expression {
             this.value = value;
         }
 
+        @Override
         public Object evaluate(final ELContext context) {
             return value;
         }
     }
 
+
     private static final class PatternChunk implements Chunk {
         private final MessageFormat formatter;
         private final ArrayList<ParsedExpression> expressions;
 
-        public PatternChunk(MessageFormat formatter, String expression) {
+        public PatternChunk(final MessageFormat formatter, final String expression) {
             this.formatter = formatter;
             this.expressions = new ArrayList<ParsedExpression>(2);
 
             int s = 0, e = expression.length();
-            for (int d=expression.indexOf('|',s);  d>=s && d<e;  d=expression.indexOf('|',s)) {
-                if (d>s) {
-                    expressions.add( parseExpresion(expression.substring(s,d)) );
+            for (int d = expression.indexOf('|', s); d >= s && d < e; d = expression.indexOf('|', s)) {
+                if (d > s) {
+                    expressions.add(parseExpresion(expression.substring(s, d)));
                 }
-                s = d+1;
+                s = d + 1;
             }
-            if (s<e) {
-                expressions.add( parseExpresion(expression.substring(s,e)) );
+            if (s < e) {
+                expressions.add(parseExpresion(expression.substring(s, e)));
             }
         }
 
         private ParsedExpression parseExpresion(final String expr) {
-            final int ss = expr.indexOf(':',0);
+            final int ss = expr.indexOf(':', 0);
             final ELContext.Scope scope;
-            if (ss>=0) {
-                scope = ELContext.Scope.valueOf( expr.substring(0, ss).trim().toUpperCase() );
+            if (ss >= 0) {
+                scope = ELContext.Scope.valueOf(expr.substring(0, ss).trim().toUpperCase());
             } else {
                 scope = null;
             }
-            String name = expr.substring(ss+1).trim();
+            String name = expr.substring(ss + 1).trim();
             String property = null;
             final int length = name.length();
-            for (int i=0; i<length; i++) {
+            for (int i = 0; i < length; i++) {
                 final char c = name.charAt(i);
-                if (c==BeanUtil.NESTED_DELIM) {
-                    property = name.substring(i+1);
+                if (c == '.') {
+                    property = name.substring(i + 1);
                     name = name.substring(0, i);
                     break;
                 }
@@ -190,18 +193,19 @@ public class BaseExpression implements Expression {
             return new ParsedExpression(scope, name, property);
         }
 
+        @Override
         public Object evaluate(final ELContext context) throws Exception {
             Object result = null;
             for (ParsedExpression expr : expressions) {
                 result = context.getAttribute(expr.attrName, expr.scope);
-                if (expr.property!=null) {
+                if (expr.property != null) {
                     result = BeanUtil.getProperty(result, expr.property);
                 }
-                if (result!=null)
+                if (result != null)
                     break;
             }
 
-            if (formatter!=null && result!=null) {
+            if (formatter != null && result != null) {
                 formatter.setLocale(context.getLocale());
                 if (!(result instanceof Object[]))
                     result = new Object[]{result};
@@ -211,21 +215,25 @@ public class BaseExpression implements Expression {
         }
     }
 
+
     private static final class ParsedExpression {
+
         public final ELContext.Scope scope;
         public final String attrName;
         public final String property;
-        public ParsedExpression(ELContext.Scope scope, String attrName, String property) {
-            if (attrName==null || attrName.length()==0)
+
+        public ParsedExpression(final ELContext.Scope scope, final String attrName, final String property) {
+            if (attrName == null || attrName.length() == 0)
                 throw new IllegalArgumentException("attr name must be specified");
             this.scope = scope;
             this.attrName = attrName;
             this.property = property;
         }
+
+        @Override
         public String toString() {
-            return "{scope:"+scope+", attr:"+attrName+", property:"+property+"}";
+            return "{scope:" + scope + ", attr:" + attrName + ", property:" + property + "}";
         }
     }
-
 }
 

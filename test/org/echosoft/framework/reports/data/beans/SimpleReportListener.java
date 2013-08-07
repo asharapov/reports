@@ -8,21 +8,19 @@ import org.echosoft.framework.reports.processor.ExecutionContext;
  */
 public class SimpleReportListener implements ReportEventListener {
 
-    public void beforeReport(ExecutionContext ectx) {
-        System.out.println("before report "+ectx.report.getId());
+    public void beforeReport(final ExecutionContext ectx) {
+        System.out.println("before report " + ectx.report.getId());
     }
 
-    public void beforeSheet(ExecutionContext ectx) {
-        System.out.println("\tbefore sheet "+ectx.sheet.getId());
+    public void beforeSheet(final ExecutionContext ectx) {
+        System.out.println("\tbefore sheet " + ectx.sheet.getId());
     }
 
-    public void afterSheet(ExecutionContext ectx) {
-        System.out.println("\tafter sheet "+ectx.sheet.getId());
+    public void afterSheet(final ExecutionContext ectx) {
+        System.out.println("\tafter sheet " + ectx.sheet.getId());
     }
 
-    public void afterReport(ExecutionContext ectx) {
-        System.out.println("after report "+ectx.report.getId());
+    public void afterReport(final ExecutionContext ectx) {
+        System.out.println("after report " + ectx.report.getId());
     }
-
-
 }

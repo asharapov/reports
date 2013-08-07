@@ -44,18 +44,17 @@ public class POIUtilsTest {
 
     @Test
     public void testParams() throws Exception {
-        process(1, 5, Arrays.asList("A","B","C"), 2, 1);
+        process(1, 5, Arrays.asList("A", "B", "C"), 2, 1);
     }
 
     public static String process(int top, int bottom, List<String> colnames, int nth, int offset) {
         final StringBuilder formula = new StringBuilder(32);
-        if (top>bottom) {
+        if (top > bottom) {
             return "0";
-        } else
-        if (nth==1) {
+        } else if (nth == 1) {
             formula.append("SUMPRODUCT(");
-            for (int i=0,cnt=colnames.size(); i<cnt; i++) {
-                if (i>0)
+            for (int i = 0, cnt = colnames.size(); i < cnt; i++) {
+                if (i > 0)
                     formula.append(',');
                 final String colname = colnames.get(i);
                 formula.append(colname).append(top).append(':').append(colname).append(bottom);
@@ -64,7 +63,7 @@ public class POIUtilsTest {
         } else {
             formula.append("SUMPRODUCT(");
             formula.append("ABS(MOD(ROW(").append(top).append(':').append(bottom).append(")-ROW(A").append(top).append("),").append(nth).append(")=").append(offset).append(")");
-            for (int i=0,cnt=colnames.size(); i<cnt; i++) {
+            for (int i = 0, cnt = colnames.size(); i < cnt; i++) {
                 formula.append(',');
                 final String colname = colnames.get(i);
                 formula.append(colname).append(top).append(':').append(colname).append(bottom);
@@ -74,6 +73,4 @@ public class POIUtilsTest {
         System.out.println(formula);
         return formula.toString();
     }
-
-
 }

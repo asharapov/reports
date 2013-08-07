@@ -52,6 +52,13 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="target" type="TargetType" default="HSSF">
+      <xs:annotation>
+        <xs:documentation>
+          Формат в котором будет генерироваться данный отчет.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="ReportDescription">
@@ -74,15 +81,6 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="AbstractDataProvider" abstract="true">
-    <xs:choice minOccurs="0">
-      <xs:element name="filter" type="Expression"/>
-      <xs:element name="params" type="Expression"/>
-      <xs:element name="param" type="Parameter" maxOccurs="unbounded"/>
-    </xs:choice>
-    <xs:attribute name="id" type="xs:ID" use="required"/>
-  </xs:complexType>
-
   <xs:complexType name="FilteredDataProvider">
     <xs:annotation>
       <xs:documentation>
@@ -100,33 +98,29 @@
   </xs:complexType>
 
   <xs:complexType name="ListDataProvider">
-    <xs:complexContent>
-      <xs:extension base="AbstractDataProvider">
-        <xs:attribute name="data" type="Expression" use="required"/>
-      </xs:extension>
-    </xs:complexContent>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="data" type="Expression" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="SQLDataProvider">
-    <xs:complexContent>
-      <xs:extension base="AbstractDataProvider">
-        <xs:choice>
-          <xs:element name="sql" type="Expression"/>
-          <xs:element name="sql-ref" type="Expression"/>
-        </xs:choice>
-        <xs:attribute name="datasource" type="Expression" use="required"/>
-        <xs:attribute name="processor" type="SQLProcessorType" default="generic"/>
-      </xs:extension>
-    </xs:complexContent>
+    <xs:sequence>
+      <xs:choice>
+        <xs:element name="sql" type="Expression"/>
+        <xs:element name="sql-ref" type="Expression"/>
+      </xs:choice>
+      <xs:element name="params" type="Expression"/>
+      <xs:element name="param" type="Parameter" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="datasource" type="Expression" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="ClassDataProvider">
-    <xs:complexContent>
-      <xs:extension base="AbstractDataProvider">
-        <xs:attribute name="object" type="Expression" use="required"/>
-        <xs:attribute name="method" type="Expression" use="required"/>
-      </xs:extension>
-    </xs:complexContent>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="object" type="Expression" use="required"/>
+    <xs:attribute name="method" type="Expression" use="required"/>
+    <xs:attribute name="arg" type="Expression"/>
+    <xs:attribute name="arg-class" type="Expression"/>
   </xs:complexType>
 
   <xs:complexType name="ReportEventListener">
@@ -414,15 +408,21 @@
   </xs:complexType>
 
 
-  <xs:simpleType name="SQLProcessorType">
+  <xs:simpleType name="TargetType">
     <xs:annotation>
-      <xs:documentation>Перечень поддерживаемых обработчиков запросов</xs:documentation>
+      <xs:documentation>Определяет формат в котором будет сгенерирован итоговый отчет</xs:documentation>
     </xs:annotation>
     <xs:restriction base="xs:Name">
-      <xs:enumeration value="oracle"/>
-      <xs:enumeration value="pgsql"/>
-      <xs:enumeration value="mssql"/>
-      <xs:enumeration value="generic"/>
+      <xs:enumeration value="HSSF">
+        <xs:annotation>
+          <xs:documentation>Формат Office 2003 с использованием библиотеки Apache POI</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="XSSF">
+        <xs:annotation>
+          <xs:documentation>Формат Office 2007 с использованием библиотеки Apache POI</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
 

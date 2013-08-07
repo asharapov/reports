@@ -1,6 +1,6 @@
 package org.echosoft.framework.reports.macros;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.ss.usermodel.Cell;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.processor.Group;
 
@@ -33,7 +33,7 @@ public class GroupItemNum implements Macros {
         } else {
             number = group.records.size();
         }
-        ectx.cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
+        ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
         ectx.cell.setCellValue(number);
     }
 

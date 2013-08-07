@@ -20,5 +20,4 @@ public interface ReportProcessor {
      * @throws ReportProcessingException в случае каких-либо проблем.
      */
     public Workbook process(final Report report, final ELContext ctx) throws ReportProcessingException;
-
 }

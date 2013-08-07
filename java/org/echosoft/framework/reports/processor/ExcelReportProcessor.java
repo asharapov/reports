@@ -4,10 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.poi.POIXMLProperties;
 import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hpsf.MutableProperty;
 import org.apache.poi.hpsf.MutablePropertySet;
@@ -16,52 +16,46 @@ import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hpsf.Variant;
 import org.apache.poi.hpsf.wellknown.PropertyIDMap;
 import org.apache.poi.hpsf.wellknown.SectionIDMap;
-import org.apache.poi.hssf.model.InternalSheet;
-import org.apache.poi.hssf.record.PaletteRecord;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
-import org.apache.poi.hssf.usermodel.HSSFFont;
-import org.apache.poi.hssf.usermodel.HSSFPalette;
-import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
-import org.apache.poi.hssf.usermodel.HSSFRichTextString;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.openxml4j.util.Nullable;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.PrintSetup;
+import org.apache.poi.ss.usermodel.RichTextString;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.echosoft.common.model.TreeNode;
-import org.echosoft.common.query.Query;
-import org.echosoft.common.query.providers.DataProvider;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.echosoft.common.data.misc.TreeNode;
 import org.echosoft.framework.reports.macros.Macros;
-import org.echosoft.framework.reports.model.Area;
-import org.echosoft.framework.reports.model.Cell;
-import org.echosoft.framework.reports.model.CellStyle;
-import org.echosoft.framework.reports.model.Color;
-import org.echosoft.framework.reports.model.ColumnGroup;
+import org.echosoft.framework.reports.model.AreaModel;
+import org.echosoft.framework.reports.model.CellModel;
+import org.echosoft.framework.reports.model.ColumnGroupModel;
 import org.echosoft.framework.reports.model.CompositeSection;
-import org.echosoft.framework.reports.model.Font;
 import org.echosoft.framework.reports.model.GroupStyle;
 import org.echosoft.framework.reports.model.GroupingSection;
-import org.echosoft.framework.reports.model.PageSettings;
+import org.echosoft.framework.reports.model.PageSettingsModel;
 import org.echosoft.framework.reports.model.PlainSection;
-import org.echosoft.framework.reports.model.PrintSetup;
+import org.echosoft.framework.reports.model.PrintSetupModel;
 import org.echosoft.framework.reports.model.Report;
-import org.echosoft.framework.reports.model.Row;
+import org.echosoft.framework.reports.model.RowModel;
 import org.echosoft.framework.reports.model.Section;
-import org.echosoft.framework.reports.model.Sheet;
-import org.echosoft.framework.reports.model.StylePalette;
+import org.echosoft.framework.reports.model.SheetModel;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.events.CellEvent;
 import org.echosoft.framework.reports.model.events.CellEventListener;
 import org.echosoft.framework.reports.model.events.ReportEventListener;
 import org.echosoft.framework.reports.model.events.SectionEventListener;
+import org.echosoft.framework.reports.model.providers.DataProvider;
 import org.echosoft.framework.reports.model.providers.ProviderUsage;
-import org.echosoft.framework.reports.util.POIUtils;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheets;
 
 /**
  * Формирует итоговый отчет по его модели и на основании данных указанных пользователем в качестве параметров.<br/>
- * Результатом работы данного построителя является экземпляр {@link HSSFWorkbook} соответствующий формату Excel-2003.
+ * Результатом работы данного построителя является экземпляр {@link Workbook} соответствующий формату не ниже Excel-2003.
  *
  * @author Anton Sharapov
  */
@@ -90,27 +84,22 @@ public class ExcelReportProcessor implements ReportProcessor {
      * @throws ReportProcessingException в случае каких-либо проблем.
      */
     @Override
-    public HSSFWorkbook process(Report report, final ELContext ctx) throws ReportProcessingException {
+    public Workbook process(Report report, final ELContext ctx) throws ReportProcessingException {
         ExecutionContext ectx = null;
         try {
             report = new Report(null, report); // копируем модель отчета, т.к. в процессе формирования отчета она может измениться.
-            final HSSFWorkbook wb = makeWorkbook(report, ctx);
-            final Map<Short, HSSFCellStyle> styles = applyStyles(report, wb);
+            final Workbook wb = makeWorkbook(report, ctx);
+            final Map<Short, CellStyle> styles = applyStyles(report, wb);
             ectx = new ExecutionContext(report, ctx, wb, styles);
             ctx.getVariables().put(VAR_CONTEXT, ectx);
-            final String user = report.getUser()!=null ? (String)report.getUser().getValue(ctx) : null;
-            final String password = report.getPassword()!= null ?(String)report.getPassword().getValue(ctx) : null;
-            if (user!=null && password!=null) {
-                wb.writeProtectWorkbook(password, user);
-            }
             for (final ReportEventListener listener : ectx.listeners) {
                 listener.beforeReport(ectx);
             }
-            for (final Sheet sheet : report.getSheets()) {
+            for (final SheetModel sheet : report.getSheets()) {
                 processSheet(ectx, sheet);
             }
             boolean activeSheetSpecified = false;
-            for (int i=0, cnt=wb.getNumberOfSheets(); i<cnt; i++) {
+            for (int i = 0, cnt = wb.getNumberOfSheets(); i < cnt; i++) {
                 if (!wb.isSheetHidden(i) && !wb.isSheetVeryHidden(i)) {
                     wb.setActiveSheet(i);
                     wb.setSelectedTab(i);
@@ -119,7 +108,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                 }
             }
             if (!activeSheetSpecified) {
-                final HSSFSheet sheet = wb.createSheet();
+                final Sheet sheet = wb.createSheet();
                 final int index = wb.getSheetIndex(sheet);
                 wb.setActiveSheet(index);
                 wb.setSelectedTab(index);
@@ -129,177 +118,199 @@ public class ExcelReportProcessor implements ReportProcessor {
             }
             return wb;
         } catch (Exception e) {
-            throw new ReportProcessingException(e.getMessage()+"\n"+ectx, e, ectx);
+            throw new ReportProcessingException(e.getMessage() + "\n" + ectx, e, ectx);
         }
     }
 
-    protected HSSFWorkbook makeWorkbook(final Report report, final ELContext ctx) throws Exception {
-        final byte[] emptyWorkbookData = new HSSFWorkbook().getBytes();
-        final POIFSFileSystem fs;
-        if (report.getTemplate()!=null) {
-            fs = new POIFSFileSystem( new ByteArrayInputStream(report.getTemplate()) );
-        } else {
-            fs = new POIFSFileSystem();
-            fs.createDocument(new ByteArrayInputStream(emptyWorkbookData), "Workbook");
-        }
+    protected Workbook makeWorkbook(final Report report, final ELContext ctx) throws Exception {
+        switch (report.getTarget()) {
+            case XSSF: {
+                final XSSFWorkbook wb;
+                if (report.getTemplate() != null) {
+                    final OPCPackage pkg = OPCPackage.open(new ByteArrayInputStream(report.getTemplate()));
+                    wb = new XSSFWorkbook(pkg);
+                    final CTSheets sheets = wb.getCTWorkbook().getSheets();
+                    while (sheets.sizeOfSheetArray() > 0)
+                        sheets.removeSheet(0);
+                } else {
+                    wb = new XSSFWorkbook();
+                }
+                final POIXMLProperties props = wb.getProperties();
+                props.getCoreProperties().setCreated(new Nullable<Date>(new Date()));
+                final String application = report.getDescription().getApplication(ctx);
+                if (application != null) {
+                    props.getExtendedProperties().getUnderlyingProperties().setApplication(application);
+                }
+                final String author = report.getDescription().getAuthor(ctx);
+                if (author != null) {
+                    props.getCoreProperties().setCreator(author);
+                }
+                final String version = report.getDescription().getVersion(ctx);
+                if (version != null) {
+                    props.getExtendedProperties().getUnderlyingProperties().setAppVersion(version);
+                }
+                final String title = report.getDescription().getTitle(ctx);
+                if (title != null) {
+                    props.getCoreProperties().setTitle(title);
+                }
+                final String subject = report.getDescription().getSubject(ctx);
+                if (subject != null) {
+                    props.getCoreProperties().setSubjectProperty(subject);
+                }
+                final String comments = report.getDescription().getComments(ctx);
+                if (comments != null) {
+                    props.getCoreProperties().setDescription(comments);
+                }
+                final String company = report.getDescription().getCompany(ctx);
+                if (company != null) {
+                    props.getExtendedProperties().getUnderlyingProperties().setCompany(company);
+                }
+                final String category = report.getDescription().getCategory(ctx);
+                if (category != null) {
+                    props.getCoreProperties().setCategory(category);
+                }
+                // специфичные для XSSF настройки ...
+                final String user = report.getUser() != null ? (String) report.getUser().getValue(ctx) : null;
+                final String password = report.getPassword() != null ? (String) report.getPassword().getValue(ctx) : null;
+                if (user != null && password != null) {
+                    wb.lockWindows();
+                    wb.lockRevision();
+                    wb.lockStructure();
+                }
+                return wb;
+            }
+            case HSSF:
+            default: {
+                final POIFSFileSystem fs;
+                if (report.getTemplate() != null) {
+                    fs = new POIFSFileSystem(new ByteArrayInputStream(report.getTemplate()));
+                } else {
+                    final byte[] emptyWorkbookData = new HSSFWorkbook().getBytes();
+                    fs = new POIFSFileSystem();
+                    fs.createDocument(new ByteArrayInputStream(emptyWorkbookData), "Workbook");
+                }
 
-        final MutablePropertySet siProperties = new MutablePropertySet();
-        final MutableSection siSection = (MutableSection) siProperties.getSections().get(0);
-        siSection.setFormatID(SectionIDMap.SUMMARY_INFORMATION_ID);
-        final MutableProperty p0 = new MutableProperty();
-        p0.setID(PropertyIDMap.PID_CREATE_DTM);
-        p0.setType(Variant.VT_FILETIME);
-        p0.setValue(new Date());
-        siSection.setProperty(p0);
+                final MutablePropertySet siProperties = new MutablePropertySet();
+                final MutableSection siSection = (MutableSection) siProperties.getSections().get(0);
+                siSection.setFormatID(SectionIDMap.SUMMARY_INFORMATION_ID);
+                final MutableProperty p0 = new MutableProperty();
+                p0.setID(PropertyIDMap.PID_CREATE_DTM);
+                p0.setType(Variant.VT_FILETIME);
+                p0.setValue(new Date());
+                siSection.setProperty(p0);
 
-        final String application = report.getDescription().getApplication(ctx);
-        if (application != null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_APPNAME);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(application);
-            siSection.setProperty(p);
-        }
-        final String author = report.getDescription().getAuthor(ctx);
-        if (author != null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_AUTHOR);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(author);
-            siSection.setProperty(p);
-        }
-        final String version = report.getDescription().getVersion(ctx);
-        if (version != null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_REVNUMBER);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(version);
-            siSection.setProperty(p);
-        }
-        final String title = report.getDescription().getTitle(ctx);
-        if (title != null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_TITLE);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(title);
-            siSection.setProperty(p);
-        }
-        final String subject = report.getDescription().getSubject(ctx);
-        if (subject != null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_SUBJECT);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(subject);
-            siSection.setProperty(p);
-        }
-        final String comments = report.getDescription().getComments(ctx);
-        if (comments != null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_COMMENTS);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(comments);
-            siSection.setProperty(p);
-        }
+                final String application = report.getDescription().getApplication(ctx);
+                if (application != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_APPNAME);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(application);
+                    siSection.setProperty(p);
+                }
+                final String author = report.getDescription().getAuthor(ctx);
+                if (author != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_AUTHOR);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(author);
+                    siSection.setProperty(p);
+                }
+                final String version = report.getDescription().getVersion(ctx);
+                if (version != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_REVNUMBER);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(version);
+                    siSection.setProperty(p);
+                }
+                final String title = report.getDescription().getTitle(ctx);
+                if (title != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_TITLE);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(title);
+                    siSection.setProperty(p);
+                }
+                final String subject = report.getDescription().getSubject(ctx);
+                if (subject != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_SUBJECT);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(subject);
+                    siSection.setProperty(p);
+                }
+                final String comments = report.getDescription().getComments(ctx);
+                if (comments != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_COMMENTS);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(comments);
+                    siSection.setProperty(p);
+                }
 
-        final MutablePropertySet dsiProperties = new MutablePropertySet();
-        final MutableSection dsiSection = (MutableSection)dsiProperties.getSections().get(0);
-        dsiSection.setFormatID(SectionIDMap.DOCUMENT_SUMMARY_INFORMATION_ID[0]);
-        final String company = report.getDescription().getCompany(ctx);
-        if (company!=null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_COMPANY);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(company);
-            dsiSection.setProperty(p);
-        }
-        final String category = report.getDescription().getCategory(ctx);
-        if (category!=null) {
-            final MutableProperty p = new MutableProperty();
-            p.setID(PropertyIDMap.PID_CATEGORY);
-            p.setType(Variant.VT_LPWSTR);
-            p.setValue(category);
-            dsiSection.setProperty(p);
-        }
+                final MutablePropertySet dsiProperties = new MutablePropertySet();
+                final MutableSection dsiSection = (MutableSection) dsiProperties.getSections().get(0);
+                dsiSection.setFormatID(SectionIDMap.DOCUMENT_SUMMARY_INFORMATION_ID[0]);
+                final String company = report.getDescription().getCompany(ctx);
+                if (company != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_COMPANY);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(company);
+                    dsiSection.setProperty(p);
+                }
+                final String category = report.getDescription().getCategory(ctx);
+                if (category != null) {
+                    final MutableProperty p = new MutableProperty();
+                    p.setID(PropertyIDMap.PID_CATEGORY);
+                    p.setType(Variant.VT_LPWSTR);
+                    p.setValue(category);
+                    dsiSection.setProperty(p);
+                }
 
-        fs.createDocument(siProperties.toInputStream(), SummaryInformation.DEFAULT_STREAM_NAME);
-        fs.createDocument(dsiProperties.toInputStream(), DocumentSummaryInformation.DEFAULT_STREAM_NAME);
-        return new HSSFWorkbook(fs,true);
+                fs.createDocument(siProperties.toInputStream(), SummaryInformation.DEFAULT_STREAM_NAME);
+                fs.createDocument(dsiProperties.toInputStream(), DocumentSummaryInformation.DEFAULT_STREAM_NAME);
+                final HSSFWorkbook wb = new HSSFWorkbook(fs, true);
+                // специфичные для HSSF настройки ...
+                final String user = report.getUser() != null ? (String) report.getUser().getValue(ctx) : null;
+                final String password = report.getPassword() != null ? (String) report.getPassword().getValue(ctx) : null;
+                if (user != null && password != null) {
+                    wb.writeProtectWorkbook(password, user);
+                }
+                return wb;
+            }
+        }
     }
 
-    protected Map<Short, HSSFCellStyle> applyStyles(final Report report, final HSSFWorkbook wb) {
-        final StylePalette palette = report.getPalette();
-        final Map<Short, HSSFCellStyle> styles = new HashMap<Short, HSSFCellStyle>();
-
-        if (report.getTemplate()!=null) {
-            for (final short styleIndex : palette.getStyles().keySet()) {
-                final HSSFCellStyle style = wb.getCellStyleAt(styleIndex);
-                if (style==null)
-                    throw new RuntimeException("Inconsistent report template. Style not found: "+styleIndex);
+    protected Map<Short, CellStyle> applyStyles(final Report report, final Workbook wb) {
+        if (report.getTemplate() != null) {
+            final Map<Short, CellStyle> styles = new HashMap<Short, CellStyle>();
+            for (final short styleIndex : report.getPalette().getStyles().keySet()) {
+                final CellStyle style = wb.getCellStyleAt(styleIndex);
+                if (style == null)
+                    throw new RuntimeException("Inconsistent report template. Style not found: " + styleIndex);
                 styles.put(styleIndex, style);
             }
             return styles;
+        } else {
+            return report.getPalette().applyTo(wb);
         }
-        if (palette.getColors().size() > PaletteRecord.STANDARD_PALETTE_SIZE)
-            throw new RuntimeException("too many colors on report");
-        final HSSFPalette pal = wb.getCustomPalette();
-        for (final Color color : palette.getColors().values()) {
-            pal.setColorAtIndex(color.getId(), color.getRed(), color.getGreen(), color.getBlue());
-        }
-
-        final Map<Short, HSSFFont> fonts = new HashMap<Short, HSSFFont>();
-        final HSSFDataFormat formatter = wb.createDataFormat();
-        for (final Font font : palette.getFonts().values()) {
-            final HSSFFont f = POIUtils.ensureFontExists(wb, font);
-            fonts.put(font.getId(), f);
-        }
-
-        for (final CellStyle style : palette.getStyles().values()) {
-            final short bbc = style.getBottomBorderColor() != null ? style.getBottomBorderColor().getId() : 0;
-            final short fbc = style.getFillBackgroundColor() != null ? style.getFillBackgroundColor().getId() : 0;
-            final short ffc = style.getFillForegroundColor() != null ? style.getFillForegroundColor().getId() : 0;
-            final short lbc = style.getLeftBorderColor() != null ? style.getLeftBorderColor().getId() : 0;
-            final short rbc = style.getRightBorderColor() != null ? style.getRightBorderColor().getId() : 0;
-            final short tbc = style.getTopBorderColor() != null ? style.getTopBorderColor().getId() : 0;
-
-            final HSSFCellStyle s = wb.createCellStyle();
-            s.setAlignment(style.getAlignment());
-            s.setBorderBottom(style.getBorderBottom());
-            s.setBorderLeft(style.getBorderLeft());
-            s.setBorderRight(style.getBorderRight());
-            s.setBorderTop(style.getBorderTop());
-            s.setBottomBorderColor(bbc);
-            s.setDataFormat(formatter.getFormat(style.getDataFormat()));
-            s.setFillBackgroundColor(fbc);
-            s.setFillForegroundColor(ffc);
-            s.setFillPattern(style.getFillPattern());
-            s.setHidden(style.isHidden());
-            s.setIndention(style.getIndention());
-            s.setLeftBorderColor(lbc);
-            s.setLocked(style.isLocked());
-            s.setRightBorderColor(rbc);
-            s.setRotation(style.getRotation());
-            s.setTopBorderColor(tbc);
-            s.setVerticalAlignment(style.getVerticalAlignment());
-            s.setWrapText(style.isWrapText());
-            s.setFont(fonts.get(style.getFont().getId()));
-            styles.put(style.getId(), s);
-        }
-        return styles;
     }
 
-    protected void processSheet(final ExecutionContext ectx, final Sheet sheet) throws Exception {
+    protected void processSheet(final ExecutionContext ectx, final SheetModel sheet) throws Exception {
         ectx.sheet = sheet;
         for (final ReportEventListener listener : ectx.listeners) {
             listener.beforeSheet(ectx);
         }
         if (ectx.sheet.isRendered()) {
-            ectx.wsheet = ectx.wb.createSheet( (String)sheet.getTitle().getValue(ectx.elctx) );
-            //ctx.wsheet.setRowSumsBelow(false);
-            ectx.wsheet.setAlternativeExpression(false);  // setAlternativeExpression делает то что должен делать метод setRowSumBelow() ...
+            ectx.wsheet = ectx.wb.createSheet((String) sheet.getTitle().getValue(ectx.elctx));
+            ectx.wsheet.setRowSumsBelow(false);
+            //ectx.wsheet.setAlternativeExpression(false);  //мы использовали этот метод т.к. setRowSumBelow() не работал в должной мере, но судя по коду, в POI это исправили еще 4 года назад
+
             final int sheetIdx = ectx.wb.getSheetIndex(ectx.wsheet);
             ectx.wb.setSheetHidden(sheetIdx, sheet.isHidden());
-            if (sheet.isProtected() && ectx.report.getPassword()!=null && ectx.wb.isWriteProtected()) {
-                ectx.wsheet.protectSheet( (String)ectx.report.getPassword().getValue(ectx.elctx) );
+            if (sheet.isProtected() && ectx.report.getPassword() != null /*&& ectx.wb.isWriteProtected()*/) {
+                ectx.wsheet.protectSheet((String) ectx.report.getPassword().getValue(ectx.elctx));
             }
             for (final Section section : sheet.getSections()) {
                 processSection(ectx, section);
@@ -312,8 +323,8 @@ public class ExcelReportProcessor implements ReportProcessor {
             for (int i = 0; i < hidden.length; i++) {
                 ectx.wsheet.setColumnHidden(i, hidden[i]);
             }
-            for (Iterator<TreeNode<ColumnGroup>> i = sheet.getColumnGroups().traverseChildNodes(); i.hasNext();) {
-                final ColumnGroup group = i.next().getData();
+            for (TreeNode<String, ColumnGroupModel> grpNode : sheet.getColumnGroups().traverseNodes(false)) {
+                final ColumnGroupModel group = grpNode.getData();
                 ectx.wsheet.groupColumn(group.getFirstColumn(), (short) group.getLastColumn());
             }
             processPageSettings(ectx.wsheet, sheet.getPageSettings());
@@ -325,25 +336,25 @@ public class ExcelReportProcessor implements ReportProcessor {
         ectx.wsheet = null;
     }
 
-    private void processPageSettings(final HSSFSheet sheet, final PageSettings pageSettings) {
+    private void processPageSettings(final Sheet sheet, final PageSettingsModel pageSettings) {
         sheet.getHeader().setLeft(pageSettings.getHeader().getLeft());
         sheet.getHeader().setCenter(pageSettings.getHeader().getCenter());
         sheet.getHeader().setRight(pageSettings.getHeader().getRight());
         sheet.getFooter().setLeft(pageSettings.getFooter().getLeft());
         sheet.getFooter().setCenter(pageSettings.getFooter().getCenter());
         sheet.getFooter().setRight(pageSettings.getFooter().getRight());
-        sheet.setMargin(InternalSheet.TopMargin, pageSettings.getMargins().getTop());
-        sheet.setMargin(InternalSheet.RightMargin, pageSettings.getMargins().getRight());
-        sheet.setMargin(InternalSheet.BottomMargin, pageSettings.getMargins().getBottom());
-        sheet.setMargin(InternalSheet.LeftMargin, pageSettings.getMargins().getLeft());
+        sheet.setMargin(Sheet.TopMargin, pageSettings.getMargins().getTop());
+        sheet.setMargin(Sheet.RightMargin, pageSettings.getMargins().getRight());
+        sheet.setMargin(Sheet.BottomMargin, pageSettings.getMargins().getBottom());
+        sheet.setMargin(Sheet.LeftMargin, pageSettings.getMargins().getLeft());
         processPrintSetup(sheet.getPrintSetup(), pageSettings.getPrintSetup());
         sheet.setFitToPage(pageSettings.isFitToPage());
         sheet.setHorizontallyCenter(pageSettings.isHorizontallyCenter());
         sheet.setVerticallyCenter(pageSettings.isVerticallyCenter());
-        if (pageSettings.getZoom()!=null)
+        if (pageSettings.getZoom() != null)
             sheet.setZoom(pageSettings.getZoom(), 100);
     }
-    private void processPrintSetup(final HSSFPrintSetup hps, final PrintSetup printSetup) {
+    private void processPrintSetup(final PrintSetup hps, final PrintSetupModel printSetup) {
         hps.setPaperSize(printSetup.getPaperSize());
         hps.setScale(printSetup.getScale());
         hps.setFitWidth(printSetup.getFitWidth());
@@ -354,7 +365,6 @@ public class ExcelReportProcessor implements ReportProcessor {
         hps.setLandscape(printSetup.getLandscape());
         hps.setLeftToRight(printSetup.getLeftToRight());
         hps.setNoColor(printSetup.getNoColor());
-        hps.setOptions(printSetup.getOptions());
         hps.setDraft(printSetup.getDraft());
         hps.setHResolution(printSetup.getHResolution());
         hps.setNotes(printSetup.getNotes());
@@ -387,7 +397,7 @@ public class ExcelReportProcessor implements ReportProcessor {
             if (section instanceof GroupingSection) {
                 processGroupingSection(ectx);
             } else
-                throw new RuntimeException("Unsupported section type: "+section.getClass());
+                throw new RuntimeException("Unsupported section type: " + section.getClass());
 
             final int lastRow = ectx.getLastRowNum();
             if (section.isHidden()) {
@@ -395,7 +405,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                     ectx.wsheet.getRow(i).setZeroHeight(true);
                 }
             }
-            if (section.isCollapsible() && lastRow>firstRow) {
+            if (section.isCollapsible() && lastRow > firstRow) {
                 ectx.wsheet.groupRow(firstRow, lastRow);
                 ectx.wsheet.setRowGroupCollapsed(firstRow, section.isCollapsed());
             }
@@ -412,19 +422,13 @@ public class ExcelReportProcessor implements ReportProcessor {
 
     protected void processPlainSection(final ExecutionContext ectx) throws Exception {
         final SectionContext sctx = ectx.sectionContext;
-        final PlainSection section = (PlainSection)sctx.section;
-        DataProvider provider = null;
-        Query query = null;
-        if (section.getDataProvider() != null) {
-            provider = section.getDataProvider().getProvider(ectx.elctx);
-            query = section.getDataProvider().getQuery(ectx.elctx);
-        }
+        final PlainSection section = (PlainSection) sctx.section;
 
-        if (provider != null) {
-            sctx.beanIterator = provider.execute(query);
+        if (section.getDataProvider() != null) {
+            sctx.issuer = section.getDataProvider().getIssuer(ectx.elctx);
             try {
-                while (sctx.beanIterator.hasNext()) {
-                    sctx.bean = sctx.beanIterator.next();
+                while (sctx.issuer.hasNext()) {
+                    sctx.bean = sctx.issuer.next();
                     ectx.elctx.setRowModel(sctx.bean);
                     ectx.elctx.getVariables().put(VAR_RECORD, sctx.record);
                     renderArea(ectx, section.getTemplate(), -1);
@@ -435,8 +439,8 @@ public class ExcelReportProcessor implements ReportProcessor {
                     sctx.record++;
                 }
             } finally {
-                sctx.beanIterator.close();
-                sctx.beanIterator = null;
+                sctx.issuer.close();
+                sctx.issuer = null;
                 sctx.bean = null;
             }
         } else {
@@ -446,24 +450,18 @@ public class ExcelReportProcessor implements ReportProcessor {
 
     protected void processGroupingSection(final ExecutionContext ectx) throws Exception {
         final SectionContext sctx = ectx.sectionContext;
-        final GroupingSection section = (GroupingSection)sctx.section;
-        DataProvider provider = null;
-        Query query = null;
-        if (section.getDataProvider() != null) {
-            provider = section.getDataProvider().getProvider(ectx.elctx);
-            query = section.getDataProvider().getQuery(ectx.elctx);
-        }
+        final GroupingSection section = (GroupingSection) sctx.section;
 
-        if (provider != null) {
+        if (section.getDataProvider() != null) {
             sctx.gm = new GroupManager(section.getGroups()) {
                 public void renderCurrentGroup(final ExecutionContext ctx) throws Exception {
                     renderGroup(ctx, getCurrentGroup());
                 }
             };
-            sctx.beanIterator = provider.execute(query);
+            sctx.issuer = section.getDataProvider().getIssuer(ectx.elctx);
             try {
-                while (sctx.beanIterator.hasNext()) {
-                    sctx.bean = sctx.beanIterator.next();
+                while (sctx.issuer.hasNext()) {
+                    sctx.bean = sctx.issuer.next();
                     ectx.elctx.setRowModel(sctx.bean);
                     ectx.elctx.getVariables().put(VAR_RECORD, sctx.record);
                     sctx.gm.initRecord(ectx, sctx.bean);
@@ -476,8 +474,8 @@ public class ExcelReportProcessor implements ReportProcessor {
                     sctx.record++;
                 }
             } finally {
-                sctx.beanIterator.close();
-                sctx.beanIterator = null;
+                sctx.issuer.close();
+                sctx.issuer = null;
                 sctx.bean = null;
             }
             sctx.gm.finalizeAllGroups(ectx);
@@ -489,25 +487,20 @@ public class ExcelReportProcessor implements ReportProcessor {
 
     protected void processCompositeSection(final ExecutionContext ectx) throws Exception {
         final SectionContext sctx = ectx.sectionContext;
-        final CompositeSection section = (CompositeSection)sctx.section;
-        DataProvider provider = null;
-        Query query = null;
-        if (section.getDataProvider() != null) {
-            provider = section.getDataProvider().getProvider(ectx.elctx);
-            query = section.getDataProvider().getQuery(ectx.elctx);
-        }
-
+        final CompositeSection section = (CompositeSection) sctx.section;
+        final DataProvider provider = section.getDataProvider();
         final ProviderUsage providerUsage = section.getProviderUsage();
-        if (provider!=null && providerUsage!=ProviderUsage.DECLARE_ONLY) {
+
+        if (provider != null && providerUsage != ProviderUsage.DECLARE_ONLY) {
             sctx.gm = new GroupManager(section.getGroups()) {
                 public void renderCurrentGroup(final ExecutionContext ctx) throws Exception {
                     renderGroup(ctx, getCurrentGroup());
                 }
             };
-            sctx.beanIterator = provider.execute(query);
+            sctx.issuer = provider.getIssuer(ectx.elctx);
             try {
-                while(sctx.beanIterator.hasNext()) {
-                    sctx.bean = ProviderUsage.PREFETCH_RECORDS==providerUsage ? sctx.beanIterator.readAhead() : sctx.beanIterator.next();
+                while (sctx.issuer.hasNext()) {
+                    sctx.bean = ProviderUsage.PREFETCH_RECORDS == providerUsage ? sctx.issuer.readAhead() : sctx.issuer.next();
                     ectx.elctx.setRowModel(sctx.bean);
                     ectx.elctx.getVariables().put(VAR_RECORD, sctx.record);
                     sctx.gm.initRecord(ectx, sctx.bean);
@@ -522,22 +515,22 @@ public class ExcelReportProcessor implements ReportProcessor {
                     sctx.record++;
                 }
             } finally {
-                sctx.beanIterator.close();
-                sctx.beanIterator = null;
+                sctx.issuer.close();
+                sctx.issuer = null;
                 sctx.bean = null;
             }
             sctx.gm.finalizeAllGroups(ectx);
             sctx.gm = null;
         } else {
-            sctx.beanIterator = provider!=null ? provider.execute(query) : null;
+            sctx.issuer = provider != null ? provider.getIssuer(ectx.elctx) : null;
             try {
                 for (final Section childSection : section.getSections()) {
                     processSection(ectx, childSection);
                 }
             } finally {
-                if (sctx.beanIterator!=null) {
-                    sctx.beanIterator.close();
-                    sctx.beanIterator = null;
+                if (sctx.issuer != null) {
+                    sctx.issuer.close();
+                    sctx.issuer = null;
                 }
             }
         }
@@ -547,20 +540,20 @@ public class ExcelReportProcessor implements ReportProcessor {
      * Отрисовывает группировочную строку в отчете.
      *
      * @param group текущая группа, которая должна быть отображена в отчете.
-     * @param ectx   контекст выполнения задачи.
+     * @param ectx  контекст выполнения задачи.
      * @throws Exception в случае каких-либо проблем.
      */
     protected void renderGroup(final ExecutionContext ectx, final Group group) throws Exception {
         final Object prevBean = ectx.elctx.getRowModel();
         ectx.elctx.setRowModel(group.bean);
 
-        final GroupStyle style = group.level!=null ? group.model.getStyleByLevel(group.level) : group.model.getDefaultStyle();
+        final GroupStyle style = group.level != null ? group.model.getStyleByLevel(group.level) : group.model.getDefaultStyle();
         renderArea(ectx, style.getTemplate(), group.startRow);
 
         final int firstRow = group.startRow + 1;
         final int lastRow = ectx.wsheet.getLastRowNum();
-        if (group.model.isCollapsible() && lastRow>=firstRow) {
-            ectx.wsheet.groupRow(firstRow, lastRow );
+        if (group.model.isCollapsible() && lastRow >= firstRow) {
+            ectx.wsheet.groupRow(firstRow, lastRow);
             if (group.model.isCollapsed()) {
                 ectx.wsheet.setRowGroupCollapsed(firstRow, group.model.isCollapsed());
             }
@@ -572,14 +565,14 @@ public class ExcelReportProcessor implements ReportProcessor {
     /**
      * Отрисовывает группу строк на основе их шаблона в отчете.
      *
-     * @param ectx      контекст выполнения задачи.
+     * @param ectx     контекст выполнения задачи.
      * @param template шаблон группы строк.
      * @param startRow номер первой строки отчета (начиная с 0) в которую надо вставлять данный контент.
      *                 Если данный параметр меньше нуля, то будет осуществляться вставка новых строк в конец листа.
      * @return номер следующей строки после отображения данной группы строк.
      * @throws Exception в случае каких-либо проблем
      */
-    protected int renderArea(final ExecutionContext ectx, final Area template, int startRow) throws Exception {
+    protected int renderArea(final ExecutionContext ectx, final AreaModel template, int startRow) throws Exception {
         final CellEvent event = new CellEvent(ectx);
 
         if (startRow < 0) {
@@ -589,8 +582,8 @@ public class ExcelReportProcessor implements ReportProcessor {
         int r = startRow;
         final Map<String, Object> variables = ectx.elctx.getVariables();
         final boolean hidden = template.isHidden();
-        for (final Row rm : template.getRows()) {
-            HSSFRow row = ectx.wsheet.getRow(r);
+        for (final RowModel rm : template.getRows()) {
+            Row row = ectx.wsheet.getRow(r);
             if (row == null) {
                 row = ectx.wsheet.createRow(r);
             }
@@ -602,14 +595,14 @@ public class ExcelReportProcessor implements ReportProcessor {
             variables.put(VAR_PREV_ROW, r - 1);
             variables.put(VAR_ROW, r);
             variables.put(VAR_NEXT_ROW, r + 1);
-            final List<Cell> cells = rm.getCells();
+            final List<CellModel> cells = rm.getCells();
             for (int i = 0; i < cells.size(); i++) {
-                final Cell cm = cells.get(i);
+                final CellModel cm = cells.get(i);
                 if (cm == null)
                     continue;
-                final HSSFCellStyle style = ectx.styles.get(cm.getStyle());
-                ectx.cell = row.createCell(i, HSSFCell.CELL_TYPE_BLANK);
-                if (style!=null)
+                final CellStyle style = ectx.styles.get(cm.getStyle());
+                ectx.cell = row.createCell(i, Cell.CELL_TYPE_BLANK);
+                if (style != null)
                     ectx.cell.setCellStyle(style);
                 event.setRendered(false);
                 event.setCellValue(cm.getExpression().getValue(ectx.elctx));
@@ -629,43 +622,43 @@ public class ExcelReportProcessor implements ReportProcessor {
     /**
      * Устанавливает значение ячейки.
      *
-     * @param ectx   контекст выполнения задачи.
+     * @param ectx  контекст выполнения задачи.
      * @param value объект на основании которого устанавливается значение ячейки.
      */
     protected void renderCell(final ExecutionContext ectx, final Object value) {
         if (value == null) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_BLANK);
+            ectx.cell.setCellType(Cell.CELL_TYPE_BLANK);
         } else
         if (value instanceof Date) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
+            ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue((Date) value);
         } else
         if (value instanceof Calendar) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
+            ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
             ectx.cell.setCellValue((Calendar) value);
         } else
         if (value instanceof Double) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
-            ectx.cell.setCellValue((Double)value);
+            ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            ectx.cell.setCellValue((Double) value);
         } else
         if (value instanceof Number) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
-            ectx.cell.setCellValue( new Double(((Number)value).doubleValue()) );
+            ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            ectx.cell.setCellValue(((Number) value).doubleValue());
         } else
         if (value instanceof Boolean) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_BOOLEAN);
+            ectx.cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
             ectx.cell.setCellValue((Boolean) value);
         } else
-        if (value instanceof HSSFRichTextString) {
-            ectx.cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-            ectx.cell.setCellValue((HSSFRichTextString) value);
+        if (value instanceof RichTextString) {
+            ectx.cell.setCellType(Cell.CELL_TYPE_STRING);
+            ectx.cell.setCellValue((RichTextString) value);
         } else {
             final String text = value.toString();
-            if (ectx.cell.getCellType() == HSSFCell.CELL_TYPE_FORMULA) {
+            if (ectx.cell.getCellType() == Cell.CELL_TYPE_FORMULA) {
                 ectx.cell.setCellFormula(text);
             } else
             if (text.startsWith(FORMULA)) {
-                ectx.cell.setCellType(HSSFCell.CELL_TYPE_FORMULA);
+                ectx.cell.setCellType(Cell.CELL_TYPE_FORMULA);
                 ectx.cell.setCellFormula(text.substring(FORMULA_LENGTH));
             } else
             if (text.startsWith(MACROS)) {
@@ -676,7 +669,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                     final int fi = text.lastIndexOf(')');
                     if (fi < si)
                         throw new IllegalArgumentException("Illegal custom function call [" + text + "] at row:" + ectx.cell.getRowIndex() + ", cell:" + ectx.cell.getColumnIndex());
-                    args =  text.substring(si + 1, fi);
+                    args = text.substring(si + 1, fi);
                 } else {
                     name = text.substring(MACROS_LENGTH);
                     args = null;
@@ -686,10 +679,9 @@ public class ExcelReportProcessor implements ReportProcessor {
                     throw new IllegalArgumentException("Unable to find custom function [" + name + "] at row:" + ectx.cell.getRowIndex() + ", cell:" + ectx.cell.getColumnIndex());
                 func.call(ectx, args);
             } else {
-                ectx.cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-                ectx.cell.setCellValue(new HSSFRichTextString(text));
+                ectx.cell.setCellType(Cell.CELL_TYPE_STRING);
+                ectx.cell.setCellValue(ectx.creationHelper.createRichTextString(text));
             }
         }
     }
-
 }

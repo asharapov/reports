@@ -25,108 +25,116 @@ public class ReportDescription implements Serializable, Cloneable {
     public Expression getCompany() {
         return company;
     }
-    public void setCompany(Expression company) {
+    public void setCompany(final Expression company) {
         this.company = company;
     }
 
     public Expression getApplication() {
         return application;
     }
-    public void setApplication(Expression application) {
+    public void setApplication(final Expression application) {
         this.application = application;
     }
 
     public Expression getAuthor() {
         return author;
     }
-    public void setAuthor(Expression author) {
+    public void setAuthor(final Expression author) {
         this.author = author;
     }
 
     public Expression getVersion() {
         return version;
     }
-    public void setVersion(Expression version) {
+    public void setVersion(final Expression version) {
         this.version = version;
     }
 
     public Expression getTitle() {
         return title;
     }
-    public void setTitle(Expression title) {
+    public void setTitle(final Expression title) {
         this.title = title;
     }
 
     public Expression getSubject() {
         return subject;
     }
-    public void setSubject(Expression subject) {
+    public void setSubject(final Expression subject) {
         this.subject = subject;
     }
 
     public Expression getCategory() {
         return category;
     }
-    public void setCategory(Expression category) {
+    public void setCategory(final Expression category) {
         this.category = category;
     }
 
     public Expression getComments() {
         return comments;
     }
-    public void setComments(Expression comments) {
+    public void setComments(final Expression comments) {
         this.comments = comments;
     }
 
 
-    public String getCompany(ELContext ctx) throws Exception {
+    public String getCompany(final ELContext ctx) throws Exception {
         final Object result;
-        return (company!=null && (result=company.getValue(ctx))!=null)
+        return (company != null && (result = company.getValue(ctx)) != null)
                 ? result.toString()
                 : null;
     }
-    public String getApplication(ELContext ctx) throws Exception {
+
+    public String getApplication(final ELContext ctx) throws Exception {
         final Object result;
-        return (application!=null && (result=application.getValue(ctx))!=null)
+        return (application != null && (result = application.getValue(ctx)) != null)
                 ? result.toString()
                 : null;
     }
-    public String getAuthor(ELContext ctx) throws Exception {
+
+    public String getAuthor(final ELContext ctx) throws Exception {
         final Object result;
-        return (author!=null && (result=author.getValue(ctx))!=null)
+        return (author != null && (result = author.getValue(ctx)) != null)
                 ? result.toString()
                 : null;
     }
-    public String getVersion(ELContext ctx) throws Exception {
+
+    public String getVersion(final ELContext ctx) throws Exception {
         final Object result;
-        return (version!=null && (result=version.getValue(ctx))!=null)
+        return (version != null && (result = version.getValue(ctx)) != null)
                 ? result.toString()
                 : null;
     }
-    public String getTitle(ELContext ctx) throws Exception {
+
+    public String getTitle(final ELContext ctx) throws Exception {
         final Object result;
-        return (title!=null && (result=title.getValue(ctx))!=null)
+        return (title != null && (result = title.getValue(ctx)) != null)
                 ? result.toString()
                 : null;
     }
-    public String getSubject(ELContext ctx) throws Exception {
+
+    public String getSubject(final ELContext ctx) throws Exception {
         final Object result;
-        return (subject!=null && (result=subject.getValue(ctx))!=null)
+        return (subject != null && (result = subject.getValue(ctx)) != null)
                 ? result.toString()
                 : null;
     }
-    public String getCategory(ELContext ctx) throws Exception {
+
+    public String getCategory(final ELContext ctx) throws Exception {
         final Object result;
-        return (category!=null && (result=category.getValue(ctx))!=null)
+        return (category != null && (result = category.getValue(ctx)) != null)
                 ? result.toString()
                 : null;
     }
-    public String getComments(ELContext ctx) throws Exception {
+
+    public String getComments(final ELContext ctx) throws Exception {
         final Object result;
-        return (comments!=null && (result=comments.getValue(ctx))!=null)
+        return (comments != null && (result = comments.getValue(ctx)) != null)
                 ? result.toString()
                 : null;
     }
+
 
     @Override
     public Object clone() throws CloneNotSupportedException {

@@ -35,36 +35,37 @@ import org.junit.Test;
  */
 public class POITest {
 
+    @Test
     public void testParsing() throws IOException {
         final HSSFWorkbook wb = TestUtils.loadExcelDocument("poitest1.xls");
         final SummaryInformation si = wb.getSummaryInformation();
-        System.out.println("author: "+si.getAuthor());
-        System.out.println("application: "+si.getApplicationName());
-        System.out.println("subject: "+si.getSubject());
-        System.out.println("title: "+si.getTitle());
-        System.out.println("keywords: "+si.getKeywords());
-        System.out.println("comments: "+si.getComments());
-        System.out.println("created: "+si.getCreateDateTime());
+        System.out.println("author: " + si.getAuthor());
+        System.out.println("application: " + si.getApplicationName());
+        System.out.println("subject: " + si.getSubject());
+        System.out.println("title: " + si.getTitle());
+        System.out.println("keywords: " + si.getKeywords());
+        System.out.println("comments: " + si.getComments());
+        System.out.println("created: " + si.getCreateDateTime());
         System.out.println();
         System.out.println(si);
     }
 
-
+    @Test
     public void testHeadParsing() throws IOException {
         final InputStream in = TestUtils.openFileStream("poitest1.xls");
         final POIFSReader reader = new POIFSReader();
         reader.registerListener(new POIFSReaderListener() {
             public void processPOIFSReaderEvent(POIFSReaderEvent event) {
-                System.out.println("name: "+event.getName()+"\npath: "+event.getPath());
+                System.out.println("name: " + event.getName() + "\npath: " + event.getPath());
                 try {
-                    SummaryInformation si = (SummaryInformation)PropertySetFactory.create(event.getStream());
-                    System.out.println("author: "+si.getAuthor());
-                    System.out.println("application: "+si.getApplicationName());
-                    System.out.println("subject: "+si.getSubject());
-                    System.out.println("title: "+si.getTitle());
-                    System.out.println("keywords: "+si.getKeywords());
-                    System.out.println("comments: "+si.getComments());
-                    System.out.println("created: "+si.getCreateDateTime());
+                    SummaryInformation si = (SummaryInformation) PropertySetFactory.create(event.getStream());
+                    System.out.println("author: " + si.getAuthor());
+                    System.out.println("application: " + si.getApplicationName());
+                    System.out.println("subject: " + si.getSubject());
+                    System.out.println("title: " + si.getTitle());
+                    System.out.println("keywords: " + si.getKeywords());
+                    System.out.println("comments: " + si.getComments());
+                    System.out.println("created: " + si.getCreateDateTime());
                     //System.out.println(si);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -74,6 +75,7 @@ public class POITest {
         reader.read(in);
     }
 
+    @Test
     public void testSummaryInfoWriting() throws IOException, WritingNotSupportedException {
         final ByteArrayOutputStream out1 = new ByteArrayOutputStream(4096);
         final ByteArrayOutputStream out2 = new ByteArrayOutputStream(4096);
@@ -87,7 +89,6 @@ public class POITest {
         cell2.setCellValue(new HSSFRichTextString("cell2"));
         */
         wb.write(out1);
-
         final MutablePropertySet mps = new MutablePropertySet();
         final MutableSection ms = (MutableSection) mps.getSections().get(0);
         ms.setFormatID(SectionIDMap.SUMMARY_INFORMATION_ID);
@@ -106,41 +107,35 @@ public class POITest {
         p3.setType(Variant.VT_FILETIME);
         p3.setValue(new Date());
         ms.setProperty(p3);
-
         final POIFSFileSystem fs = new POIFSFileSystem(new ByteArrayInputStream(out1.toByteArray()));
         fs.createDocument(mps.toInputStream(), SummaryInformation.DEFAULT_STREAM_NAME);
         fs.writeFilesystem(out2);
-
-
-        wb = new HSSFWorkbook( new ByteArrayInputStream(out2.toByteArray()) );
+        wb = new HSSFWorkbook(new ByteArrayInputStream(out2.toByteArray()));
         System.out.println(wb.getSheetName(0));
         final SummaryInformation si = wb.getSummaryInformation();
-        System.out.println("author: "+si.getAuthor());
-        System.out.println("application: "+si.getApplicationName());
-        System.out.println("subject: "+si.getSubject());
-        System.out.println("title: "+si.getTitle());
-        System.out.println("keywords: "+si.getKeywords());
-        System.out.println("comments: "+si.getComments());
-        System.out.println("created: "+si.getCreateDateTime());
+        System.out.println("author: " + si.getAuthor());
+        System.out.println("application: " + si.getApplicationName());
+        System.out.println("subject: " + si.getSubject());
+        System.out.println("title: " + si.getTitle());
+        System.out.println("keywords: " + si.getKeywords());
+        System.out.println("comments: " + si.getComments());
+        System.out.println("created: " + si.getCreateDateTime());
     }
 
-
-
+    @Test
     public void testNumericFields() throws IOException {
         System.out.println(Locale.getDefault());
-
         final HSSFWorkbook wb = new HSSFWorkbook();
         final HSSFSheet sheet = wb.createSheet("test sheet");
         final HSSFRow row1 = sheet.createRow(0);
         row1.setHeight(sheet.getDefaultRowHeight());
         final HSSFCell[] cells1 = new HSSFCell[3];
         cells1[0] = row1.createCell(0, HSSFCell.CELL_TYPE_STRING);
-        cells1[0].setCellValue( new HSSFRichTextString("test1"));
+        cells1[0].setCellValue(new HSSFRichTextString("test1"));
         cells1[1] = row1.createCell(1, HSSFCell.CELL_TYPE_STRING);
-        cells1[1].setCellValue( new HSSFRichTextString("test2"));
+        cells1[1].setCellValue(new HSSFRichTextString("test2"));
         cells1[2] = row1.createCell(2, HSSFCell.CELL_TYPE_STRING);
-        cells1[2].setCellValue( new HSSFRichTextString("test3"));
-
+        cells1[2].setCellValue(new HSSFRichTextString("test3"));
         final HSSFRow row2 = sheet.createRow(1);
         row2.setHeight(sheet.getDefaultRowHeight());
         final HSSFCell[] cells2 = new HSSFCell[3];
@@ -151,7 +146,6 @@ public class POITest {
         cells2[2] = row2.createCell(2, HSSFCell.CELL_TYPE_BLANK);
         cells2[2].setCellType(HSSFCell.CELL_TYPE_FORMULA);
         cells2[2].setCellFormula("A2+B2");
-
         final HSSFRow row3 = sheet.createRow(2);
         row3.setHeight(sheet.getDefaultRowHeight());
         final HSSFCell[] cells3 = new HSSFCell[3];
@@ -161,13 +155,13 @@ public class POITest {
         POIUtils.setCellValue(cells3[1], 2.6);
         cells3[2] = row3.createCell(2, HSSFCell.CELL_TYPE_STRING);
         POIUtils.setCellValue(cells3[2], "$F=A3+B3");
-
         final FileOutputStream out = new FileOutputStream("poitest.xls");
         wb.write(out);
         out.flush();
         out.close();
     }
 
+    @Test
     public void testColumnGroups() throws IOException {
         final HSSFWorkbook wb = new HSSFWorkbook();
         final HSSFSheet sheet = wb.createSheet("test");
@@ -182,11 +176,9 @@ public class POITest {
 //        sheet.groupColumn(1, 15);
 //        sheet.groupColumn(4, 12);
 //        sheet.groupColumn(7, 9);
-
         sheet.groupColumn(7, 9);
         sheet.groupColumn(4, 12);
         sheet.groupColumn(1, 15);  // POI bug here: 45639
-
         final FileOutputStream out = new FileOutputStream("poitest.xls");
         wb.write(out);
         out.flush();
@@ -198,7 +190,7 @@ public class POITest {
         final HSSFWorkbook wb = new HSSFWorkbook();
         final HSSFSheet sheet1 = wb.createSheet("sumstop");
         sheet1.setRowSumsBelow(false);
-        for (int i=0; i<22; i++) {
+        for (int i = 0; i < 22; i++) {
             sheet1.createRow(i);
         }
         sheet1.groupRow(6, 7);
@@ -210,7 +202,6 @@ public class POITest {
 //        sheet1.groupRow(20, 21);
 //        sheet1.groupRow(19, 21);
 //        sheet1.groupRow(18, 21);
-
 //        final HSSFSheet sheet2 = wb.createSheet("sumsbelow");
 //        sheet2.setRowSumsBelow(true);
 //        for (int i=0; i<22; i++) {
@@ -229,13 +220,13 @@ public class POITest {
 ////        sheet2.setRowGroupCollapsed(20, true);
 //        sheet2.groupRow(19, 21);
 //        sheet2.groupRow(18, 21);
-
         final FileOutputStream out = new FileOutputStream("poitest.xls");
         wb.write(out);
         out.flush();
         out.close();
     }
 
+    @Test
     public void testRowGroups2() throws IOException {
         final HSSFWorkbook wb = TestUtils.loadExcelDocument("poitest2.xls");
         final HSSFSheet sheet1 = wb.getSheetAt(0);

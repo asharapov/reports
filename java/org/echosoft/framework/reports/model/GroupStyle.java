@@ -24,35 +24,35 @@ public class GroupStyle implements Serializable, Cloneable {
     /**
      * Собственно шаблон оформления.
      */
-    private Area template;
+    private AreaModel template;
 
 
     public int getLevel() {
         return level;
     }
-    public void setLevel(int level) {
+    public void setLevel(final int level) {
         this.level = level;
     }
 
     public boolean isDefault() {
         return defaultStyle;
     }
-    public void setDefault(boolean defaultStyle) {
+    public void setDefault(final boolean defaultStyle) {
         this.defaultStyle = defaultStyle;
     }
 
-    public Area getTemplate() {
+    public AreaModel getTemplate() {
         return template;
     }
-    public void setTemplate(Area template) {
+    public void setTemplate(final AreaModel template) {
         this.template = template;
     }
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        final GroupStyle result = (GroupStyle)super.clone();
-        if (template!=null)
-            result.template = (Area)template.clone();
+        final GroupStyle result = (GroupStyle) super.clone();
+        if (template != null)
+            result.template = (AreaModel) template.clone();
         return result;
     }
 
@@ -61,14 +61,16 @@ public class GroupStyle implements Serializable, Cloneable {
         return level;
     }
 
+    @Override
     public boolean equals(final Object obj) {
-        if (obj==null || !getClass().equals(obj.getClass()))
+        if (obj == null || !getClass().equals(obj.getClass()))
             return false;
-        final GroupStyle other = (GroupStyle)obj;
-        return level==other.level && defaultStyle==other.defaultStyle;
+        final GroupStyle other = (GroupStyle) obj;
+        return level == other.level && defaultStyle == other.defaultStyle;
     }
 
+    @Override
     public String toString() {
-        return "[GroupStyle{level:"+level+", default:"+defaultStyle+", height:"+(template!=null ? template.getRowsCount() : 0)+"}]";
+        return "[GroupStyle{level:" + level + ", default:" + defaultStyle + ", height:" + (template != null ? template.getRowsCount() : 0) + "}]";
     }
 }
