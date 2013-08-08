@@ -98,9 +98,11 @@ public class ClassDataProvider implements DataProvider {
 
         if (argCls != null) {
             final Method method = cls.getMethod(methodName, argCls);
+            method.setAccessible(true); // пропустим стандартный контроль доступа (иначе не сможем вызывать публичные методы непубличных объектов )
             return method.invoke(service, arg);
         } else {
             final Method method = cls.getMethod(methodName);
+            method.setAccessible(true); // пропустим стандартный контроль доступа (иначе не сможем вызывать публичные методы непубличных объектов )
             return method.invoke(service);
         }
     }
