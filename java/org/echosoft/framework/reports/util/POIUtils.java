@@ -534,9 +534,12 @@ public class POIUtils {
         dst.setRightBorderColor(src.getRightBorderXSSFColor());
         dst.setBottomBorderColor(src.getBottomBorderXSSFColor());
         dst.setLeftBorderColor(src.getLeftBorderXSSFColor());
-        dst.setFillPattern(src.getFillPattern());
-        dst.setFillForegroundColor(src.getFillForegroundXSSFColor());
-        dst.setFillBackgroundColor(src.getFillBackgroundXSSFColor());
+        final short fp = src.getFillPattern();
+        dst.setFillPattern(fp);
+        if (fp != CellStyle.NO_FILL) {
+            dst.setFillForegroundColor(src.getFillForegroundXSSFColor());
+            dst.setFillBackgroundColor(src.getFillBackgroundXSSFColor());
+        }
         dst.setFont(wb.getFontAt(src.getFontIndex()));
         return dst;
     }
