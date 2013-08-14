@@ -537,8 +537,12 @@ public class POIUtils {
         final short fp = src.getFillPattern();
         dst.setFillPattern(fp);
         if (fp != CellStyle.NO_FILL) {
-            dst.setFillForegroundColor(src.getFillForegroundXSSFColor());
-            dst.setFillBackgroundColor(src.getFillBackgroundXSSFColor());
+            final XSSFColor ffc = src.getFillForegroundXSSFColor();
+            if (ffc != null)
+                dst.setFillForegroundColor(ffc);
+            final XSSFColor fbc = src.getFillBackgroundXSSFColor();
+            if (fbc != null)
+                dst.setFillBackgroundColor(fbc);
         }
         dst.setFont(wb.getFontAt(src.getFontIndex()));
         return dst;
