@@ -27,13 +27,13 @@ build.nowarn=off
 build.encoding=utf-8
 
 # Specifies the version of source code accepted.
-build.source=1.6
+build.source=1.7
 
 # Generate class files for specific VM version
-build.target=1.6
+build.target=1.7
 
 # Explicitly specifies path to JDK that should be used for project building.
-jdk.home=/usr/local/java/sdk/6.0
+jdk.home=/usr/local/java/sdk/7.0
 
 # Explicitly specifies path to Git binary (workaround of ant bug that sometimes occurs on windows platform)
 git.bin=git
