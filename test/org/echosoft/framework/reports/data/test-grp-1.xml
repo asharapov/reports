@@ -15,9 +15,9 @@
   <sheet id="sheet1" title="группировка-1">
     <plain-section id="s11" height="1" />
     <grouping-section id="s12" rowHeight="1" indentColumns="A" provider="ds1">
-      <group discriminatorField="contragent" collapsed="false" />
+      <group discriminatorField="contragent" collapsed="true" />
     </grouping-section>
-      <plain-section id="s13" height="1" />
+    <plain-section id="s13" height="1" />
   </sheet>
 
   <sheet id="sheet2" title="группировка-2">
@@ -26,7 +26,7 @@
       <group discriminatorField="contragent" collapsed="false" />
       <group discriminatorField="name" collapsed="false" />
     </grouping-section>
-      <plain-section id="s23" height="1" />
+    <plain-section id="s23" height="1" />
   </sheet>
 
 </report>

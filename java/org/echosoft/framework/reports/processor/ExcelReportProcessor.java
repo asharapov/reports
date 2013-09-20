@@ -51,6 +51,7 @@ import org.echosoft.framework.reports.model.events.ReportEventListener;
 import org.echosoft.framework.reports.model.events.SectionEventListener;
 import org.echosoft.framework.reports.model.providers.DataProvider;
 import org.echosoft.framework.reports.model.providers.ProviderUsage;
+import org.echosoft.framework.reports.util.POIUtils;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheets;
 
 /**
@@ -478,7 +479,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                 sctx.issuer = null;
                 sctx.bean = null;
             }
-            sctx.gm.finalizeAllGroups(ectx);
+            sctx.gm.finalizeAllGroups(ectx);    // TODO:
             sctx.gm = null;
         } else {
             renderArea(ectx, section.getRowTemplate(), -1);
@@ -553,10 +554,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         final int firstRow = group.startRow + 1;
         final int lastRow = ectx.wsheet.getLastRowNum();
         if (group.model.isCollapsible() && lastRow >= firstRow) {
-            ectx.wsheet.groupRow(firstRow, lastRow);
-            if (group.model.isCollapsed()) {
-                ectx.wsheet.setRowGroupCollapsed(firstRow, group.model.isCollapsed());
-            }
+            POIUtils.groupRows(ectx.wsheet, firstRow, lastRow, group.model.isCollapsed());
         }
 
         ectx.elctx.setRowModel(prevBean);

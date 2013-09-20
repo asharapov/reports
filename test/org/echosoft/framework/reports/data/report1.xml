@@ -22,7 +22,7 @@
     <plain-section id="s1.header" height="4" />
     <composite-section id="s1.data">
       <plain-section id="s1.data.header" height="2" />
-      <plain-section id="s1.data.body" height="1" provider="ds1" collapsible="false" collapsed="false" />
+      <plain-section id="s1.data.body" height="1" provider="ds1" collapsible="true" collapsed="true" />
       <plain-section id="s1.data.footer" height="1" />
     </composite-section>
     <plain-section id="s1.footer" height="1" />

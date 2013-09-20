@@ -5,6 +5,7 @@ import java.util.Date;
 
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Cell;
@@ -14,11 +15,14 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.RichTextString;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.model.StylesTable;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.echosoft.framework.reports.model.ColorModel;
 import org.echosoft.framework.reports.model.FontModel;
@@ -593,5 +597,27 @@ public class POIUtils {
             ectx.elctx.getVariables().put(styleName, dst);
         }
         return dst;
+    }
+
+    public static void groupRows(final Sheet sheet, final int firstRow, final int lastRow, final boolean collapsed) {
+        if (lastRow < firstRow)
+            return;
+        sheet.groupRow(firstRow, lastRow);
+        if (collapsed) {
+            if (sheet instanceof HSSFSheet) {
+                sheet.setRowGroupCollapsed(lastRow, true);
+            } else
+            if (sheet instanceof XSSFSheet) {
+                final XSSFSheet xsheet = (XSSFSheet)sheet;
+                for (int i = firstRow; i <= lastRow; i++) {
+                    final XSSFRow row = xsheet.getRow(i);
+                    if (row != null) {
+                        row.getCTRow().setHidden(true);
+                        row.getCTRow().setCollapsed(true);
+                    }
+                }
+            } else
+                throw new RuntimeException("Unsupported sheet class");
+        }
     }
 }

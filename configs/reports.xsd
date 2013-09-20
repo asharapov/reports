@@ -108,8 +108,8 @@
         <xs:element name="sql" type="Expression"/>
         <xs:element name="sql-ref" type="Expression"/>
       </xs:choice>
-      <xs:element name="params" type="Expression"/>
-      <xs:element name="param" type="Parameter" maxOccurs="unbounded"/>
+      <xs:element name="params" type="Expression" minOccurs="0"/>
+      <xs:element name="param" type="Parameter" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attribute name="id" type="xs:ID" use="required"/>
     <xs:attribute name="datasource" type="Expression" use="required"/>
