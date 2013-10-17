@@ -75,8 +75,8 @@ public abstract class Section implements Serializable, Cloneable {
             throw new IllegalArgumentException("Report section identifier must be specified");
         this.id = id;
         this.rendered = true;
-        this.sectionListeners = new ArrayList<SectionEventListenerHolder>();
-        this.cellListeners = new ArrayList<CellEventListenerHolder>();
+        this.sectionListeners = new ArrayList<>();
+        this.cellListeners = new ArrayList<>();
     }
 
     /**

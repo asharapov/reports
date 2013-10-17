@@ -522,6 +522,9 @@ public class POIUtils {
     public static XSSFCellStyle copyStyle(final XSSFWorkbook wb, final short index) {
         final XSSFCellStyle src = wb.getCellStyleAt(index);
         final XSSFCellStyle dst = wb.createCellStyle();
+        dst.cloneStyleFrom(src);
+        return dst;
+        /*
         dst.setAlignment(src.getAlignment());
         dst.setVerticalAlignment(src.getVerticalAlignment());
         dst.setDataFormat(src.getDataFormat());
@@ -550,6 +553,7 @@ public class POIUtils {
         }
         dst.setFont(wb.getFontAt(src.getFontIndex()));
         return dst;
+        */
     }
 
     /**

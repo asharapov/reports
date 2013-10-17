@@ -131,7 +131,7 @@ public class SQLDataProvider implements DataProvider {
         ResultSet rs = null;
         try {
             conn = ds.getConnection();
-            pstmt = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            pstmt = conn.prepareStatement(psql.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             pstmt.setFetchDirection(ResultSet.FETCH_FORWARD);
             pstmt.setFetchSize(DEFAULT_FETCH_SIZE);
             psql.applyParams(pstmt, params);
