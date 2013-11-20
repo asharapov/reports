@@ -318,7 +318,7 @@ public class ExcelReportProcessor implements ReportProcessor {
             }
             final int[] widths = sheet.getColumnWidths();
             for (int i = 0; i < widths.length; i++) {
-                ectx.wsheet.setColumnWidth((short) i, widths[i]);
+                ectx.wsheet.setColumnWidth(i, widths[i]);
             }
             final boolean[] hidden = sheet.getColumnHidden();
             for (int i = 0; i < hidden.length; i++) {
@@ -326,7 +326,7 @@ public class ExcelReportProcessor implements ReportProcessor {
             }
             for (TreeNode<String, ColumnGroupModel> grpNode : sheet.getColumnGroups().traverseNodes(false)) {
                 final ColumnGroupModel group = grpNode.getData();
-                ectx.wsheet.groupColumn(group.getFirstColumn(), (short) group.getLastColumn());
+                ectx.wsheet.groupColumn(group.getFirstColumn(), group.getLastColumn());
             }
             processPageSettings(ectx.wsheet, sheet.getPageSettings());
         }

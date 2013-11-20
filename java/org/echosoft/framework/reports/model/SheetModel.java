@@ -88,10 +88,10 @@ public class SheetModel implements Serializable {
         this.hidden = false;
         this.rendered = true;
         this.locked = false;
-        this.sections = new ArrayList<Section>();
+        this.sections = new ArrayList<>();
         this.colwidths = EMPTY_INT_ARRAY;
         this.colhidden = EMPTY_BOOLEAN_ARRAY;
-        this.colgroups = new TreeNode<String, ColumnGroupModel>("", null);
+        this.colgroups = new TreeNode<>("", null);
         this.pageSettings = new PageSettingsModel();
     }
 

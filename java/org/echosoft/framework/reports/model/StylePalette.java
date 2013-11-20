@@ -31,9 +31,9 @@ public class StylePalette implements Serializable, Cloneable {
     private Map<Short, CellStyleModel> styles;
 
     public StylePalette(final Workbook wb) {
-        colors = new HashMap<Short, ColorModel>();
-        fonts = new HashMap<Short, FontModel>();
-        styles = new HashMap<Short, CellStyleModel>();
+        colors = new HashMap<>();
+        fonts = new HashMap<>();
+        styles = new HashMap<>();
 
         if (wb instanceof HSSFWorkbook) {
             init((HSSFWorkbook) wb);
@@ -45,7 +45,7 @@ public class StylePalette implements Serializable, Cloneable {
     }
 
     private void init(final XSSFWorkbook wb) {
-        final Map<Integer, ColorModel> hashedColors = new HashMap<Integer, ColorModel>();
+        final Map<Integer, ColorModel> hashedColors = new HashMap<>();
 
         for (short i = 0, cnt = wb.getNumberOfFonts(); i < cnt; i++) {
             final XSSFFont f = wb.getFontAt(i);
@@ -232,7 +232,7 @@ public class StylePalette implements Serializable, Cloneable {
     }
 
     private Map<Short, CellStyle> applyTo(final HSSFWorkbook wb) {
-        final Map<Short, CellStyle> result = new HashMap<Short, CellStyle>();
+        final Map<Short, CellStyle> result = new HashMap<>();
 
         if (colors.size() > PaletteRecord.STANDARD_PALETTE_SIZE)
             throw new RuntimeException("Too many colors in report for HSSF format");
@@ -241,7 +241,7 @@ public class StylePalette implements Serializable, Cloneable {
             pal.setColorAtIndex(color.getId(), color.getRed(), color.getGreen(), color.getBlue());
         }
 
-        final Map<Short, Font> fontsmap = new HashMap<Short, Font>();
+        final Map<Short, Font> fontsmap = new HashMap<>();
         for (final FontModel font : fonts.values()) {
             final Font f = POIUtils.ensureFontExists(wb, font);
             fontsmap.put(font.getId(), f);
@@ -284,9 +284,9 @@ public class StylePalette implements Serializable, Cloneable {
     }
 
     private Map<Short, CellStyle> applyTo(final XSSFWorkbook wb) {
-        final Map<Short, CellStyle> result = new HashMap<Short, CellStyle>();
+        final Map<Short, CellStyle> result = new HashMap<>();
 
-        final Map<Short, Font> fontsmap = new HashMap<Short, Font>();
+        final Map<Short, Font> fontsmap = new HashMap<>();
         for (final FontModel font : fonts.values()) {
             final Font f = POIUtils.ensureFontExists(wb, font);
             fontsmap.put(font.getId(), f);
@@ -340,15 +340,15 @@ public class StylePalette implements Serializable, Cloneable {
     @Override
     public Object clone() throws CloneNotSupportedException {
         final StylePalette result = (StylePalette) super.clone();
-        result.colors = new HashMap<Short, ColorModel>(colors.size());
+        result.colors = new HashMap<>(colors.size());
         for (Map.Entry<Short, ColorModel> e : colors.entrySet()) {
             result.colors.put(e.getKey(), (ColorModel) e.getValue().clone());
         }
-        result.fonts = new HashMap<Short, FontModel>(fonts.size());
+        result.fonts = new HashMap<>(fonts.size());
         for (Map.Entry<Short, FontModel> e : fonts.entrySet()) {
             result.fonts.put(e.getKey(), (FontModel) e.getValue().clone());
         }
-        result.styles = new HashMap<Short, CellStyleModel>(styles.size());
+        result.styles = new HashMap<>(styles.size());
         for (Map.Entry<Short, CellStyleModel> e : styles.entrySet()) {
             result.styles.put(e.getKey(), (CellStyleModel) e.getValue().clone());
         }

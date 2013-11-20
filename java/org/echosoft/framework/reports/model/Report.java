@@ -115,11 +115,11 @@ public class Report implements Serializable {
         this.id = id;
         this.target = TargetType.HSSF;
         this.description = new ReportDescription();
-        this.sheets = new ArrayList<SheetModel>();
+        this.sheets = new ArrayList<>();
         this.palette = new StylePalette(wb);
-        this.macros = new HashMap<String, Macros>();
-        this.listeners = new ArrayList<ReportEventListenerHolder>();
-        this.providers = new HashMap<String, DataProvider>();
+        this.macros = new HashMap<>();
+        this.listeners = new ArrayList<>();
+        this.providers = new HashMap<>();
     }
 
     /**
@@ -141,9 +141,9 @@ public class Report implements Serializable {
         template = src.template;
         description = (ReportDescription) src.description.clone();
         palette = (StylePalette) src.palette.clone();
-        macros = new HashMap<String, Macros>();
-        listeners = new ArrayList<ReportEventListenerHolder>();
-        providers = new HashMap<String, DataProvider>();
+        macros = new HashMap<>();
+        listeners = new ArrayList<>();
+        providers = new HashMap<>();
         macros.putAll(src.macros);
         for (ReportEventListenerHolder listener : src.listeners) {
             listeners.add((ReportEventListenerHolder) listener.clone());
@@ -151,7 +151,7 @@ public class Report implements Serializable {
         for (Map.Entry<String, DataProvider> entry : src.providers.entrySet()) {
             providers.put(entry.getKey(), (DataProvider) entry.getValue().clone());
         }
-        sheets = new ArrayList<SheetModel>();
+        sheets = new ArrayList<>();
         for (SheetModel sheet : src.sheets) {
             sheets.add(sheet.cloneSheet(this));
         }

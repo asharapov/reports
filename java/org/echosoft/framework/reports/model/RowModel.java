@@ -29,7 +29,7 @@ public class RowModel implements Serializable, Cloneable {
 
 
     public RowModel() {
-        cells = new ArrayList<CellModel>();
+        cells = new ArrayList<>();
         height = -1;
     }
 
