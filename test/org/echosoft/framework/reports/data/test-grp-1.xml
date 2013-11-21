@@ -12,7 +12,7 @@
   <list-data-provider id="ds1" data="${env:invoices}" />
   <list-data-provider id="ds2" data="${env:payments}" />
 
-  <sheet id="sheet1" title="группировка-1">
+  <sheet id="sheet1" title="группировка-1" group-columns="C-E">
     <plain-section id="s11" height="1" />
     <grouping-section id="s12" rowHeight="1" indentColumns="A" provider="ds1">
       <group discriminatorField="contragent" collapsed="true" />

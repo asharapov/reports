@@ -133,8 +133,8 @@ public class TestUtils {
         final String name = StringUtil.trim(element.getAttribute("name"));
         final String contragent = StringUtil.trim(element.getAttribute("contragent"));
         final String invoice = StringUtil.trim(element.getAttribute("invoice"));
-        final int amount = Any.asInt(StringUtil.trim(element.getAttribute("amount")));
-        final double unitcost = Any.asDouble(StringUtil.trim(element.getAttribute("unitcost")));
+        final int amount = Any.asInt(StringUtil.trim(element.getAttribute("amount")), 0);
+        final double unitcost = Any.asDouble(StringUtil.trim(element.getAttribute("unitcost")), 0d);
         return new Invoice(id, name, contragent, invoice, amount, unitcost);
     }
 
