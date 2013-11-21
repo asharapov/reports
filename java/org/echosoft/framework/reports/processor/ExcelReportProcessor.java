@@ -28,6 +28,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.echosoft.common.data.misc.TreeNode;
 import org.echosoft.framework.reports.macros.Macros;
@@ -125,6 +126,7 @@ public class ExcelReportProcessor implements ReportProcessor {
 
     protected Workbook makeWorkbook(final Report report, final ELContext ctx) throws Exception {
         switch (report.getTarget()) {
+            case SXSSF:
             case XSSF: {
                 final XSSFWorkbook wb;
                 if (report.getTemplate() != null) {
@@ -137,7 +139,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                     wb = new XSSFWorkbook();
                 }
                 final POIXMLProperties props = wb.getProperties();
-                props.getCoreProperties().setCreated(new Nullable<Date>(new Date()));
+                props.getCoreProperties().setCreated(new Nullable<>(new Date()));
                 final String application = report.getDescription().getApplication(ctx);
                 if (application != null) {
                     props.getExtendedProperties().getUnderlyingProperties().setApplication(application);
@@ -177,6 +179,9 @@ public class ExcelReportProcessor implements ReportProcessor {
                     wb.lockWindows();
                     wb.lockRevision();
                     wb.lockStructure();
+                }
+                if (report.getTarget() == Report.TargetType.SXSSF) {
+                    return new SXSSFWorkbook(wb, 1000);
                 }
                 return wb;
             }
@@ -285,7 +290,7 @@ public class ExcelReportProcessor implements ReportProcessor {
 
     protected Map<Short, CellStyle> applyStyles(final Report report, final Workbook wb) {
         if (report.getTemplate() != null) {
-            final Map<Short, CellStyle> styles = new HashMap<Short, CellStyle>();
+            final Map<Short, CellStyle> styles = new HashMap<>();
             for (final short styleIndex : report.getPalette().getStyles().keySet()) {
                 final CellStyle style = wb.getCellStyleAt(styleIndex);
                 if (style == null)
@@ -479,7 +484,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                 sctx.issuer = null;
                 sctx.bean = null;
             }
-            sctx.gm.finalizeAllGroups(ectx);    // TODO:
+            sctx.gm.finalizeAllGroups(ectx);
             sctx.gm = null;
         } else {
             renderArea(ectx, section.getRowTemplate(), -1);

@@ -423,6 +423,11 @@
           <xs:documentation>Формат Office 2007 с использованием библиотеки Apache POI</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
+      <xs:enumeration value="SXSSF">
+        <xs:annotation>
+          <xs:documentation>Формат Office 2007 с использованием библиотеки Apache POI. Потоковый режим формирования отчетности (экспериментальная реализация)</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
 
