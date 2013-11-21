@@ -14,6 +14,7 @@ import org.echosoft.common.utils.StreamUtil;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.el.Expression;
 import org.echosoft.framework.reports.processor.ReportProcessingException;
+import org.echosoft.framework.reports.util.Logs;
 
 /**
  * Предназначен для динамического конструирования поставщиков данных на основе контекста выполнения отчета.
@@ -34,7 +35,7 @@ public class SQLDataProvider implements DataProvider {
 
     public SQLDataProvider(final String id) {
         this.id = id;
-        params = new HashMap<Expression, Expression>();
+        params = new HashMap<>();
     }
 
     @Override
@@ -125,7 +126,9 @@ public class SQLDataProvider implements DataProvider {
 
     private ReadAheadIssuer getIssuer(final DataSource ds, final String sql, final Map<String, Object> params) throws Exception {
         final ParameterizedSQL psql = new ParameterizedSQL(sql);
-
+        if (Logs.reports.isDebugEnabled()) {
+            Logs.reports.debug("Issuer query: \n" + psql.compileNonParameterizedQuery(params));
+        }
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -164,7 +167,7 @@ public class SQLDataProvider implements DataProvider {
     @Override
     public Object clone() throws CloneNotSupportedException {
         final SQLDataProvider result = (SQLDataProvider) super.clone();
-        result.params = new HashMap<Expression, Expression>(params.size());
+        result.params = new HashMap<>(params.size());
         result.params.putAll(params);
         return result;
     }
