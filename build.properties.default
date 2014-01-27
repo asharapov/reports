@@ -44,6 +44,6 @@ git.bin=git
 #
 built.by=Anton Sharapov, asharapov2@yandex.ru
 spec.version=2.0
-spec.vendor=echosoft, 2013
+spec.vendor=echosoft, 2014
 spec.extraversion=
 app.name=echosoft-reports

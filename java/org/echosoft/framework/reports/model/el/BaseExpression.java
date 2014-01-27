@@ -28,7 +28,7 @@ public class BaseExpression implements Expression {
 
     public BaseExpression(final Object expression) {
         this.expression = expression;
-        this.chunks = new ArrayList<Chunk>(1);
+        this.chunks = new ArrayList<>(1);
         init(expression);
         this.staticExpr = (chunks.size() == 1) && (chunks.get(0) instanceof StaticChunk);
     }
@@ -39,7 +39,7 @@ public class BaseExpression implements Expression {
 
     /**
      * @return true  если выражение является полностью статичным, т.е. не содержит ссылок на
-     *         параметры в том или ином пространстве имен контекста.
+     * параметры в том или ином пространстве имен контекста.
      */
     @Override
     public boolean isStatic() {
@@ -74,7 +74,8 @@ public class BaseExpression implements Expression {
         final String text;
         if (expression instanceof String) {
             text = (String) expression;
-        } else if (expression instanceof RichTextString) {
+        } else
+        if (expression instanceof RichTextString) {
             text = ((RichTextString) expression).getString();
         } else {
             chunks.add(new StaticChunk(expression));
@@ -157,7 +158,7 @@ public class BaseExpression implements Expression {
 
         public PatternChunk(final MessageFormat formatter, final String expression) {
             this.formatter = formatter;
-            this.expressions = new ArrayList<ParsedExpression>(2);
+            this.expressions = new ArrayList<>(2);
 
             int s = 0, e = expression.length();
             for (int d = expression.indexOf('|', s); d >= s && d < e; d = expression.indexOf('|', s)) {
