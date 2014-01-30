@@ -59,8 +59,8 @@ public class AreaModel implements Serializable, Cloneable {
     public AreaModel(final Sheet sheet, final int top, final int height, final StylePalette palette) {
         if (sheet == null || top < 0 || height < 1)
             throw new IllegalArgumentException("Illegal area arguments");
-        rows = new ArrayList<RowModel>();
-        regions = new ArrayList<Region>();
+        rows = new ArrayList<>();
+        regions = new ArrayList<>();
 
         final int bottom = top + height - 1;
         int lastColumn = 0;
@@ -177,7 +177,7 @@ public class AreaModel implements Serializable, Cloneable {
      * @return список всех регионов определенных в данной области которые включают в себя указанную ячейку области.
      */
     public Collection<Region> getRegionsWithCell(final int colnum, final int rownum) {
-        final ArrayList<Region> result = new ArrayList<Region>();
+        final ArrayList<Region> result = new ArrayList<>();
         for (Region region : regions) {
             if (region.contains(colnum, rownum))
                 result.add(region);
@@ -313,7 +313,7 @@ public class AreaModel implements Serializable, Cloneable {
     public List<CellRangeAddress> makePOIRegions(final int offset) {
         if (offset < 0)
             throw new IllegalArgumentException("Invalid offset: " + offset);
-        final List<CellRangeAddress> result = new ArrayList<CellRangeAddress>(regions.size());
+        final List<CellRangeAddress> result = new ArrayList<>(regions.size());
         for (Region src : regions) {
             final CellRangeAddress dst = new CellRangeAddress(src.getFirstRow() + offset, src.getLastRow() + offset, src.getFirstCol(), src.getLastCol());
             result.add(dst);
@@ -372,11 +372,11 @@ public class AreaModel implements Serializable, Cloneable {
     @Override
     public Object clone() throws CloneNotSupportedException {
         final AreaModel result = (AreaModel) super.clone();
-        result.rows = new ArrayList<RowModel>(rows.size());
+        result.rows = new ArrayList<>(rows.size());
         for (RowModel rm : rows) {
             result.rows.add((RowModel) rm.clone());
         }
-        result.regions = new ArrayList<Region>(regions.size());
+        result.regions = new ArrayList<>(regions.size());
         for (Region region : regions) {
             result.regions.add(new Region(result, region.firstCol, region.firstRow, region.lastCol, region.lastRow));
         }

@@ -188,11 +188,11 @@ public abstract class Section implements Serializable, Cloneable {
         if (target == null)
             throw new IllegalArgumentException("Target report model must be specified");
         final Section result = (Section) super.clone();
-        result.sectionListeners = new ArrayList<SectionEventListenerHolder>();
+        result.sectionListeners = new ArrayList<>();
         for (SectionEventListenerHolder listener : sectionListeners) {
             result.sectionListeners.add((SectionEventListenerHolder) listener.clone());
         }
-        result.cellListeners = new ArrayList<CellEventListenerHolder>();
+        result.cellListeners = new ArrayList<>();
         for (CellEventListenerHolder listener : cellListeners) {
             result.cellListeners.add((CellEventListenerHolder) listener.clone());
         }

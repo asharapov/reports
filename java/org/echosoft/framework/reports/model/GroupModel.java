@@ -77,7 +77,7 @@ public class GroupModel implements Serializable, Cloneable {
 
     public GroupModel() {
         collapsible = true;
-        styles = new TreeMap<Integer, GroupStyle>();
+        styles = new TreeMap<>();
     }
 
 
@@ -220,7 +220,7 @@ public class GroupModel implements Serializable, Cloneable {
     @Override
     public Object clone() throws CloneNotSupportedException {
         final GroupModel result = (GroupModel) super.clone();
-        result.styles = new TreeMap<Integer, GroupStyle>();
+        result.styles = new TreeMap<>();
         for (GroupStyle style : styles.values()) {
             result.styles.put(style.getLevel(), (GroupStyle) style.clone());
         }

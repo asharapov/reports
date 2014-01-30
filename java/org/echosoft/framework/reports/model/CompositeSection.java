@@ -42,9 +42,9 @@ public class CompositeSection extends Section {
     public CompositeSection(final String id) {
         super(id);
         providerUsage = ProviderUsage.STANDARD;
-        groups = new ArrayList<GroupModel>(5);
+        groups = new ArrayList<>(5);
         indentedColumns = EMPTY_INT_ARRAY;
-        sections = new ArrayList<Section>();
+        sections = new ArrayList<>();
     }
 
     /**
@@ -185,13 +185,13 @@ public class CompositeSection extends Section {
     @Override
     public Section cloneSection(final Report target) throws CloneNotSupportedException {
         final CompositeSection result = (CompositeSection) super.cloneSection(target);
-        result.groups = new ArrayList<GroupModel>();
+        result.groups = new ArrayList<>();
         for (GroupModel gm : groups) {
             result.groups.add((GroupModel) gm.clone());
         }
         result.indentedColumns = new int[indentedColumns.length];
         System.arraycopy(indentedColumns, 0, result.indentedColumns, 0, indentedColumns.length);
-        result.sections = new ArrayList<Section>();
+        result.sections = new ArrayList<>();
         for (Section child : sections) {
             result.sections.add(child.cloneSection(target));
         }

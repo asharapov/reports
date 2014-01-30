@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 import org.echosoft.common.collections.issuers.ReadAheadIssuer;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.el.Expression;
+import org.echosoft.framework.reports.processor.ExcelReportProcessor;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.processor.SectionContext;
 
@@ -49,7 +50,7 @@ public class FilteredDataProvider implements DataProvider {
 
     @Override
     public ReadAheadIssuer getIssuer(final ELContext ctx) throws Exception {
-        final ExecutionContext ectx = (ExecutionContext) ctx.getVariables().get("context");
+        final ExecutionContext ectx = (ExecutionContext) ctx.getVariables().get(ExcelReportProcessor.VAR_CONTEXT);
         SectionContext sctx = ectx.sectionContext.parent;
         while (sctx != null && sctx.issuer == null) {
             sctx = sctx.parent;

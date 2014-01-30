@@ -36,7 +36,7 @@ public class GroupingSection extends Section {
 
     public GroupingSection(final String id) {
         super(id);
-        groups = new ArrayList<GroupModel>(5);
+        groups = new ArrayList<>(5);
         indentedColumns = EMPTY_INT_ARRAY;
     }
 
@@ -140,7 +140,7 @@ public class GroupingSection extends Section {
     @Override
     public Section cloneSection(final Report target) throws CloneNotSupportedException {
         final GroupingSection result = (GroupingSection) super.cloneSection(target);
-        result.groups = new ArrayList<GroupModel>();
+        result.groups = new ArrayList<>();
         for (GroupModel gm : groups) {
             result.groups.add((GroupModel) gm.clone());
         }

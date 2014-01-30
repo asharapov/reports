@@ -38,9 +38,11 @@ import org.echosoft.framework.reports.model.events.CellEventListenerHolder;
 import org.echosoft.framework.reports.model.events.ReportEventListenerHolder;
 import org.echosoft.framework.reports.model.events.SectionEventListenerHolder;
 import org.echosoft.framework.reports.model.providers.ClassDataProvider;
+import org.echosoft.framework.reports.model.providers.DataProvider;
 import org.echosoft.framework.reports.model.providers.FilteredDataProvider;
 import org.echosoft.framework.reports.model.providers.ListDataProvider;
 import org.echosoft.framework.reports.model.providers.ProviderUsage;
+import org.echosoft.framework.reports.model.providers.ProxyDataProvider;
 import org.echosoft.framework.reports.model.providers.SQLDataProvider;
 import org.echosoft.framework.reports.util.Logs;
 import org.echosoft.framework.reports.util.POIUtils;
@@ -87,31 +89,37 @@ public class ReportModelParser {
             for (Iterator<Element> i = XMLUtil.getChildElements(root); i.hasNext(); ) {
                 final Element element = i.next();
                 final String tagName = element.getTagName();
-                if ("description".equals(tagName)) {
-                    parseDescription(report, element);
-                } else
-                if ("filtered-data-provider".equals(tagName)) {
-                    parseFilteredDataProvider(report, element);
-                } else
-                if ("list-data-provider".equals(tagName)) {
-                    parseListDataProvider(report, element);
-                } else
-                if ("sql-data-provider".equals(tagName)) {
-                    parseSQLDataProvider(report, element);
-                } else
-                if ("class-data-provider".equals(tagName)) {
-                    parseClassDataProvider(report, element);
-                } else
-                if ("report-listener".equals(tagName)) {
-                    parseReportEventListener(report, element);
-                } else
-                if ("sheet".equals(tagName)) {
-                    final SheetModel sheet = parseSheet(wb, report, element);
-                    if (report.findSheetById(sheet.getId()) != null)
-                        throw new RuntimeException("Sheet " + sheet.getId() + " already exists in report " + report.getId());
-                    report.getSheets().add(sheet);
-                } else
-                    throw new RuntimeException("Unknown element: " + tagName);
+                switch (tagName) {
+                    case "description":
+                        parseDescription(report, element);
+                        break;
+                    case "proxy-data-provider":
+                        parseProxyDataProvider(report, element);
+                        break;
+                    case "filtered-data-provider":
+                        parseFilteredDataProvider(report, element);
+                        break;
+                    case "list-data-provider":
+                        parseListDataProvider(report, element);
+                        break;
+                    case "sql-data-provider":
+                        parseSQLDataProvider(report, element);
+                        break;
+                    case "class-data-provider":
+                        parseClassDataProvider(report, element);
+                        break;
+                    case "report-listener":
+                        parseReportEventListener(report, element);
+                        break;
+                    case "sheet":
+                        final SheetModel sheet = parseSheet(wb, report, element);
+                        if (report.findSheetById(sheet.getId()) != null)
+                            throw new RuntimeException("Sheet " + sheet.getId() + " already exists in report " + report.getId());
+                        report.getSheets().add(sheet);
+                        break;
+                    default:
+                        throw new RuntimeException("Unknown element: " + tagName);
+                }
             }
 
             final boolean preserveTemplate = Any.asBoolean(StringUtil.trim(root.getAttribute("preserveTemplate")), false);
@@ -160,32 +168,44 @@ public class ReportModelParser {
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
-            if ("company".equals(tagName)) {
-                desc.setCompany(new BaseExpression(XMLUtil.getNodeText(el)));
-            } else
-            if ("category".equals(tagName)) {
-                desc.setCategory(new BaseExpression(XMLUtil.getNodeText(el)));
-            } else
-            if ("application".equals(tagName)) {
-                desc.setApplication(new BaseExpression(XMLUtil.getNodeText(el)));
-            } else
-            if ("author".equals(tagName)) {
-                desc.setAuthor(new BaseExpression(XMLUtil.getNodeText(el)));
-            } else
-            if ("version".equals(tagName)) {
-                desc.setVersion(new BaseExpression(XMLUtil.getNodeText(el)));
-            } else
-            if ("title".equals(tagName)) {
-                desc.setTitle(new BaseExpression(XMLUtil.getNodeText(el)));
-            } else
-            if ("subject".equals(tagName)) {
-                desc.setSubject(new BaseExpression(XMLUtil.getNodeText(el)));
-            } else
-            if ("comments".equals(tagName)) {
-                desc.setComments(new BaseExpression(XMLUtil.getNodeText(el)));
-            } else
-                throw new RuntimeException("Unknown element: " + tagName);
+            switch (tagName) {
+                case "company":
+                    desc.setCompany(new BaseExpression(XMLUtil.getNodeText(el)));
+                    break;
+                case "category":
+                    desc.setCategory(new BaseExpression(XMLUtil.getNodeText(el)));
+                    break;
+                case "application":
+                    desc.setApplication(new BaseExpression(XMLUtil.getNodeText(el)));
+                    break;
+                case "author":
+                    desc.setAuthor(new BaseExpression(XMLUtil.getNodeText(el)));
+                    break;
+                case "version":
+                    desc.setVersion(new BaseExpression(XMLUtil.getNodeText(el)));
+                    break;
+                case "title":
+                    desc.setTitle(new BaseExpression(XMLUtil.getNodeText(el)));
+                    break;
+                case "subject":
+                    desc.setSubject(new BaseExpression(XMLUtil.getNodeText(el)));
+                    break;
+                case "comments":
+                    desc.setComments(new BaseExpression(XMLUtil.getNodeText(el)));
+                    break;
+                default:
+                    throw new RuntimeException("Unknown element: " + tagName);
+            }
         }
+    }
+
+    private static void parseProxyDataProvider(final Report report, final Element element) {
+        final String id = StringUtil.trim(element.getAttribute("id"));
+        final String ref = StringUtil.trim(element.getAttribute("ref"));
+        if (id == null || ref == null)
+            throw new RuntimeException("Mandatory attributes not specified: " + element);
+        final DataProvider provider = new ProxyDataProvider(id, new BaseExpression(ref));
+        report.getProviders().put(id, provider);
     }
 
     private static void parseFilteredDataProvider(final Report report, final Element element) {
@@ -222,25 +242,28 @@ public class ReportModelParser {
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
-            if ("sql".equals(tagName)) {
-                final String sql = StringUtil.trim(XMLUtil.getNodeText(el));
-                result.setSQL(new BaseExpression(sql));
-            } else
-            if ("sql-ref".equals(tagName)) {
-                final String sqlref = StringUtil.trim(XMLUtil.getNodeText(el));
-                result.setSQLReference(new BaseExpression(sqlref));
-            } else
-            if ("params".equals(tagName)) {
-                final String paramsMap = StringUtil.trim(XMLUtil.getNodeText(el));
-                result.setParamsMap(new BaseExpression(paramsMap));
-            } else
-            if ("param".equals(tagName)) {
-                final String name = StringUtil.trim(el.getAttribute("name"));
-                final String value = StringUtil.trim(el.getAttribute("value"));
-                if (name != null)
-                    result.addParam(new BaseExpression(name), new BaseExpression(value));
-            } else
-                throw new RuntimeException("Unknown element: " + tagName);
+            switch (tagName) {
+                case "sql":
+                    final String sql = StringUtil.trim(XMLUtil.getNodeText(el));
+                    result.setSQL(new BaseExpression(sql));
+                    break;
+                case "sql-ref":
+                    final String sqlref = StringUtil.trim(XMLUtil.getNodeText(el));
+                    result.setSQLReference(new BaseExpression(sqlref));
+                    break;
+                case "params":
+                    final String paramsMap = StringUtil.trim(XMLUtil.getNodeText(el));
+                    result.setParamsMap(new BaseExpression(paramsMap));
+                    break;
+                case "param":
+                    final String name = StringUtil.trim(el.getAttribute("name"));
+                    final String value = StringUtil.trim(el.getAttribute("value"));
+                    if (name != null)
+                        result.addParam(new BaseExpression(name), new BaseExpression(value));
+                    break;
+                default:
+                    throw new RuntimeException("Unknown element: " + tagName);
+            }
         }
         report.getProviders().put(id, result);
     }
@@ -257,15 +280,18 @@ public class ReportModelParser {
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
-            if ("arg".equals(tagName)) {
-                final String arg = StringUtil.trim(XMLUtil.getNodeText(el));
-                result.setArg(new BaseExpression(arg));
-            } else
-            if ("arg-class".equals(tagName)) {
-                final String argClass = StringUtil.trim(XMLUtil.getNodeText(el));
-                result.setArgType(new BaseExpression(argClass));
-            } else
-                throw new RuntimeException("Unknown element: " + tagName);
+            switch (tagName) {
+                case "arg":
+                    final String arg = StringUtil.trim(XMLUtil.getNodeText(el));
+                    result.setArg(new BaseExpression(arg));
+                    break;
+                case "arg-class":
+                    final String argClass = StringUtil.trim(XMLUtil.getNodeText(el));
+                    result.setArgType(new BaseExpression(argClass));
+                    break;
+                default:
+                    throw new RuntimeException("Unknown element: " + tagName);
+            }
         }
         report.getProviders().put(id, result);
     }
@@ -303,28 +329,34 @@ public class ReportModelParser {
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
-            if ("plain-section".equals(tagName)) {
-                final Section section = parsePlainSection(esheet, offset, report, el);
-                if (sheet.findSectionById(section.getId()) != null)
-                    throw new RuntimeException("Section " + section.getId() + " already exists in sheet " + sheet.getId());
-                sheet.getSections().add(section);
-                offset += section.getTemplateRowsCount();
-            } else
-            if ("grouping-section".equals(tagName)) {
-                final Section section = parseGroupingSection(esheet, offset, report, el);
-                if (sheet.findSectionById(section.getId()) != null)
-                    throw new RuntimeException("Section " + section.getId() + " already exists in sheet " + sheet.getId());
-                sheet.getSections().add(section);
-                offset += section.getTemplateRowsCount();
-            } else
-            if ("composite-section".equals(tagName)) {
-                final Section section = parseCompositeSection(esheet, offset, report, el);
-                if (sheet.findSectionById(section.getId()) != null)
-                    throw new RuntimeException("Section " + section.getId() + " already exists in sheet " + sheet.getId());
-                sheet.getSections().add(section);
-                offset += section.getTemplateRowsCount();
-            } else
-                throw new RuntimeException("Unknown element: " + tagName);
+            switch (tagName) {
+                case "plain-section": {
+                    final Section section = parsePlainSection(esheet, offset, report, el);
+                    if (sheet.findSectionById(section.getId()) != null)
+                        throw new RuntimeException("Section " + section.getId() + " already exists in sheet " + sheet.getId());
+                    sheet.getSections().add(section);
+                    offset += section.getTemplateRowsCount();
+                    break;
+                }
+                case "grouping-section": {
+                    final Section section = parseGroupingSection(esheet, offset, report, el);
+                    if (sheet.findSectionById(section.getId()) != null)
+                        throw new RuntimeException("Section " + section.getId() + " already exists in sheet " + sheet.getId());
+                    sheet.getSections().add(section);
+                    offset += section.getTemplateRowsCount();
+                    break;
+                }
+                case "composite-section": {
+                    final Section section = parseCompositeSection(esheet, offset, report, el);
+                    if (sheet.findSectionById(section.getId()) != null)
+                        throw new RuntimeException("Section " + section.getId() + " already exists in sheet " + sheet.getId());
+                    sheet.getSections().add(section);
+                    offset += section.getTemplateRowsCount();
+                    break;
+                }
+                default:
+                    throw new RuntimeException("Unknown element: " + tagName);
+            }
         }
         final int colcount = sheet.getColumnsCount();
         final int[] width = new int[colcount];
@@ -391,13 +423,16 @@ public class ReportModelParser {
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
-            if ("section-listener".equals(tagName)) {
-                parseSectionEventListener(section, el);
-            } else
-            if ("cell-listener".equals(tagName)) {
-                parseCellEventListener(section, el);
-            } else
-                throw new RuntimeException("Unknown element: " + tagName);
+            switch (tagName) {
+                case "section-listener":
+                    parseSectionEventListener(section, el);
+                    break;
+                case "cell-listener":
+                    parseCellEventListener(section, el);
+                    break;
+                default:
+                    throw new RuntimeException("Unknown element: " + tagName);
+            }
         }
         return section;
     }
@@ -419,18 +454,21 @@ public class ReportModelParser {
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
-            if ("section-listener".equals(tagName)) {
-                parseSectionEventListener(section, el);
-            } else
-            if ("cell-listener".equals(tagName)) {
-                parseCellEventListener(section, el);
-            } else
-            if ("group".equals(tagName)) {
-                final GroupModel group = parseGroup(sheet, offset + height, report, el);
-                section.getGroups().add(group);
-                height += group.getStylesCount() * group.getRowsCount();
-            } else
-                throw new RuntimeException("Unknown element: " + tagName);
+            switch (tagName) {
+                case "section-listener":
+                    parseSectionEventListener(section, el);
+                    break;
+                case "cell-listener":
+                    parseCellEventListener(section, el);
+                    break;
+                case "group":
+                    final GroupModel group = parseGroup(sheet, offset + height, report, el);
+                    section.getGroups().add(group);
+                    height += group.getStylesCount() * group.getRowsCount();
+                    break;
+                default:
+                    throw new RuntimeException("Unknown element: " + tagName);
+            }
         }
         section.setRowTemplate(new AreaModel(sheet, offset + height, rowHeight, report.getPalette()));
         return section;
@@ -454,33 +492,39 @@ public class ReportModelParser {
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
-            if ("section-listener".equals(tagName)) {
-                parseSectionEventListener(section, el);
-            } else
-            if ("cell-listener".equals(tagName)) {
-                parseCellEventListener(section, el);
-            } else
-            if ("group".equals(tagName)) {
-                final GroupModel group = parseGroup(sheet, offset + height, report, el);
-                section.getGroups().add(group);
-                height += group.getStylesCount() * group.getRowsCount();
-            } else
-            if ("plain-section".equals(tagName)) {
-                final Section child = parsePlainSection(sheet, offset + height, report, el);
-                section.getSections().add(child);
-                height += child.getTemplateRowsCount();
-            } else
-            if ("grouping-section".equals(tagName)) {
-                final Section child = parseGroupingSection(sheet, offset + height, report, el);
-                section.getSections().add(child);
-                height += child.getTemplateRowsCount();
-            } else
-            if ("composite-section".equals(tagName)) {
-                final Section child = parseCompositeSection(sheet, offset + height, report, el);
-                section.getSections().add(child);
-                height += child.getTemplateRowsCount();
-            } else
-                throw new RuntimeException("Unknown element: " + tagName);
+            switch (tagName) {
+                case "section-listener":
+                    parseSectionEventListener(section, el);
+                    break;
+                case "cell-listener":
+                    parseCellEventListener(section, el);
+                    break;
+                case "group":
+                    final GroupModel group = parseGroup(sheet, offset + height, report, el);
+                    section.getGroups().add(group);
+                    height += group.getStylesCount() * group.getRowsCount();
+                    break;
+                case "plain-section": {
+                    final Section child = parsePlainSection(sheet, offset + height, report, el);
+                    section.getSections().add(child);
+                    height += child.getTemplateRowsCount();
+                    break;
+                }
+                case "grouping-section": {
+                    final Section child = parseGroupingSection(sheet, offset + height, report, el);
+                    section.getSections().add(child);
+                    height += child.getTemplateRowsCount();
+                    break;
+                }
+                case "composite-section": {
+                    final Section child = parseCompositeSection(sheet, offset + height, report, el);
+                    section.getSections().add(child);
+                    height += child.getTemplateRowsCount();
+                    break;
+                }
+                default:
+                    throw new RuntimeException("Unknown element: " + tagName);
+            }
         }
         return section;
     }

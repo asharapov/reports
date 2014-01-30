@@ -21,8 +21,8 @@ import org.echosoft.framework.reports.util.Logs;
 public class ReportsRegistry {
 
     private static final ReportProcessor defaultProcessor;
-    private static final Map<String, ReportProcessor> processors = new HashMap<String, ReportProcessor>();
-    private static final Map<String, Report> reports = new HashMap<String, Report>();
+    private static final Map<String, ReportProcessor> processors = new HashMap<>();
+    private static final Map<String, Report> reports = new HashMap<>();
     static {
         defaultProcessor = new ExcelReportProcessor();
         processors.put("excel2003", defaultProcessor);

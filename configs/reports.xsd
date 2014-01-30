@@ -12,6 +12,7 @@
     <xs:sequence>
       <xs:element name="description" type="ReportDescription" minOccurs="0" maxOccurs="1"/>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="proxy-data-provider" type="ProxyDataProvider"/>
         <xs:element name="filtered-data-provider" type="FilteredDataProvider"/>
         <xs:element name="list-data-provider" type="ListDataProvider"/>
         <xs:element name="sql-data-provider" type="SQLDataProvider"/>
@@ -79,6 +80,24 @@
       <xs:element name="category" type="Expression" minOccurs="0"/>
       <xs:element name="comments" type="Expression" minOccurs="0"/>
     </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ProxyDataProvider">
+    <xs:annotation>
+      <xs:documentation>
+        Определяет "логический" поставщик который проксирует все обращения к другом поставщику, выполняющему реальное обращение к данным.
+        Данный тип поставщиков используется для позднего связывания секций отчета с поставщиками данных, т.к. привязка остальных типов поставщиков к секциям
+        осуществляется традиционно на этапе парсинга информации об отчете.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="ref" type="Expression" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Динамически вычисляемое выражение, позволяющее во время построения отчета выбрать реально используемый поставщик.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="FilteredDataProvider">

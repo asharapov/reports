@@ -48,7 +48,7 @@ public abstract class GroupManager {
      */
     public GroupManager(final List<GroupModel> groups) {
         this.models = groups != null ? groups.toArray(new GroupModel[groups.size()]) : EMPTY_GROUP_MODEL;
-        this.groups = new ArrayList<Group>();
+        this.groups = new ArrayList<>();
 
         if (models.length > 0) {
             useTotalGrouping = models[0].getDiscriminatorField() == null;

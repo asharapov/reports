@@ -25,8 +25,14 @@ import org.echosoft.framework.reports.util.POIUtils;
  * </ol>
  * <p>Примеры использования в ячейках:
  * <ol>
- * <li> <span style="border:1px solid black;padding:6px"><code>$M=fcolrowssum(A,rows)</code></span>
+ * <li> <span style="border:1px solid black;padding:6px"><code>$M=fsum(rows, A)</code></span>
  * <p> Суммирует значения в строках полученных из переменной <code>rows</code> в колонке <code>A</code>.</p>
+ * </li>
+ * <li> <span style="border:1px solid black;padding:6px"><code>$M=fsum(rows)</code></span>
+ * <p> Суммирует значения в строках полученных из переменной <code>rows</code> в текущей колонке (определяется по текущей ячейке с макросом).</p>
+ * </li>
+ * <li> <span style="border:1px solid black;padding:6px"><code>$M=fsum(rows,,first)</code></span>
+ * <p> Берет значение из первой строки (из списка строк в первом аргументе) и текущей колонки и помещает его в текущую обрабатываемую ячейку.</p>
  * </li>
  * </ol>
  * </p>
@@ -34,17 +40,19 @@ import org.echosoft.framework.reports.util.POIUtils;
  * @author Anton Sharapov
  * @see MacrosRegistry
  */
-public class FColRowsSum implements Macros {
+public class FSum implements Macros {
 
-    public FColRowsSum() {
+    public FSum() {
     }
 
     @Override
     public void call(final ExecutionContext ectx, final String arg) {
         final String[] args = StringUtil.split(arg, ',');
-        if (args == null || args.length < 2)
+        if (args == null || args.length < 1)
             throw new IllegalArgumentException("Incorrect arguments count for macro fnrowsum " + Arrays.toString(args) + " at " + POIUtils.getCellName(ectx.cell));
-        final String attrName = args[1];
+
+        // 1. Найдем итератор номеров строк участвующих в формуле ...
+        final String attrName = args[0];
         Object v = ectx.elctx.getVariables().get(attrName);
         if (v == null) {
             v = ectx.elctx.getEnvironment().get(attrName);
@@ -52,22 +60,42 @@ public class FColRowsSum implements Macros {
                 throw new IllegalArgumentException("Can't resolve rows for attribute '" + attrName + "'.");
         }
         final Iterator<Integer> rows = resolveNumbers(v);
-        process(ectx.cell, args[0], rows);
+
+        // определим имя колонки участвующей в формуле (если она не задана то используется текущая обрабатываемая колонка) ...
+        String colname = args.length > 1 ? args[1].trim() : "";
+        if (colname.length() == 0) {
+            colname = POIUtils.getColumnName(ectx.cell.getColumnIndex());
+        }
+
+        // уточним специальный режим использования (опционально) ...
+        final String mode = args.length > 2 ? args[2].trim().toLowerCase() : "";
+
+        if (rows == null || !rows.hasNext()) {
+            // исключительная ситуация: нет данных для обработки ...
+            ectx.cell.setCellType(Cell.CELL_TYPE_BLANK);
+            return;
+        }
+
+        if ("first".equals(mode)) {
+            calculateFirstRow(ectx.cell, colname, rows);
+        } else {
+            calculateRowsSummary(ectx.cell, colname, rows);
+        }
     }
 
     @SuppressWarnings("unchecked")
     private Iterator<Integer> resolveNumbers(final Object v) {
         if (v instanceof Iterable) {
-            return ((Iterable<Integer>)v).iterator();
+            return ((Iterable<Integer>) v).iterator();
         } else
         if (v instanceof Iterator) {
-            return (Iterator<Integer>)v;
+            return (Iterator<Integer>) v;
         } else
         if (v instanceof Enumeration) {
-            return new EnumerationIterator<>((Enumeration<Integer>)v);
+            return new EnumerationIterator<>((Enumeration<Integer>) v);
         } else
         if (v instanceof Integer[]) {
-            return new ObjectArrayIterator<>((Integer[])v);
+            return new ObjectArrayIterator<>((Integer[]) v);
         } else
         if (v instanceof int[]) {
             return new ArrayIterator(v);
@@ -78,7 +106,7 @@ public class FColRowsSum implements Macros {
             throw new IllegalArgumentException("Couldn't cast to integers iterator: " + v);
     }
 
-    public void process(final Cell cell, final String colname, final Iterator<Integer> rows) {
+    private void calculateRowsSummary(final Cell cell, final String colname, final Iterator<Integer> rows) {
         final StringBuilder buf = new StringBuilder(50);
         while (rows.hasNext()) {
             if (buf.length() > 0) {
@@ -89,5 +117,10 @@ public class FColRowsSum implements Macros {
         }
         cell.setCellType(Cell.CELL_TYPE_FORMULA);
         cell.setCellFormula(buf.toString());
+    }
+
+    private void calculateFirstRow(final Cell cell, final String colname, final Iterator<Integer> rows) {
+        cell.setCellType(Cell.CELL_TYPE_FORMULA);
+        cell.setCellFormula(colname + rows.next());
     }
 }

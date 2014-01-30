@@ -14,7 +14,7 @@ import org.echosoft.common.utils.StringUtil;
  */
 public final class MacrosRegistry {
 
-    private static final HashMap<String, Macros> map = new HashMap<String, Macros>();
+    private static final HashMap<String, Macros> map = new HashMap<>();
     static {
         MacrosRegistry.registerMacros("gsum", new GroupSum());
         MacrosRegistry.registerMacros("gmax", new GroupMax());
@@ -24,7 +24,7 @@ public final class MacrosRegistry {
         MacrosRegistry.registerMacros("nrowsum", new NRowsSum());
         MacrosRegistry.registerMacros("fnrowsum", new FNRowsSum());
         MacrosRegistry.registerMacros("fnrowsumprod", new FNRowsSumProd());
-        MacrosRegistry.registerMacros("fcolrowssum", new FColRowsSum());
+        MacrosRegistry.registerMacros("fsum", new FSum());
     }
 
     /**

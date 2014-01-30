@@ -92,8 +92,8 @@ public final class ExecutionContext {
         this.wb = wb;
         this.creationHelper = wb.getCreationHelper();
         this.styles = styles;
-        this.history = new HashMap<String,SectionContext>();
-        this.listeners = new ArrayList<ReportEventListener>();
+        this.history = new HashMap<>();
+        this.listeners = new ArrayList<>();
         for (final ReportEventListenerHolder holder : report.getListeners()) {
             final ReportEventListener listener = holder.getListener(ctx);
             if (listener != null)
