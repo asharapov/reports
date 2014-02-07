@@ -315,8 +315,9 @@ public class ExcelReportProcessor implements ReportProcessor {
 
             final int sheetIdx = ectx.wb.getSheetIndex(ectx.wsheet);
             ectx.wb.setSheetHidden(sheetIdx, sheet.isHidden());
-            if (sheet.isProtected() && ectx.report.getPassword() != null /*&& ectx.wb.isWriteProtected()*/) {
-                ectx.wsheet.protectSheet((String) ectx.report.getPassword().getValue(ectx.elctx));
+            final String password = ectx.report.getPassword() != null ? (String) ectx.report.getPassword().getValue(ectx.elctx) : null;
+            if (sheet.isProtected() && password != null /*&& ectx.wb.isWriteProtected()*/) {
+                ectx.wsheet.protectSheet(password);
             }
             for (final Section section : sheet.getSections()) {
                 processSection(ectx, section);
