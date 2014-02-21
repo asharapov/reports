@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hpsf.SummaryInformation;
@@ -16,7 +17,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.echosoft.common.io.FastStringTokenizer;
 import org.echosoft.common.utils.Any;
 import org.echosoft.common.utils.StringUtil;
 import org.echosoft.common.utils.XMLUtil;
@@ -309,8 +309,8 @@ public class ReportModelParser {
         sheet.setProtected(Any.asBoolean(StringUtil.trim(element.getAttribute("protected")), false));
         final String cgs = StringUtil.trim(element.getAttribute("group-columns"));
         if (cgs != null) {
-            for (Iterator<String> it = new FastStringTokenizer(cgs, ','); it.hasNext(); ) {
-                final String token = StringUtil.trim(it.next());
+            for (StringTokenizer it = new StringTokenizer(cgs, ","); it.hasMoreElements(); ) {
+                final String token = StringUtil.trim(it.nextToken());
                 if (token == null)
                     continue;
                 final String[] cnames = StringUtil.split(token, '-');
