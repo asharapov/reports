@@ -11,6 +11,7 @@ import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.poifs.filesystem.DirectoryNode;
 import org.apache.poi.poifs.filesystem.Entry;
 import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -131,9 +132,10 @@ public class ReportModelParser {
                     final HSSFWorkbook hwb = (HSSFWorkbook) wb;
                     final byte[] data = hwb.getBytes();
                     final String[] shouldBeDropped = {"Workbook", "WORKBOOK", SummaryInformation.DEFAULT_STREAM_NAME, DocumentSummaryInformation.DEFAULT_STREAM_NAME};
+                    final DirectoryNode directoryNode = hwb.getRootDirectory();
                     for (String entryName : shouldBeDropped) {
                         try {
-                            final Entry entry = hwb.getRootDirectory().getEntry(entryName);
+                            final Entry entry = directoryNode.getEntry(entryName);
                             if (entry != null) {
                                 if (!entry.delete())
                                     Logs.reports.warn("unable to delete POIFS section: '" + entryName + "'  (" + entry + ")");
@@ -142,9 +144,14 @@ public class ReportModelParser {
                             // Секция с указанным именем отсутствует в иерархии. Просто перейдем к следующей в списке ...
                         }
                     }
-                    hwb.getRootDirectory().createDocument("Workbook", new ByteArrayInputStream(data));
+                    directoryNode.createDocument("Workbook", new ByteArrayInputStream(data));
                     final ByteArrayOutputStream buf = new ByteArrayOutputStream(4096);
-                    hwb.getRootDirectory().getFileSystem().writeFilesystem(buf);
+                    if (directoryNode.getFileSystem() != null) {
+                        directoryNode.getFileSystem().writeFilesystem(buf);
+                    } else
+                    if (directoryNode.getNFileSystem() != null) {
+                        directoryNode.getNFileSystem().writeFilesystem(buf);
+                    }
                     report.setTemplate(buf.toByteArray());
                 } else
                 if (wb instanceof XSSFWorkbook) {
