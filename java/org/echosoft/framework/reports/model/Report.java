@@ -29,7 +29,12 @@ public class Report implements Serializable {
      * Перечень возможных форматов в которых может генерироваться отчет.
      */
     public static enum TargetType {
-        HSSF, XSSF, SXSSF;
+        HSSF("xls"), XSSF("xlsx"), SXSSF("xlsx");
+
+        public final String extension;
+        private TargetType(final String extension) {
+            this.extension = extension;
+        }
         public static TargetType findByName(final String name, final TargetType defaultType) {
             for (TargetType type : values()) {
                 if (type.name().equals(name))
