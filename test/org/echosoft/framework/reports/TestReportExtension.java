@@ -11,13 +11,13 @@ import org.echosoft.framework.reports.parser.ReportExtension;
 import org.w3c.dom.Element;
 
 /**
- *
+ * Пример расширения.
  */
 public class TestReportExtension implements ReportExtension {
 
     @Override
-    public boolean initElement(final Report report, final Element definitionEl) throws Exception {
-        final String tagName = definitionEl.getTagName();
+    public boolean handleConfigElement(final Report report, final Element configElement) throws Exception {
+        final String tagName = configElement.getTagName();
         if ("test-provider".equals(tagName)) {
             final ListDataProvider provider = new ListDataProvider("test");
             final List<Company> list = new ArrayList<>();
@@ -30,4 +30,8 @@ public class TestReportExtension implements ReportExtension {
         return false;
     }
 
+    @Override
+    public void onConfig(final Report report) {
+        System.out.println("Complete report " + report.getId() + " configuration with extension " + this);
+    }
 }

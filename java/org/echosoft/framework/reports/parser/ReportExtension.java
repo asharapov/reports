@@ -13,10 +13,17 @@ public interface ReportExtension {
     /**
      * Передает в модуль расширения
      * @param report  формируемая модель отчета.
-     * @param definitionEl  элемент описания отчета который не был распознан стандартным конфигуратором отчета.
+     * @param configElement  элемент описания отчета который не был распознан стандартным конфигуратором отчета.
      * @return
      *     <li><code>true</code>  если данное расширение смогло опознать данный элемент и обработало его. В этом случае обработка данного элемента считается выполненной.
      *     <li><code>false</code> если данное расширение не обладает сведениями о данном элементе и конфигуратор должен использовать другие расширения для обработки данного элемента конфигурации.
      */
-    boolean initElement(final Report report, final Element definitionEl) throws Exception;
+    boolean handleConfigElement(final Report report, final Element configElement) throws Exception;
+
+    /**
+     * Гарантированно вызывается по завершению конфигурирования отчета.
+     * Данный метод идеально подходит для выполнения каких-либо действий над моделью отчетов независящих от его конфигурации.
+     * @param report модель отчета.
+     */
+    void onConfig(final Report report) throws Exception;
 }

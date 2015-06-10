@@ -142,6 +142,11 @@ public class ReportModelParser {
             if (Boolean.valueOf(root.getAttribute("preserveTemplate"))) {
                 preserveTemplate(report, wb);
             }
+            if (extensions != null) {
+                for (ReportExtension extension : extensions) {
+                    extension.onConfig(report);
+                }
+            }
 
             return report;
         } catch (Exception e) {
@@ -152,7 +157,7 @@ public class ReportModelParser {
     private static void parseUnknownElement(final Report report, final List<ReportExtension> extensions, final Element element) throws Exception {
         if (extensions != null) {
             for (ReportExtension extension : extensions) {
-                final boolean ok = extension.initElement(report, element);
+                final boolean ok = extension.handleConfigElement(report, element);
                 if (ok)
                     return;
             }
