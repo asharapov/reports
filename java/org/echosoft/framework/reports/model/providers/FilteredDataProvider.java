@@ -3,6 +3,7 @@ package org.echosoft.framework.reports.model.providers;
 import java.util.NoSuchElementException;
 
 import org.echosoft.common.collections.issuers.ReadAheadIssuer;
+import org.echosoft.common.utils.ObjectUtil;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.el.Expression;
 import org.echosoft.framework.reports.processor.ExcelReportProcessor;
@@ -20,6 +21,7 @@ public class FilteredDataProvider implements DataProvider {
      * Идентификатор поставщика данных.
      */
     private final String id;
+    private final String predicateId;
 
     /**
      * Предикат используемый для фильтрации данных в исходном поставщике данных.
@@ -29,6 +31,7 @@ public class FilteredDataProvider implements DataProvider {
 
     public FilteredDataProvider(final String id) {
         this.id = id;
+        this.predicateId = id + "-p-int";
     }
 
     @Override
@@ -48,6 +51,23 @@ public class FilteredDataProvider implements DataProvider {
         this.predicate = predicate;
     }
 
+    public ComparablePredicate getPredicateValue(final ELContext ctx) throws Exception {
+        ComparablePredicate result = (ComparablePredicate)ctx.getVariables().get(predicateId);
+        if (result == null && predicate != null) {
+            final Object obj = predicate.getValue(ctx);
+            if (obj == null)
+                return null;
+            if (obj instanceof ComparablePredicate)
+                return (ComparablePredicate) obj;
+            if (!(obj instanceof CharSequence))
+                throw new IllegalArgumentException("Invalid ComparablePredicate instance: " + obj);
+            final String predicateCls = obj.toString();
+            result = ObjectUtil.makeInstance(predicateCls, ComparablePredicate.class);
+            ctx.getVariables().put(predicateId, result);
+        }
+        return result;
+    }
+
     @Override
     public ReadAheadIssuer getIssuer(final ELContext ctx) throws Exception {
         final ExecutionContext ectx = (ExecutionContext) ctx.getVariables().get(ExcelReportProcessor.VAR_CONTEXT);
@@ -55,7 +75,7 @@ public class FilteredDataProvider implements DataProvider {
         while (sctx != null && sctx.issuer == null) {
             sctx = sctx.parent;
         }
-        final ComparablePredicate cp = predicate != null ? (ComparablePredicate) predicate.getValue(ctx) : null;
+        final ComparablePredicate cp = getPredicateValue(ctx);
         return (sctx != null && cp != null)
                 ? new FilteredBeanIterator<Object>(sctx.issuer, sctx.bean, cp)
                 : null;
