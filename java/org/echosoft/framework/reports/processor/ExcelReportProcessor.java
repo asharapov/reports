@@ -412,7 +412,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                     ectx.wsheet.getRow(i).setZeroHeight(true);
                 }
             }
-            if (section.isCollapsible() && lastRow > firstRow) {
+            if (section.isCollapsible() && lastRow >= firstRow) {
                 ectx.wsheet.groupRow(firstRow, lastRow);
                 ectx.wsheet.setRowGroupCollapsed(firstRow, section.isCollapsed());
             }
