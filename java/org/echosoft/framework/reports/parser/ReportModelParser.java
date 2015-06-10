@@ -3,8 +3,10 @@ package org.echosoft.framework.reports.parser;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.poi.hpsf.DocumentSummaryInformation;
@@ -68,6 +70,19 @@ public class ReportModelParser {
      * @throws Exception в случае каких-либо проблем.
      */
     public static Report parse(final InputStream template, final InputStream structure) throws Exception {
+        return parse(template, structure, null);
+    }
+
+    /**
+     * Выполняет операцию чтения структуры информации и ее последующей компиляции.
+     *
+     * @param template  шаблон отчета в формате Excel.
+     * @param structure описание структуры шаблона в формате XML.
+     * @param extensions список расширений к которым парсер может обращаться если встретит незнакомый ему элемент описания структуры отчета. Может быть null.
+     * @return полная структура отчета.
+     * @throws Exception в случае каких-либо проблем.
+     */
+    public static Report parse(final InputStream template, final InputStream structure, final List<ReportExtension> extensions) throws Exception {
         // загружаем шаблон отчета ...
         final Workbook wb = WorkbookFactory.create(template);
         // загружаем информацию о структуре отчета
@@ -87,6 +102,7 @@ public class ReportModelParser {
             report.setTarget(target);
             report.setUser(new BaseExpression(StringUtil.getNonEmpty(root.getAttribute("user"), "user")));
             report.setPassword(new BaseExpression(StringUtil.trim(root.getAttribute("password"))));
+
             for (Iterator<Element> i = XMLUtil.getChildElements(root); i.hasNext(); ) {
                 final Element element = i.next();
                 final String tagName = element.getTagName();
@@ -119,56 +135,30 @@ public class ReportModelParser {
                         report.getSheets().add(sheet);
                         break;
                     default:
-                        throw new RuntimeException("Unknown element: " + tagName);
+                        parseUnknownElement(report, extensions, element);
                 }
             }
 
-            final boolean preserveTemplate = Any.asBoolean(StringUtil.trim(root.getAttribute("preserveTemplate")), false);
-            if (preserveTemplate) {
-                for (int i = wb.getNumberOfSheets(); i > 0; i--) {
-                    wb.removeSheetAt(wb.getNumberOfSheets() - 1);
-                }
-                if (wb instanceof HSSFWorkbook) {
-                    final HSSFWorkbook hwb = (HSSFWorkbook) wb;
-                    final byte[] data = hwb.getBytes();
-                    final String[] shouldBeDropped = {"Workbook", "WORKBOOK", SummaryInformation.DEFAULT_STREAM_NAME, DocumentSummaryInformation.DEFAULT_STREAM_NAME};
-                    final DirectoryNode directoryNode = hwb.getRootDirectory();
-                    for (String entryName : shouldBeDropped) {
-                        try {
-                            final Entry entry = directoryNode.getEntry(entryName);
-                            if (entry != null) {
-                                if (!entry.delete())
-                                    Logs.reports.warn("unable to delete POIFS section: '" + entryName + "'  (" + entry + ")");
-                            }
-                        } catch (FileNotFoundException ffe) {
-                            // Секция с указанным именем отсутствует в иерархии. Просто перейдем к следующей в списке ...
-                        }
-                    }
-                    directoryNode.createDocument("Workbook", new ByteArrayInputStream(data));
-                    final ByteArrayOutputStream buf = new ByteArrayOutputStream(4096);
-                    if (directoryNode.getFileSystem() != null) {
-                        directoryNode.getFileSystem().writeFilesystem(buf);
-                    } else
-                    if (directoryNode.getNFileSystem() != null) {
-                        directoryNode.getNFileSystem().writeFilesystem(buf);
-                    }
-                    report.setTemplate(buf.toByteArray());
-                } else
-                if (wb instanceof XSSFWorkbook) {
-                    final XSSFWorkbook xwb = (XSSFWorkbook)wb;
-                    final OPCPackage pkg = xwb.getPackage();
-                    final ByteArrayOutputStream buf = new ByteArrayOutputStream(8192);
-                    pkg.save(buf);
-                    report.setTemplate(buf.toByteArray());
-                } else
-                    throw new IllegalArgumentException("Unknown workbook implementation: " + wb);
+            if (Boolean.valueOf(root.getAttribute("preserveTemplate"))) {
+                preserveTemplate(report, wb);
             }
+
             return report;
         } catch (Exception e) {
             throw new Exception("Unable to parse report [" + report.getId() + "] model: " + e.getMessage(), e);
         }
     }
 
+    private static void parseUnknownElement(final Report report, final List<ReportExtension> extensions, final Element element) throws Exception {
+        if (extensions != null) {
+            for (ReportExtension extension : extensions) {
+                final boolean ok = extension.initElement(report, element);
+                if (ok)
+                    return;
+            }
+        }
+        throw new RuntimeException("Unknown element: " + element.getTagName());
+    }
 
     private static void parseDescription(final Report report, final Element element) {
         final ReportDescription desc = report.getDescription();
@@ -593,5 +583,45 @@ public class ReportModelParser {
         if (className == null && instance == null)
             throw new RuntimeException("Listener's class or instance must be specified");
         section.getCellListeners().add(new CellEventListenerHolder(new BaseExpression(className), new BaseExpression(instance)));
+    }
+
+    private static void preserveTemplate(final Report report, final Workbook wb) throws IOException {
+        for (int i = wb.getNumberOfSheets(); i > 0; i--) {
+            wb.removeSheetAt(wb.getNumberOfSheets() - 1);
+        }
+        if (wb instanceof HSSFWorkbook) {
+            final HSSFWorkbook hwb = (HSSFWorkbook) wb;
+            final byte[] data = hwb.getBytes();
+            final String[] shouldBeDropped = {"Workbook", "WORKBOOK", SummaryInformation.DEFAULT_STREAM_NAME, DocumentSummaryInformation.DEFAULT_STREAM_NAME};
+            final DirectoryNode directoryNode = hwb.getRootDirectory();
+            for (String entryName : shouldBeDropped) {
+                try {
+                    final Entry entry = directoryNode.getEntry(entryName);
+                    if (entry != null) {
+                        if (!entry.delete())
+                            Logs.reports.warn("unable to delete POIFS section: '" + entryName + "'  (" + entry + ")");
+                    }
+                } catch (FileNotFoundException ffe) {
+                    // Секция с указанным именем отсутствует в иерархии. Просто перейдем к следующей в списке ...
+                }
+            }
+            directoryNode.createDocument("Workbook", new ByteArrayInputStream(data));
+            final ByteArrayOutputStream buf = new ByteArrayOutputStream(4096);
+            if (directoryNode.getFileSystem() != null) {
+                directoryNode.getFileSystem().writeFilesystem(buf);
+            } else
+            if (directoryNode.getNFileSystem() != null) {
+                directoryNode.getNFileSystem().writeFilesystem(buf);
+            }
+            report.setTemplate(buf.toByteArray());
+        } else
+        if (wb instanceof XSSFWorkbook) {
+            final XSSFWorkbook xwb = (XSSFWorkbook)wb;
+            final OPCPackage pkg = xwb.getPackage();
+            final ByteArrayOutputStream buf = new ByteArrayOutputStream(8192);
+            pkg.save(buf);
+            report.setTemplate(buf.toByteArray());
+        } else
+            throw new IllegalArgumentException("Unknown workbook implementation: " + wb);
     }
 }

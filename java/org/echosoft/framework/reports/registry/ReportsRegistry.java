@@ -5,9 +5,12 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.echosoft.framework.reports.model.Report;
+import org.echosoft.framework.reports.parser.ReportExtension;
 import org.echosoft.framework.reports.parser.ReportModelParser;
 import org.echosoft.framework.reports.processor.ExcelReportProcessor;
 import org.echosoft.framework.reports.processor.ReportProcessor;
@@ -23,6 +26,7 @@ public class ReportsRegistry {
     private static final ReportProcessor defaultProcessor;
     private static final Map<String, ReportProcessor> processors = new HashMap<>();
     private static final Map<String, Report> reports = new HashMap<>();
+    private static final List<ReportExtension> extensions = new CopyOnWriteArrayList<>();
     static {
         defaultProcessor = new ExcelReportProcessor();
         processors.put("excel2003", defaultProcessor);
@@ -61,6 +65,14 @@ public class ReportsRegistry {
     }
 
     /**
+     * Возвращает изменяемый список расширений для моделей отчетов.</br>
+     * К расширениям библиотека будет обращаться в момент инициализации отчета когда будут встречаться незнакомые ей элемента описания отчета.
+     */
+    public List<ReportExtension> getExtensions() {
+        return extensions;
+    }
+
+    /**
      * Возвращает информацию по всем зарегистрированным в системе отчетам. Удаление элемента данной коллекции приведет
      * к исключению соответствующего отчета из списка зарегистрированных отчетов. Добавление элементов в коллекцию
      * не поддерживается.
@@ -93,6 +105,12 @@ public class ReportsRegistry {
         reports.put(report.getId(), report);
     }
 
+    /**
+     * Сбрасывает сведения о всех отчетах.
+     */
+    public static void resetReports() {
+        reports.clear();
+    }
 
     /**
      * <p>Находит шаблоны и описания отчетов в указанном каталоге и автоматически регистрирует их в системе.</p>
@@ -119,7 +137,7 @@ public class ReportsRegistry {
         for (File file : dir.listFiles(filter)) {
             if (file.isDirectory()) {
                 if (recursive) {
-                    result += registerReportsFromDirectory(file, recursive, filter);
+                    result += registerReportsFromDirectory(file, true, filter);
                 }
                 continue;
             }
@@ -148,21 +166,15 @@ public class ReportsRegistry {
                 continue;
 
             Logs.reports.debug("registering report: " + tuple[0].getPath());
-            final FileInputStream template = new FileInputStream(tuple[0]);
-            try {
-                final FileInputStream structure = new FileInputStream(tuple[1]);
-                try {
-                    final Report report = ReportModelParser.parse(template, structure);
+            try (FileInputStream template = new FileInputStream(tuple[0])) {
+                try (FileInputStream structure = new FileInputStream(tuple[1])) {
+                    final Report report = ReportModelParser.parse(template, structure, extensions);
                     reports.put(report.getId(), report);
                     result++;
                 } catch (Exception e) {
                     cause = e;
                     Logs.reports.error(e.getMessage(), e);
-                } finally {
-                    structure.close();
                 }
-            } finally {
-                template.close();
             }
         }
 

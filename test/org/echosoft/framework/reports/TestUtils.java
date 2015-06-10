@@ -18,6 +18,7 @@ import org.echosoft.framework.reports.data.beans.Invoice;
 import org.echosoft.framework.reports.data.beans.Payment;
 import org.echosoft.framework.reports.data.beans.Project;
 import org.echosoft.framework.reports.model.Report;
+import org.echosoft.framework.reports.parser.ReportExtension;
 import org.echosoft.framework.reports.parser.ReportModelParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -41,11 +42,14 @@ public class TestUtils {
     }
 
     public static Report loadReport(final String reportName) throws Exception {
+        final List<ReportExtension> extensions = new ArrayList<>();
+        extensions.add(new TestReportExtension());
+
         InputStream wb = TestUtils.openFileStream(reportName + ".xls");
         if (wb == null)
             wb = TestUtils.openFileStream(reportName + ".xlsx");
         final InputStream cfg = TestUtils.openFileStream(reportName + ".xml");
-        return ReportModelParser.parse(wb, cfg);
+        return ReportModelParser.parse(wb, cfg, extensions);
     }
 
     public static List<Invoice> loadInvoices(final String dsName) throws Exception {
