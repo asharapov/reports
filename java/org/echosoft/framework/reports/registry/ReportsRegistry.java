@@ -68,7 +68,7 @@ public class ReportsRegistry {
      * Возвращает изменяемый список расширений для моделей отчетов.</br>
      * К расширениям библиотека будет обращаться в момент инициализации отчета когда будут встречаться незнакомые ей элемента описания отчета.
      */
-    public List<ReportExtension> getExtensions() {
+    public static List<ReportExtension> getExtensions() {
         return extensions;
     }
 
