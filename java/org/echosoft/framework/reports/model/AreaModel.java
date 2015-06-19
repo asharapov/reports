@@ -54,16 +54,17 @@ public class AreaModel implements Serializable, Cloneable {
      * @param sheet   шаблон листа отчета в котором находятся данные для данной области.
      * @param top     номер верхней строки (начиная с 0) относящейся к указанной области.
      * @param height  количество строк в области. Должно быть как минимум 1.
+     * @param lastColumn номер последней колонки.
      * @param palette реестр всех стилей используемых в данном отчете.
      */
-    public AreaModel(final Sheet sheet, final int top, final int height, final StylePalette palette) {
+    public AreaModel(final Sheet sheet, final int top, final int height, int lastColumn, final StylePalette palette) {
         if (sheet == null || top < 0 || height < 1)
             throw new IllegalArgumentException("Illegal area arguments");
         rows = new ArrayList<>();
         regions = new ArrayList<>();
 
         final int bottom = top + height - 1;
-        int lastColumn = 0;
+        int lcn = 0;
         for (int i = top; i <= bottom; i++) {
             final RowModel rm = new RowModel();
             rows.add(rm);
@@ -74,8 +75,8 @@ public class AreaModel implements Serializable, Cloneable {
             }
             rm.setHeight(row.getHeight());
             rm.setHidden(row.getZeroHeight());
-            lastColumn = Math.max(lastColumn, row.getLastCellNum());
-            for (int j = 0; j <= row.getLastCellNum(); j++) {
+            lcn = lastColumn >= 0 ? lastColumn : Math.max(lcn, row.getLastCellNum());
+            for (int j = 0; j <= lcn; j++) {
                 final Cell cell = row.getCell(j);
                 if (cell == null) {
                     rm.getCells().add(null);
@@ -84,7 +85,7 @@ public class AreaModel implements Serializable, Cloneable {
                 }
             }
         }
-        this.columnsCount = lastColumn + 1;
+        this.columnsCount = lcn + 1;
 
         final int regcount = sheet.getNumMergedRegions();
         for (int i = 0; i < regcount; i++) {

@@ -54,6 +54,11 @@ public abstract class Section implements Serializable, Cloneable {
     private boolean rendered;
 
     /**
+     * Список описаний именованных регионов которые должны быть созданы на листе по завершении обработки данной секции.
+     */
+    private List<NamedRegion> namedRegions;
+
+    /**
      * Описывает обработчики которые вызываются перед началом обработки секции и после окончания обработки секции.
      */
     private List<SectionEventListenerHolder> sectionListeners;
@@ -75,6 +80,7 @@ public abstract class Section implements Serializable, Cloneable {
             throw new IllegalArgumentException("Report section identifier must be specified");
         this.id = id;
         this.rendered = true;
+        this.namedRegions = new ArrayList<>();
         this.sectionListeners = new ArrayList<>();
         this.cellListeners = new ArrayList<>();
     }
@@ -129,6 +135,13 @@ public abstract class Section implements Serializable, Cloneable {
     }
     public void setRendered(final boolean rendered) {
         this.rendered = rendered;
+    }
+
+    /**
+     * Список описаний именованных регионов которые должны быть созданы на листе по завершении обработки данной секции.
+     */
+    public List<NamedRegion> getNamedRegions() {
+        return namedRegions;
     }
 
     /**
@@ -188,6 +201,10 @@ public abstract class Section implements Serializable, Cloneable {
         if (target == null)
             throw new IllegalArgumentException("Target report model must be specified");
         final Section result = (Section) super.clone();
+        result.namedRegions = new ArrayList<>();
+        for (NamedRegion ref : namedRegions) {
+            result.namedRegions.add(ref.clone());
+        }
         result.sectionListeners = new ArrayList<>();
         for (SectionEventListenerHolder listener : sectionListeners) {
             result.sectionListeners.add((SectionEventListenerHolder) listener.clone());

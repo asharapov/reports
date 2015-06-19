@@ -104,7 +104,7 @@ public class SheetModel implements Serializable {
 
 
     /**
-     * @return Название листа.
+     * @return Название листа или <code>null</code>.
      */
     public Expression getTitle() {
         return title;
@@ -119,8 +119,6 @@ public class SheetModel implements Serializable {
      * @param title новое название листа.
      */
     public void setTitle(final Expression title) {
-        if (title == null)
-            throw new IllegalArgumentException("Sheet title can't be an empty");
         this.title = title;
     }
 

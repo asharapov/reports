@@ -143,7 +143,7 @@ public class ReportsRegistry {
             }
             final int s = file.getName().lastIndexOf('.');
             final String ext = s >= 0 ? file.getName().substring(s + 1).toLowerCase() : null;
-            if (!"xls".equals(ext) && !"xlsx".equals(ext) && !"xml".equals(ext))
+            if (!"xls".equals(ext) && !"xlsx".equals(ext) && !"xlsm".equals(ext) && !"xml".equals(ext))
                 continue;
             final String name = file.getName().substring(0, s);
 
@@ -153,7 +153,7 @@ public class ReportsRegistry {
                 files.put(name, tuple);
             }
 
-            if ("xls".equals(ext) || "xlsx".equals(ext)) {
+            if ("xls".equals(ext) || "xlsx".equals(ext) || "xlsm".equals(ext)) {
                 tuple[0] = file;
             } else {
                 tuple[1] = file;

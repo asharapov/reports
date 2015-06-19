@@ -12,7 +12,6 @@ import java.util.StringTokenizer;
 import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.poifs.filesystem.DirectoryNode;
 import org.apache.poi.poifs.filesystem.Entry;
 import org.apache.poi.ss.usermodel.PrintSetup;
@@ -29,6 +28,7 @@ import org.echosoft.framework.reports.model.CompositeSection;
 import org.echosoft.framework.reports.model.GroupModel;
 import org.echosoft.framework.reports.model.GroupStyle;
 import org.echosoft.framework.reports.model.GroupingSection;
+import org.echosoft.framework.reports.model.NamedRegion;
 import org.echosoft.framework.reports.model.PageSettingsModel;
 import org.echosoft.framework.reports.model.PlainSection;
 import org.echosoft.framework.reports.model.PrintSetupModel;
@@ -305,7 +305,7 @@ public class ReportModelParser {
         if (esheet == null)
             throw new RuntimeException("Template doesn't contains sheet " + id);
         final SheetModel sheet = new SheetModel(id);
-        sheet.setTitle(new BaseExpression(StringUtil.trim(element.getAttribute("title"))));
+        sheet.setTitle(BaseExpression.makeExpression(StringUtil.trim(element.getAttribute("title"))));
         sheet.setHidden(Any.asBoolean(StringUtil.trim(element.getAttribute("hidden")), false));
         sheet.setRendered(Any.asBoolean(StringUtil.trim(element.getAttribute("rendered")), true));
         sheet.setProtected(Any.asBoolean(StringUtil.trim(element.getAttribute("protected")), false));
@@ -420,12 +420,16 @@ public class ReportModelParser {
         if (pid != null)
             section.setDataProvider(report.getProviders().get(pid));
         final int height = Any.asInt(element.getAttribute("height"), 1);
-        section.setTemplate(new AreaModel(sheet, offset, height, report.getPalette()));
+        final int lastColumn = POIUtils.getColumnNumber(StringUtil.trim(element.getAttribute("lastColumn")));
+        section.setTemplate(new AreaModel(sheet, offset, height, lastColumn, report.getPalette()));
         section.getTemplate().setHidden(section.isHidden());
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
             switch (tagName) {
+                case "named-region":
+                    parseNamedRegion(section, el);
+                    break;
                 case "section-listener":
                     parseSectionEventListener(section, el);
                     break;
@@ -452,11 +456,15 @@ public class ReportModelParser {
         final String[] colnames = Any.asStringArray(StringUtil.trim(element.getAttribute("indentColumns")), null);
         section.setIndentedColumns(colnames);
         final int rowHeight = Any.asInt(element.getAttribute("rowHeight"), 1);
+        final int lastColumn = POIUtils.getColumnNumber(StringUtil.trim(element.getAttribute("lastColumn")));
         int height = 0;
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
             switch (tagName) {
+                case "named-region":
+                    parseNamedRegion(section, el);
+                    break;
                 case "section-listener":
                     parseSectionEventListener(section, el);
                     break;
@@ -472,7 +480,7 @@ public class ReportModelParser {
                     throw new RuntimeException("Unknown element: " + tagName);
             }
         }
-        section.setRowTemplate(new AreaModel(sheet, offset + height, rowHeight, report.getPalette()));
+        section.setRowTemplate(new AreaModel(sheet, offset + height, rowHeight, lastColumn, report.getPalette()));
         return section;
     }
 
@@ -495,6 +503,9 @@ public class ReportModelParser {
             final Element el = i.next();
             final String tagName = el.getTagName();
             switch (tagName) {
+                case "named-region":
+                    parseNamedRegion(section, el);
+                    break;
                 case "section-listener":
                     parseSectionEventListener(section, el);
                     break;
@@ -531,6 +542,16 @@ public class ReportModelParser {
         return section;
     }
 
+    private static NamedRegion parseNamedRegion(final Section section, final Element element) {
+        final String name = StringUtil.trim(element.getAttribute("name"));
+        final int firstColumn = POIUtils.getColumnNumber(StringUtil.trim(element.getAttribute("firstColumn")), 0);
+        final int lastColumn = POIUtils.getColumnNumber(StringUtil.trim(element.getAttribute("lastColumn")), section.getTemplateColumnsCount() - 1);
+        final NamedRegion namedRegion = new NamedRegion(name, firstColumn, lastColumn);
+        namedRegion.setComment(StringUtil.trim(element.getAttribute("comment")));
+        section.getNamedRegions().add(namedRegion);
+        return namedRegion;
+    }
+
     private static GroupModel parseGroup(final Sheet sheet, int offset, final Report report, final Element element) {
         final GroupModel group = new GroupModel();
         group.setDiscriminatorField(StringUtil.trim(element.getAttribute("discriminatorField")));
@@ -540,6 +561,7 @@ public class ReportModelParser {
         group.setHidden(Any.asBoolean(StringUtil.trim(element.getAttribute("hidden")), false));
         group.setSkipEmptyGroups(Any.asBoolean(StringUtil.trim(element.getAttribute("skipEmptyGroups")), false));
         final int height = Any.asInt(StringUtil.trim(element.getAttribute("height")), 1);
+        final int lastColumn = POIUtils.getColumnNumber(StringUtil.trim(element.getAttribute("lastColumn")));
         for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
             final Element el = i.next();
             final String tagName = el.getTagName();
@@ -547,7 +569,7 @@ public class ReportModelParser {
                 final GroupStyle style = new GroupStyle();
                 style.setLevel(Any.asInt(StringUtil.trim(el.getAttribute("level")), 0));
                 style.setDefault(Any.asBoolean(StringUtil.trim(el.getAttribute("default")), false));
-                style.setTemplate(new AreaModel(sheet, offset, height, report.getPalette()));
+                style.setTemplate(new AreaModel(sheet, offset, height, lastColumn, report.getPalette()));
                 style.getTemplate().setHidden(group.isHidden());
                 group.addStyle(style);
                 offset += height;
@@ -558,7 +580,7 @@ public class ReportModelParser {
             final GroupStyle style = new GroupStyle();
             style.setLevel(0);
             style.setDefault(true);
-            style.setTemplate(new AreaModel(sheet, offset, height, report.getPalette()));
+            style.setTemplate(new AreaModel(sheet, offset, height, lastColumn, report.getPalette()));
             style.getTemplate().setHidden(group.isHidden());
             group.addStyle(style);
         }
@@ -591,8 +613,9 @@ public class ReportModelParser {
     }
 
     private static void preserveTemplate(final Report report, final Workbook wb) throws IOException {
-        for (int i = wb.getNumberOfSheets(); i > 0; i--) {
-            wb.removeSheetAt(wb.getNumberOfSheets() - 1);
+        for (SheetModel sm : report.getSheets()) {
+            final Sheet sheet = wb.getSheet(sm.getId());
+            POIUtils.removeAllRows(sheet);
         }
         if (wb instanceof HSSFWorkbook) {
             final HSSFWorkbook hwb = (HSSFWorkbook) wb;
@@ -621,10 +644,8 @@ public class ReportModelParser {
             report.setTemplate(buf.toByteArray());
         } else
         if (wb instanceof XSSFWorkbook) {
-            final XSSFWorkbook xwb = (XSSFWorkbook)wb;
-            final OPCPackage pkg = xwb.getPackage();
             final ByteArrayOutputStream buf = new ByteArrayOutputStream(8192);
-            pkg.save(buf);
+            wb.write(buf);
             report.setTemplate(buf.toByteArray());
         } else
             throw new IllegalArgumentException("Unknown workbook implementation: " + wb);

@@ -14,9 +14,12 @@ import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Name;
 import org.apache.poi.ss.usermodel.RichTextString;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.model.StylesTable;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
@@ -26,6 +29,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.echosoft.framework.reports.model.ColorModel;
 import org.echosoft.framework.reports.model.FontModel;
+import org.echosoft.framework.reports.model.NamedRegion;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.processor.Group;
 import org.echosoft.framework.reports.processor.SectionContext;
@@ -139,19 +143,40 @@ public class POIUtils {
     }
 
     /**
-     * Конвертирует наименование колонки из формата ALPHA-26 в десятичные числа.
+     * Конвертирует наименование колонки из десятичного или ALPHA-26 форматов в числа.
      *
-     * @param columnName наименование колонки (A, B, C, ... Z, AA, ... AZ, ...)
+     * @param columnName наименование колонки - либо число либо строка в ALPHA-26 коде (A, B, C, ... Z, AA, ... AZ, ...)
      * @return порядковый номер колонки (начиная с 0).
      *         Если наименование колонки содержит недопустимые символы то метод вернет <code>-1</code>.
      */
     public static int getColumnNumber(final String columnName) {
+        return getColumnNumber(columnName, -1);
+    }
+
+    /**
+     * Конвертирует наименование колонки из десятичного или ALPHA-26 форматов в числа.
+     *
+     * @param columnName наименование колонки - либо число либо строка в ALPHA-26 коде (A, B, C, ... Z, AA, ... AZ, ...)
+     * @param defaultValue значение по умолчанию для возвращаемого результата. Используется в случае неверного формата значения атрибута columnName.
+     * @return порядковый номер колонки (начиная с 0) или, если columnName содержит недопустимые символы, то метод вернет значение атрибута defaultValue.
+     */
+    public static int getColumnNumber(final String columnName, final int defaultValue) {
+        if (columnName == null || columnName.isEmpty())
+            return defaultValue;
         int result = 0;
+        if (Character.isDigit(columnName.charAt(0))) {
+            try {
+                result = Integer.parseInt(columnName);
+                return result >= 0 ? result : defaultValue;
+            } catch (NumberFormatException e) {
+                return defaultValue;
+            }
+        }
         int pos = 0;
         for (int i = columnName.length() - 1; i >= 0; i--) {
             final char c = columnName.charAt(i);
             if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
-                return -1;  // обнаружен недопустимый символ.
+                return defaultValue;  // обнаружен недопустимый символ.
             }
             // Character.getNumericValue() возвращает значения 10-35 для символов A-Z
             final int shift = (int) Math.pow(26, pos++);
@@ -623,5 +648,30 @@ public class POIUtils {
             } else
                 throw new RuntimeException("Unsupported sheet class");
         }
+    }
+
+    public static void removeAllRows(final Sheet sheet) {
+//        for (Iterator<Row> it = sheet.rowIterator(); it.hasNext(); ) {
+//            it.next();
+//            it.remove();
+//        }
+        for (int rn = sheet.getLastRowNum(); rn > 0 || sheet.getPhysicalNumberOfRows() > 0; rn = sheet.getLastRowNum()) {
+            final Row row = sheet.getRow(rn);
+            sheet.removeRow(row);
+        }
+    }
+
+    public static Name makeName(final Sheet sheet, final NamedRegion proto, final int firstRow, final int lastRow) {
+        final Workbook wb = sheet.getWorkbook();
+        Name result = wb.getName(proto.getName());
+        if (result == null) {
+            result = wb.createName();
+            result.setNameName(proto.getName());
+        }
+        //result.setSheetIndex(wb.getSheetIndex(sheet));  // только для имен у которых область видимости ограничивается одной страницей!
+        final CellRangeAddress cra = new CellRangeAddress(firstRow, lastRow, proto.getFirstColumn(), proto.getLastColumn());
+        result.setRefersToFormula(cra.formatAsString(sheet.getSheetName(), true));
+        result.setComment(proto.getComment());
+        return result;
     }
 }

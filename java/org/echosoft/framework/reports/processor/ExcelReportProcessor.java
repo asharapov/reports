@@ -38,6 +38,7 @@ import org.echosoft.framework.reports.model.ColumnGroupModel;
 import org.echosoft.framework.reports.model.CompositeSection;
 import org.echosoft.framework.reports.model.GroupStyle;
 import org.echosoft.framework.reports.model.GroupingSection;
+import org.echosoft.framework.reports.model.NamedRegion;
 import org.echosoft.framework.reports.model.PageSettingsModel;
 import org.echosoft.framework.reports.model.PlainSection;
 import org.echosoft.framework.reports.model.PrintSetupModel;
@@ -53,7 +54,6 @@ import org.echosoft.framework.reports.model.events.SectionEventListener;
 import org.echosoft.framework.reports.model.providers.DataProvider;
 import org.echosoft.framework.reports.model.providers.ProviderUsage;
 import org.echosoft.framework.reports.util.POIUtils;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheets;
 
 /**
  * Формирует итоговый отчет по его модели и на основании данных указанных пользователем в качестве параметров.<br/>
@@ -132,9 +132,9 @@ public class ExcelReportProcessor implements ReportProcessor {
                 if (report.getTemplate() != null) {
                     final OPCPackage pkg = OPCPackage.open(new ByteArrayInputStream(report.getTemplate()));
                     wb = new XSSFWorkbook(pkg);
-                    final CTSheets sheets = wb.getCTWorkbook().getSheets();
-                    while (sheets.sizeOfSheetArray() > 0)
-                        sheets.removeSheet(0);
+//                    final CTSheets sheets = wb.getCTWorkbook().getSheets();
+//                    while (sheets.sizeOfSheetArray() > 0)
+//                        sheets.removeSheet(0);
                 } else {
                     wb = new XSSFWorkbook();
                 }
@@ -309,7 +309,11 @@ public class ExcelReportProcessor implements ReportProcessor {
             listener.beforeSheet(ectx);
         }
         if (ectx.sheet.isRendered()) {
-            ectx.wsheet = ectx.wb.createSheet((String) sheet.getTitle().getValue(ectx.elctx));
+            final String title = sheet.getTitle() != null ? (String)sheet.getTitle().getValue(ectx.elctx) : sheet.getId();
+            ectx.wsheet = ectx.wb.getSheet(title);  // в случае использования сохраненного шаблона отчета ...
+            if (ectx.wsheet == null) {
+                ectx.wsheet = ectx.wb.createSheet(title);
+            }
             ectx.wsheet.setRowSumsBelow(false);
             //ectx.wsheet.setAlternativeExpression(false);  //мы использовали этот метод т.к. setRowSumBelow() не работал в должной мере, но судя по коду, в POI это исправили еще 4 года назад
 
@@ -415,6 +419,11 @@ public class ExcelReportProcessor implements ReportProcessor {
             if (section.isCollapsible() && lastRow >= firstRow) {
                 ectx.wsheet.groupRow(firstRow, lastRow);
                 ectx.wsheet.setRowGroupCollapsed(firstRow, section.isCollapsed());
+            }
+            if (lastRow >= firstRow) {
+                for (NamedRegion namedRegion : section.getNamedRegions()) {
+                    POIUtils.makeName(ectx.wsheet, namedRegion, firstRow, lastRow);
+                }
             }
         }
         for (final SectionEventListener listener : ectx.sectionContext.sectionListeners) {
