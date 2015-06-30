@@ -181,7 +181,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                     wb.lockStructure();
                 }
                 if (report.getTarget() == Report.TargetType.SXSSF) {
-                    return new SXSSFWorkbook(wb, 1000);
+                    return new SXSSFWorkbook(wb, report.getStreamWindowSize(), report.getStreamUseCompression());
                 }
                 return wb;
             }

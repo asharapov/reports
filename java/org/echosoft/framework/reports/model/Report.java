@@ -83,6 +83,21 @@ public class Report implements Serializable {
     private byte[] template;
 
     /**
+     * Используется при генерации отчета в формате {@link TargetType#SXSSF}.
+     * Задает максимальное количество последних сгенерированных строк документа в оперативной памяти.
+     * Все предыдущие сгенерированные строки будут принудительно выгружены во временные файлы.
+     * Значение меньше 0 обозначает что все строки будут храниться в памяти.
+     * Значение 0 не допустимо (будет установлено значение по умолчанию).
+     */
+    private int streamWindowSize;
+
+    /**
+     * Используется при генерации отчета в формате {@link TargetType#SXSSF}.
+     * Указывает следует ли использовать компрессию временных файлов которые будут создаваться при генерации отчетов.
+     */
+    private boolean streamUseCompression;
+
+    /**
      * Дополнительное описание отчета.
      */
     private final ReportDescription description;
@@ -119,6 +134,7 @@ public class Report implements Serializable {
             throw new IllegalArgumentException("Report identifier must be specified");
         this.id = id;
         this.target = TargetType.HSSF;
+        this.streamWindowSize = 1000;
         this.description = new ReportDescription();
         this.sheets = new ArrayList<>();
         this.palette = new StylePalette(wb);
@@ -263,6 +279,33 @@ public class Report implements Serializable {
     }
     public void setTemplate(final byte[] template) {
         this.template = template;
+    }
+
+    /**
+     * Используется при генерации отчета в формате {@link TargetType#SXSSF}.
+     * Задает максимальное количество последних сгенерированных строк документа в оперативной памяти.
+     * Все предыдущие сгенерированные строки будут принудительно выгружены во временные файлы.
+     * Значение меньше 0 обозначает что все строки будут храниться в памяти.
+     * Значение 0 не допустимо (будет установлено значение по умолчанию).
+     */
+    public int getStreamWindowSize() {
+        return streamWindowSize;
+    }
+    public void setStreamWindowSize(final int streamWindowSize) {
+        this.streamWindowSize = streamWindowSize > 0
+                ? streamWindowSize
+                : (streamWindowSize < 0 ? -1 : 1000);
+    }
+
+    /**
+     * Используется при генерации отчета в формате {@link TargetType#SXSSF}.
+     * Указывает следует ли использовать компрессию временных файлов которые будут создаваться при генерации отчетов.
+     */
+    public boolean getStreamUseCompression() {
+        return streamUseCompression;
+    }
+    public void setStreamUseCompression(final boolean streamUseCompression) {
+        this.streamUseCompression = streamUseCompression;
     }
 
     /**

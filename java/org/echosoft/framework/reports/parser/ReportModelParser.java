@@ -102,6 +102,8 @@ public class ReportModelParser {
             report.setTarget(target);
             report.setUser(new BaseExpression(StringUtil.getNonEmpty(root.getAttribute("user"), "user")));
             report.setPassword(new BaseExpression(StringUtil.trim(root.getAttribute("password"))));
+            report.setStreamWindowSize(Any.asInt(StringUtil.trim(root.getAttribute("stream-window-size")), 1000));
+            report.setStreamUseCompression(Any.asBoolean(StringUtil.trim(root.getAttribute("stream-use-compression")), false));
 
             for (Iterator<Element> i = XMLUtil.getChildElements(root); i.hasNext(); ) {
                 final Element element = i.next();
@@ -614,8 +616,13 @@ public class ReportModelParser {
 
     private static void preserveTemplate(final Report report, final Workbook wb) throws IOException {
         for (SheetModel sm : report.getSheets()) {
-            final Sheet sheet = wb.getSheet(sm.getId());
-            POIUtils.removeAllRows(sheet);
+            if (sm.getTitle() != null) {
+                final int idx = wb.getSheetIndex(sm.getId());
+                wb.removeSheetAt(idx);
+            } else {
+                final Sheet sheet = wb.getSheet(sm.getId());
+                POIUtils.removeAllRows(sheet);
+            }
         }
         if (wb instanceof HSSFWorkbook) {
             final HSSFWorkbook hwb = (HSSFWorkbook) wb;
@@ -642,12 +649,10 @@ public class ReportModelParser {
                 directoryNode.getNFileSystem().writeFilesystem(buf);
             }
             report.setTemplate(buf.toByteArray());
-        } else
-        if (wb instanceof XSSFWorkbook) {
+        } else {
             final ByteArrayOutputStream buf = new ByteArrayOutputStream(8192);
             wb.write(buf);
             report.setTemplate(buf.toByteArray());
-        } else
-            throw new IllegalArgumentException("Unknown workbook implementation: " + wb);
+        }
     }
 }

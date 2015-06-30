@@ -62,6 +62,25 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="stream-window-size" type="xs:int" default="1000">
+            <xs:annotation>
+                <xs:documentation>
+                    Используется при генерации отчета в формате TargetType.SXSSF.
+                    Задает максимальное количество последних сгенерированных строк документа в оперативной памяти.
+                    Все предыдущие сгенерированные строки будут принудительно выгружены во временные файлы.
+                    Значение меньше 0 обозначает что все строки будут храниться в памяти.
+                    Значение 0 не допустимо (будет установлено значение по умолчанию).
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="stream-use-compression" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Используется при генерации отчета в формате TargetType.SXSSF.
+                    Указывает следует ли использовать компрессию временных файлов которые будут создаваться при генерации отчетов.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="ReportDescription">
