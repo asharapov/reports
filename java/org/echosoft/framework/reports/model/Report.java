@@ -160,6 +160,8 @@ public class Report implements Serializable {
         user = src.user;
         password = src.password;
         template = src.template;
+        streamWindowSize = src.streamWindowSize;
+        streamUseCompression = src.streamUseCompression;
         description = (ReportDescription) src.description.clone();
         palette = (StylePalette) src.palette.clone();
         macros = new HashMap<>();
