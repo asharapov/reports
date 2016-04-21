@@ -97,6 +97,21 @@ public class SimpleReportTest {
     }
 
     @Test
+    public void testImageWithMergedRegions() throws Exception {
+        final Report report = TestUtils.loadReport("imageWithMergedRegions");
+
+        final ELContext ctx = new ELContext();
+
+        final long started = System.currentTimeMillis();
+        final Workbook result = ReportsRegistry.getDefaultProcessor().process(report, ctx);
+        System.out.println(report.getId() + " generated for a " + (System.currentTimeMillis() - started) + " ms.");
+
+        final FileOutputStream out = new FileOutputStream("imageWithMergedRegionsResult.xlsx");
+        result.write(out);
+        out.close();
+    }
+
+    @Test
     public void testReport5() throws Exception {
         final Report report = TestUtils.loadReport("test-grp-1");
 

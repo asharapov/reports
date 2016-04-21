@@ -659,6 +659,10 @@ public class POIUtils {
             final Row row = sheet.getRow(rn);
             sheet.removeRow(row);
         }
+        // удаляем все объединённые области, т.к. они будут добавлены позже
+        for (int i = sheet.getNumMergedRegions() - 1; i >= 0; i--) {
+            sheet.removeMergedRegion(i);
+        }
     }
 
     public static Name makeName(final Sheet sheet, final NamedRegion proto, final int firstRow, final int lastRow) {
