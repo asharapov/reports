@@ -321,7 +321,7 @@ public class POIUtils {
             }
         }
 
-        byte[] rgb = color.getRgbWithTint();
+        byte[] rgb = color.getRGBWithTint();
         // ниже рассмотрена спец. обработка случая когда обрабатываемый .xlsx документ был получен
         // простым сохранением в новом формате из старого .xls документа без каких-либо изменений ...
         // В других случаях, по моим наблюдениям, индексированные цвета на которых бы не работали стандартные методы POI не используются.
@@ -658,6 +658,10 @@ public class POIUtils {
         for (int rn = sheet.getLastRowNum(); rn > 0 || sheet.getPhysicalNumberOfRows() > 0; rn = sheet.getLastRowNum()) {
             final Row row = sheet.getRow(rn);
             sheet.removeRow(row);
+        }
+        // удаляем все объединённые области, т.к. они будут добавлены позже
+        for (int i = sheet.getNumMergedRegions() - 1; i >= 0; i--) {
+            sheet.removeMergedRegion(i);
         }
     }
 

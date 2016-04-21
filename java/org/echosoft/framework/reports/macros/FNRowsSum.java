@@ -44,9 +44,9 @@ import org.echosoft.framework.reports.util.POIUtils;
  *  </li>
  * </ol>
  * </p>
- * @see org.echosoft.framework.reports.macros.NRowsSum
- * @see org.echosoft.framework.reports.macros.MacrosRegistry
- * @see org.echosoft.framework.reports.processor.ExecutionContext#history
+ * @see NRowsSum
+ * @see MacrosRegistry
+ * @see ExecutionContext#history
  * @author Anton Sharapov
  */
 public class FNRowsSum implements Macros {

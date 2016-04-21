@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<!--
+  ~ Copyright 2016, TopS BI LLC. All rights reserved.
+  ~ http://www.topsbi.ru
+  -->
+
+<report id="reportWithImage" title="Справка" target="XSSF" preserveTemplate="true"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://echosoft.org/java/excel-reports/reports.xsd">
+
+    <description>
+        <title>Справка</title>
+    </description>
+
+    <sheet id="report">
+        <plain-section id="header" height="2"/>
+    </sheet>
+
+</report>

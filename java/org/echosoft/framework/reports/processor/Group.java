@@ -5,10 +5,11 @@ import java.util.List;
 
 import org.echosoft.common.utils.BeanUtil;
 import org.echosoft.framework.reports.model.GroupModel;
+import org.echosoft.framework.reports.model.GroupingSection;
 
 /**
  * <p>Данная структура содержит всю информацию, требуемую в процессе генерации группировочной строки
- * в секции {@link org.echosoft.framework.reports.model.GroupingSection}.
+ * в секции {@link GroupingSection}.
  * В отличие от структуры {@link GroupModel}, которая используется для описания модели отчета,
  * данный класс используется непосредственно в фазе генерации конкретного отчета на основе его шаблона (модели).</p>
  * <p>В сферу компетенции данного класса входит привязка к конкретным строкам листа отчета для конкретной группировочной
@@ -39,8 +40,8 @@ import org.echosoft.framework.reports.model.GroupModel;
  * </table>
  *
  * @author Anton Sharapov
- * @see org.echosoft.framework.reports.model.GroupingSection
- * @see org.echosoft.framework.reports.model.GroupModel
+ * @see GroupingSection
+ * @see GroupModel
  */
 public final class Group {
 
@@ -128,7 +129,7 @@ public final class Group {
      *
      * @param bean очередной бин полученный из источника данных секции. Содержит данные для отрисовки соответствующей строки в отчете.
      * @return <code>true</code> если указанный бин, полученный из источника данных секции входит в указанную группу.
-     *         (предполагается что проверка на вхождение этого бина во все родительские группы была уже успешно выполнена).
+     * (предполагается что проверка на вхождение этого бина во все родительские группы была уже успешно выполнена).
      * @throws Exception в случае каких-либо проблем.
      */
     public boolean acceptBean(final Object bean) throws Exception {
@@ -144,7 +145,7 @@ public final class Group {
      * групп оно не увеличивается по сравнению с этим же свойством данной (родительской) группы.
      *
      * @return <code>true</code> если для всех дочерних групп значение поля {@link #depth} должно быть больше значения
-     *         этого поля на 1.
+     * этого поля на 1.
      */
     public boolean incrementsDepth() {
         return model.getDiscriminatorField() != null;

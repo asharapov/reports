@@ -76,7 +76,7 @@ public class ELContext {
                     throw new RuntimeException(e.getMessage(), e);
                 }
             }
-            public Set<Map.Entry<String, Object>> entrySet() {
+            public Set<Entry<String, Object>> entrySet() {
                 return Collections.emptySet();
 //                                        throw new UnsupportedOperationException("operation not supported");
             }
@@ -88,7 +88,7 @@ public class ELContext {
             public Object get(final Object key) {
                 return key;
             }
-            public Set<Map.Entry<String, Object>> entrySet() {
+            public Set<Entry<String, Object>> entrySet() {
                 throw new UnsupportedOperationException("operation not supported");
             }
             public String toString() {

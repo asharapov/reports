@@ -21,7 +21,7 @@ public class CellModel implements Serializable, Cloneable {
     /**
      * Тип данных в ячейке.
      *
-     * @see org.apache.poi.ss.usermodel.Cell#getCellType()
+     * @see Cell#getCellType()
      */
     private int type;
 
