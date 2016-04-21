@@ -3,8 +3,8 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.echosoft</groupId>
-    <artifactId>echosoft-reports</artifactId>
-    <version>2.0.6</version>
+    <artifactId>reports</artifactId>
+    <version>2.1.0.5</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -38,8 +38,8 @@
     <dependencies>
         <dependency>
             <groupId>org.echosoft</groupId>
-            <artifactId>echosoft-common</artifactId>
-            <version>1.0.1</version>
+            <artifactId>common</artifactId>
+            <version>1.0.1.1</version>
         </dependency>
 
         <dependency>
