@@ -43,7 +43,7 @@ import org.echosoft.framework.reports.util.POIUtils;
  * </p>
  * @see FNRowsSum
  * @see MacrosRegistry
- * @see org.echosoft.framework.reports.processor.ExecutionContext#history
+ * @see ExecutionContext#history
  * @author Anton Sharapov
  */
 public class FNRowsSumProd implements Macros {
