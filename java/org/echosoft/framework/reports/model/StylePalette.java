@@ -64,7 +64,7 @@ public class StylePalette implements Serializable, Cloneable {
             font.setColor(ensureColorRegistered(f.getXSSFColor(), wb, hashedColors));
             fonts.put(f.getIndex(), font);
         }
-        for (short i = 0, cnt = wb.getNumCellStyles(); i < cnt; i++) {
+        for (int i = 0, cnt = wb.getNumCellStyles(); i < cnt; i++) {
             final XSSFCellStyle s = wb.getCellStyleAt(i);
             final CellStyleModel style = new CellStyleModel();
             style.setId(s.getIndex());
@@ -114,7 +114,7 @@ public class StylePalette implements Serializable, Cloneable {
 
     private void init(final HSSFWorkbook wb) {
         final HSSFPalette palette = wb.getCustomPalette();
-        for (short i = 0, cnt = wb.getNumCellStyles(); i < cnt; i++) {
+        for (int i = 0, cnt = wb.getNumCellStyles(); i < cnt; i++) {
             final HSSFCellStyle s = wb.getCellStyleAt(i);
             final CellStyleModel style = new CellStyleModel();
             style.setId(s.getIndex());

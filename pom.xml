@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.echosoft</groupId>
     <artifactId>echosoft-reports</artifactId>
-    <version>2.0.5</version>
+    <version>2.0.6</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -45,19 +45,19 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>3.12</version>
+            <version>3.14</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>3.12</version>
+            <version>3.14</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml-schemas</artifactId>
-            <version>3.12</version>
+            <version>3.14</version>
         </dependency>
 
         <dependency>
@@ -87,6 +87,11 @@
         <directory>build</directory>
         <outputDirectory>build/classes/production</outputDirectory>
         <testOutputDirectory>build/classes/test</testOutputDirectory>
+        <resources>
+            <resource>
+                <directory>configs</directory>
+            </resource>
+        </resources>
 
         <plugins>
             <plugin>
