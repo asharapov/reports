@@ -469,7 +469,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         final GroupingSection section = (GroupingSection) sctx.section;
 
         if (section.getDataProvider() != null) {
-            sctx.gm = new GroupManager(section.getGroups()) {
+            sctx.gm = new GroupManager(section.getGroups(), ectx.report.getTarget().equals(Report.TargetType.SXSSF)) {
                 public void renderCurrentGroup(final ExecutionContext ctx) throws Exception {
                     renderGroup(ctx, getCurrentGroup());
                 }
@@ -508,7 +508,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         final ProviderUsage providerUsage = section.getProviderUsage();
 
         if (provider != null && providerUsage != ProviderUsage.DECLARE_ONLY) {
-            sctx.gm = new GroupManager(section.getGroups()) {
+            sctx.gm = new GroupManager(section.getGroups(), ectx.report.getTarget().equals(Report.TargetType.SXSSF)) {
                 public void renderCurrentGroup(final ExecutionContext ctx) throws Exception {
                     renderGroup(ctx, getCurrentGroup());
                 }

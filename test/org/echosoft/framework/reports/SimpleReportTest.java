@@ -113,4 +113,25 @@ public class SimpleReportTest {
         out.close();
     }
 
+    @Test
+    public void testReport6() throws Exception {
+        final Report report = TestUtils.loadReport("report5");
+
+        final ELContext ctx = new ELContext();
+        ctx.getEnvironment().put("company", "Рога и Копыта");
+        ctx.getEnvironment().put("fromDate", StringUtil.parseDate("01.04.2008"));
+        ctx.getEnvironment().put("toDate", StringUtil.parseDate("25.08.2008"));
+        ctx.getEnvironment().put("author", "Anton Sharapov");
+        ctx.getEnvironment().put("invoices", TestUtils.loadInvoices("report1-ds1.xml"));
+        ctx.getEnvironment().put("payments", TestUtils.loadPayments("report1-ds2.xml"));
+
+        final long started = System.currentTimeMillis();
+        final Workbook result = ReportsRegistry.getDefaultProcessor().process(report, ctx);
+        System.out.println(report.getId() + " generated for a " + (System.currentTimeMillis() - started) + " ms.");
+
+        final FileOutputStream out = new FileOutputStream("result-5.xlsx");
+        result.write(out);
+        out.close();
+    }
+
 }
