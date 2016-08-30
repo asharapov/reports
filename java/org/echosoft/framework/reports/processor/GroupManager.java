@@ -42,6 +42,23 @@ public abstract class GroupManager {
      */
     private boolean groupRendering;
 
+    /**
+     * если true, то группировочное поле должно отрисовываться сразу. Таким образом ормылы работать не будут, но зато будет работать группировка.
+     * используется для TargetType SXSSF
+     */
+    private boolean isDraw = false;
+
+
+    /**
+     *
+     * @param groups groups список критериев группировки
+     * @param isDraw если true, то группировачное поле отрисовывается сразу.
+     */
+    public GroupManager(final List<GroupModel> groups, boolean isDraw) {
+        this(groups);
+        this.isDraw = isDraw;
+    }
+
 
     /**
      * @param groups список критериев группировки
@@ -218,6 +235,12 @@ public abstract class GroupManager {
         for (int i = 0; i < rowcnt; i++) {
             ctx.wsheet.createRow(row++);
         }
+        if (isDraw){
+            groupRendering = true;
+            renderCurrentGroup(ctx);
+            groupRendering = false;
+        }
+
         return true;
     }
 
@@ -235,9 +258,11 @@ public abstract class GroupManager {
      * @throws Exception в случае каких-либо проблем.
      */
     protected void finalizeGroup(final ExecutionContext ctx) throws Exception {
-        groupRendering = true;
-        renderCurrentGroup(ctx);
-        groupRendering = false;
+        if (!isDraw) {
+            groupRendering = true;
+            renderCurrentGroup(ctx);
+            groupRendering = false;
+        }
         groups.remove(groups.size() - 1);
     }
 

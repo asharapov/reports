@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<report id="report5" title="Ведомость 1" password="123" target="SXSSF" preserveTemplate="true" stream-use-compression="true" stream-window-size="1"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://echo.org.ru/schemas/excel-reports/2.0/reports.xsd">
+
+    <description>
+        <company>${env:company}</company>
+        <application>Excel Report Framework</application>
+        <author>Anton Sharapov</author>
+        <version>1.2</version>
+        <title>Ведомость принятых на реализацию товаров за период ${(date,dd.MM.yyyy)env:fromDate} - ${(date,dd.MM.yyyy)env:toDate}</title>
+        <subject>Ведомость-1</subject>
+        <comments>Для внутреннего ознакомления</comments>
+    </description>
+
+    <list-data-provider id="ds2" data="${env:payments}"/>
+
+    <sheet id="sheet4" title="Работа с группировками (2)">
+        <plain-section id="s4.header" height="1"/>
+        <composite-section id="s4.data">
+            <plain-section id="s4.data.header" height="2"/>
+            <grouping-section id="s4.data.body" rowHeight="1" indentColumns="A" provider="ds2">
+                <cell-listener class="org.echosoft.framework.reports.data.beans.SimpleCellListener"/>
+                <group collapsible="false"/>
+                <group discriminatorField="activity.id" levelField="activity.level"/>
+                <group discriminatorField="company.id" collapsed="false"/>
+                <group discriminatorField="project.id" collapsed="false"/>
+            </grouping-section>
+        </composite-section>
+    </sheet>
+
+
+</report>
