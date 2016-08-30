@@ -177,7 +177,6 @@ public abstract class GroupManager {
      * @throws Exception в случае каких-либо проблем.
      */
     public void finalizeAllGroups(final ExecutionContext ctx) throws Exception {
-        if (isDraw) return;
         for (int i = groups.size() - 1; i >= 0; i--) {
             finalizeGroup(ctx);
         }
@@ -237,7 +236,9 @@ public abstract class GroupManager {
             ctx.wsheet.createRow(row++);
         }
         if (isDraw){
-            finalizeGroup(ctx);
+            groupRendering = true;
+            renderCurrentGroup(ctx);
+            groupRendering = false;
         }
 
         return true;
@@ -257,9 +258,11 @@ public abstract class GroupManager {
      * @throws Exception в случае каких-либо проблем.
      */
     protected void finalizeGroup(final ExecutionContext ctx) throws Exception {
-        groupRendering = true;
-        renderCurrentGroup(ctx);
-        groupRendering = false;
+        if (!isDraw) {
+            groupRendering = true;
+            renderCurrentGroup(ctx);
+            groupRendering = false;
+        }
         groups.remove(groups.size() - 1);
     }
 
