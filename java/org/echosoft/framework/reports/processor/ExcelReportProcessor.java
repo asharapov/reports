@@ -447,6 +447,9 @@ public class ExcelReportProcessor implements ReportProcessor {
                     sctx.bean = sctx.issuer.next();
                     ectx.elctx.setRowModel(sctx.bean);
                     ectx.elctx.getVariables().put(VAR_RECORD, sctx.record);
+                    for (SectionEventListener listener : sctx.sectionListeners) {
+                        listener.beforeRecord(ectx);
+                    }
                     renderArea(ectx, section.getTemplate(), -1);
                     for (SectionEventListener listener : sctx.sectionListeners) {
                         listener.afterRecord(ectx);
@@ -480,6 +483,9 @@ public class ExcelReportProcessor implements ReportProcessor {
                     sctx.bean = sctx.issuer.next();
                     ectx.elctx.setRowModel(sctx.bean);
                     ectx.elctx.getVariables().put(VAR_RECORD, sctx.record);
+                    for (SectionEventListener listener : sctx.sectionListeners) {
+                        listener.beforeRecord(ectx);
+                    }
                     sctx.gm.initRecord(ectx, sctx.bean);
                     renderArea(ectx, section.getRowTemplate(), -1);
                     sctx.gm.finalizeRecord(ectx);
@@ -519,6 +525,9 @@ public class ExcelReportProcessor implements ReportProcessor {
                     sctx.bean = ProviderUsage.PREFETCH_RECORDS == providerUsage ? sctx.issuer.readAhead() : sctx.issuer.next();
                     ectx.elctx.setRowModel(sctx.bean);
                     ectx.elctx.getVariables().put(VAR_RECORD, sctx.record);
+                    for (SectionEventListener listener : sctx.sectionListeners) {
+                        listener.beforeRecord(ectx);
+                    }
                     sctx.gm.initRecord(ectx, sctx.bean);
                     for (final Section childSection : section.getSections()) {
                         processSection(ectx, childSection);

@@ -15,25 +15,29 @@ public interface SectionEventListener extends EventListener, Serializable {
      * Вызвается перед началом обработки первой строки секции.
      *
      * @param ectx  описывает текущее состояние обработки отчета.
-     * @throws Exception  в случае каких-либо проблем.
      */
-    public void beforeSection(ExecutionContext ectx) throws Exception;
+    void beforeSection(ExecutionContext ectx) throws Exception;
 
+    /**
+     * Вызывается перед генерацией в секции строк связанных с очередной записью полученной от поставщика данных.
+     *
+     * @param ectx  описывает текущее состояние обработки отчета.
+     *              В контексте уже загружены сведения о новой записи которая должна быть отображена в отчете.
+     */
+    void beforeRecord(ExecutionContext ectx) throws Exception;
 
     /**
      * Вызывается по окончании создания в секции строк связанных с очередной записью полученной от поставщика данных.
      *
      * @param ectx  описывает текущее состояние обработки отчета.
-     * @throws Exception  в случае каких-либо проблем.
      */
-    public void afterRecord(ExecutionContext ectx) throws Exception;
+    void afterRecord(ExecutionContext ectx) throws Exception;
 
     /**
      * Вызвается по окончании обработки последнее строки секции.
      *
      * @param ectx  описывает текущее состояние обработки отчета.
-     * @throws Exception  в случае каких-либо проблем.
      */
-    public void afterSection(ExecutionContext ectx) throws Exception;
+    void afterSection(ExecutionContext ectx) throws Exception;
 
 }
