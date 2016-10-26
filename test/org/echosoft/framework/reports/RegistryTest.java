@@ -23,10 +23,13 @@ public class RegistryTest {
 
     @Test
     public void registerFromResourcesTest() throws Exception {
-        final Enumeration<URL> e = getClass().getClassLoader().getResources("org/echosoft/framework/reports/data");
-        while (e.hasMoreElements()) {
-            final URL url = e.nextElement();
-            System.out.println(url);
-        }
+        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        final String prefix = "org/echosoft/framework/reports/data/";
+        ReportsRegistry.registerReports(
+                loader.getResource(prefix + "report1.xls"),
+                loader.getResource(prefix + "report2.xls"),
+                loader.getResource(prefix + "test-grp-1.xlsx")
+        );
+        System.out.println("done");
     }
 }

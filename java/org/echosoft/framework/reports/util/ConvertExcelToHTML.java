@@ -148,21 +148,21 @@ public final class ConvertExcelToHTML {
                 final DataFormat dataFormat = workbook.createDataFormat();
                 final String format = dataFormat.getFormat(cell.getCellStyle().getDataFormat());
                 final boolean isWrap = cell.getCellStyle().getWrapText();
-                switch (cell.getCellType()) {
-                    case Cell.CELL_TYPE_NUMERIC:
+                switch (cell.getCellTypeEnum()) {
+                    case NUMERIC:
                         if (DateUtil.isCellDateFormatted(cell)) {
                             sb.append(mask(getFormattedDate(format, cell.getDateCellValue()), isWrap));
                         } else {
                             sb.append(mask(getFormattedNumber(format, cell.getNumericCellValue()), isWrap));
                         }
                         break;
-                    case Cell.CELL_TYPE_STRING:
+                    case STRING:
                         sb.append(mask(cell.getRichStringCellValue().getString(), isWrap));
                         break;
-                    case Cell.CELL_TYPE_FORMULA:
+                    case FORMULA:
                         sb.append(mask(getFormattedNumber(format, cell.getNumericCellValue()), isWrap));
                         break;
-                    case Cell.CELL_TYPE_BLANK:
+                    case BLANK:
                         sb.append("&nbsp;");
                         break;
                 }

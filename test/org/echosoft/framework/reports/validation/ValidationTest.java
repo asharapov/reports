@@ -3,12 +3,12 @@ package org.echosoft.framework.reports.validation;
 import java.io.InputStream;
 import java.util.List;
 
-import junit.framework.Assert;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

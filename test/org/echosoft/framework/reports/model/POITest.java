@@ -26,8 +26,10 @@ import org.apache.poi.poifs.eventfilesystem.POIFSReader;
 import org.apache.poi.poifs.eventfilesystem.POIFSReaderEvent;
 import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.CellType;
 import org.echosoft.framework.reports.TestUtils;
 import org.echosoft.framework.reports.util.POIUtils;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -38,6 +40,7 @@ public class POITest {
     @Test
     public void testParsing() throws IOException {
         final HSSFWorkbook wb = TestUtils.loadExcelDocument("poitest1.xls");
+        Assert.assertNotNull(wb);
         final SummaryInformation si = wb.getSummaryInformation();
         System.out.println("author: " + si.getAuthor());
         System.out.println("application: " + si.getApplicationName());
@@ -130,30 +133,30 @@ public class POITest {
         final HSSFRow row1 = sheet.createRow(0);
         row1.setHeight(sheet.getDefaultRowHeight());
         final HSSFCell[] cells1 = new HSSFCell[3];
-        cells1[0] = row1.createCell(0, HSSFCell.CELL_TYPE_STRING);
+        cells1[0] = row1.createCell(0, CellType.STRING);
         cells1[0].setCellValue(new HSSFRichTextString("test1"));
-        cells1[1] = row1.createCell(1, HSSFCell.CELL_TYPE_STRING);
+        cells1[1] = row1.createCell(1, CellType.STRING);
         cells1[1].setCellValue(new HSSFRichTextString("test2"));
-        cells1[2] = row1.createCell(2, HSSFCell.CELL_TYPE_STRING);
+        cells1[2] = row1.createCell(2, CellType.STRING);
         cells1[2].setCellValue(new HSSFRichTextString("test3"));
         final HSSFRow row2 = sheet.createRow(1);
         row2.setHeight(sheet.getDefaultRowHeight());
         final HSSFCell[] cells2 = new HSSFCell[3];
-        cells2[0] = row2.createCell(0, HSSFCell.CELL_TYPE_NUMERIC);
+        cells2[0] = row2.createCell(0, CellType.NUMERIC);
         cells2[0].setCellValue(1.0);
-        cells2[1] = row2.createCell(1, HSSFCell.CELL_TYPE_NUMERIC);
+        cells2[1] = row2.createCell(1, CellType.NUMERIC);
         cells2[1].setCellValue(2.5);
-        cells2[2] = row2.createCell(2, HSSFCell.CELL_TYPE_BLANK);
-        cells2[2].setCellType(HSSFCell.CELL_TYPE_FORMULA);
+        cells2[2] = row2.createCell(2, CellType.BLANK);
+        cells2[2].setCellType(CellType.FORMULA);
         cells2[2].setCellFormula("A2+B2");
         final HSSFRow row3 = sheet.createRow(2);
         row3.setHeight(sheet.getDefaultRowHeight());
         final HSSFCell[] cells3 = new HSSFCell[3];
-        cells3[0] = row3.createCell(0, HSSFCell.CELL_TYPE_NUMERIC);
+        cells3[0] = row3.createCell(0, CellType.NUMERIC);
         POIUtils.setCellValue(cells3[0], 1.2);
-        cells3[1] = row3.createCell(1, HSSFCell.CELL_TYPE_NUMERIC);
+        cells3[1] = row3.createCell(1, CellType.NUMERIC);
         POIUtils.setCellValue(cells3[1], 2.6);
-        cells3[2] = row3.createCell(2, HSSFCell.CELL_TYPE_STRING);
+        cells3[2] = row3.createCell(2, CellType.STRING);
         POIUtils.setCellValue(cells3[2], "$F=A3+B3");
         final FileOutputStream out = new FileOutputStream("poitest.xls");
         wb.write(out);
@@ -229,6 +232,7 @@ public class POITest {
     @Test
     public void testRowGroups2() throws IOException {
         final HSSFWorkbook wb = TestUtils.loadExcelDocument("poitest2.xls");
+        Assert.assertNotNull(wb);
         final HSSFSheet sheet1 = wb.getSheetAt(0);
         final HSSFSheet sheet2 = wb.getSheetAt(1);
         final HSSFSheet sheet3 = wb.getSheetAt(2);

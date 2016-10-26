@@ -2,7 +2,10 @@ package org.echosoft.framework.reports.model;
 
 import java.io.Serializable;
 
-import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 
 /**
  * Описывает стиль ячейки в отчете.
@@ -12,26 +15,36 @@ import org.apache.poi.ss.usermodel.CellStyle;
 public class CellStyleModel implements Serializable, Cloneable {
 
     private short id;
-    private short alignment;
-    private short verticalAlignment;
+    private HorizontalAlignment alignment;
+    private VerticalAlignment verticalAlignment;
     private String dataFormat;
     private boolean hidden;
     private short indention;
     private boolean locked;
     private short rotation;
     private boolean wrapText;
-    private short borderTop;
-    private short borderRight;
-    private short borderBottom;
-    private short borderLeft;
+    private BorderStyle borderTop;
+    private BorderStyle borderRight;
+    private BorderStyle borderBottom;
+    private BorderStyle borderLeft;
     private ColorModel topBorderColor;
     private ColorModel rightBorderColor;
     private ColorModel bottomBorderColor;
     private ColorModel leftBorderColor;
-    private short fillPattern;
+    private FillPatternType fillPattern;
     private ColorModel fillForegroundColor;
     private ColorModel fillBackgroundColor;
     private FontModel font;
+
+    public CellStyleModel() {
+        alignment = HorizontalAlignment.GENERAL;
+        verticalAlignment = VerticalAlignment.TOP;
+        borderTop = BorderStyle.NONE;
+        borderRight = BorderStyle.NONE;
+        borderBottom = BorderStyle.NONE;
+        borderLeft = BorderStyle.NONE;
+        fillPattern = FillPatternType.NO_FILL;
+    }
 
     /**
      * Возвращает идентификатор стиля ячейки в шаблоне отчета.
@@ -46,18 +59,18 @@ public class CellStyleModel implements Serializable, Cloneable {
         this.id = id;
     }
 
-    public short getAlignment() {
+    public HorizontalAlignment getAlignment() {
         return alignment;
     }
-    public void setAlignment(final short alignment) {
-        this.alignment = alignment;
+    public void setAlignment(final HorizontalAlignment alignment) {
+        this.alignment = alignment != null ? alignment : HorizontalAlignment.GENERAL;
     }
 
-    public short getVerticalAlignment() {
+    public VerticalAlignment getVerticalAlignment() {
         return verticalAlignment;
     }
-    public void setVerticalAlignment(final short verticalAlignment) {
-        this.verticalAlignment = verticalAlignment;
+    public void setVerticalAlignment(final VerticalAlignment verticalAlignment) {
+        this.verticalAlignment = verticalAlignment != null ? verticalAlignment : VerticalAlignment.TOP;
     }
 
     public String getDataFormat() {
@@ -103,32 +116,32 @@ public class CellStyleModel implements Serializable, Cloneable {
     }
 
 
-    public short getBorderTop() {
+    public BorderStyle getBorderTop() {
         return borderTop;
     }
-    public void setBorderTop(final short borderTop) {
-        this.borderTop = borderTop;
+    public void setBorderTop(final BorderStyle borderTop) {
+        this.borderTop = borderTop != null ? borderTop : BorderStyle.NONE;
     }
 
-    public short getBorderRight() {
+    public BorderStyle getBorderRight() {
         return borderRight;
     }
-    public void setBorderRight(final short borderRight) {
-        this.borderRight = borderRight;
+    public void setBorderRight(final BorderStyle borderRight) {
+        this.borderRight = borderRight != null ? borderRight : BorderStyle.NONE;
     }
 
-    public short getBorderBottom() {
+    public BorderStyle getBorderBottom() {
         return borderBottom;
     }
-    public void setBorderBottom(final short borderBottom) {
-        this.borderBottom = borderBottom;
+    public void setBorderBottom(final BorderStyle borderBottom) {
+        this.borderBottom = borderBottom != null ? borderBottom : BorderStyle.NONE;
     }
 
-    public short getBorderLeft() {
+    public BorderStyle getBorderLeft() {
         return borderLeft;
     }
-    public void setBorderLeft(final short borderLeft) {
-        this.borderLeft = borderLeft;
+    public void setBorderLeft(final BorderStyle borderLeft) {
+        this.borderLeft = borderLeft != null ? borderLeft : BorderStyle.NONE;
     }
 
 
@@ -160,11 +173,11 @@ public class CellStyleModel implements Serializable, Cloneable {
         this.leftBorderColor = leftBorderColor;
     }
 
-    public short getFillPattern() {
+    public FillPatternType getFillPattern() {
         return fillPattern;
     }
-    public void setFillPattern(final short fillPattern) {
-        this.fillPattern = fillPattern;
+    public void setFillPattern(final FillPatternType fillPattern) {
+        this.fillPattern = fillPattern != null ? fillPattern : FillPatternType.NO_FILL;
     }
 
     public ColorModel getFillForegroundColor() {
@@ -247,36 +260,36 @@ public class CellStyleModel implements Serializable, Cloneable {
         final StringBuilder buf = new StringBuilder(64);
         buf.append("[Style{id:").append(id);
         switch (alignment) {
-            case CellStyle.ALIGN_LEFT:
+            case LEFT:
                 buf.append(", align:left");
                 break;
-            case CellStyle.ALIGN_CENTER:
+            case CENTER:
                 buf.append(", align:center");
                 break;
-            case CellStyle.ALIGN_RIGHT:
+            case RIGHT:
                 buf.append(", align:right");
                 break;
-            case CellStyle.ALIGN_FILL:
+            case FILL:
                 buf.append(", align:fill");
                 break;
-            case CellStyle.ALIGN_JUSTIFY:
+            case JUSTIFY:
                 buf.append(", align:justify");
                 break;
-            case CellStyle.ALIGN_CENTER_SELECTION:
+            case CENTER_SELECTION:
                 buf.append(", align:center-sel");
                 break;
         }
         switch (verticalAlignment) {
-            case CellStyle.VERTICAL_TOP:
+            case TOP:
                 buf.append(", valign:top");
                 break;
-            case CellStyle.VERTICAL_CENTER:
+            case CENTER:
                 buf.append(", valign:center");
                 break;
-            case CellStyle.VERTICAL_BOTTOM:
+            case BOTTOM:
                 buf.append(", valign:bottom");
                 break;
-            case CellStyle.VERTICAL_JUSTIFY:
+            case JUSTIFY:
                 buf.append(", valign:justify");
                 break;
         }
@@ -292,7 +305,7 @@ public class CellStyleModel implements Serializable, Cloneable {
             buf.append(", rot:").append(rotation);
         if (wrapText)
             buf.append(", wrap");
-        if (borderTop != 0 || borderRight != 0 || borderBottom != 0 || borderLeft != 0) {
+        if (borderTop != BorderStyle.NONE || borderRight != BorderStyle.NONE || borderBottom != BorderStyle.NONE || borderLeft != BorderStyle.NONE) {
             final int tc = getColorHash(topBorderColor);
             final int rc = getColorHash(rightBorderColor);
             final int bc = getColorHash(bottomBorderColor);
@@ -300,23 +313,23 @@ public class CellStyleModel implements Serializable, Cloneable {
             if (borderTop == borderRight && borderTop == borderBottom && borderTop == borderLeft && tc == rc && tc == bc && tc == lc) {
                 buf.append(", border:").append(getBorderPattern(borderTop)).append(' ').append(tc >= 0 ? Integer.toHexString(tc) : "auto");
             } else {
-                if (borderTop > 0 || tc >= 0)
+                if (borderTop != BorderStyle.NONE || tc >= 0)
                     buf.append(", border-top:").append(getBorderPattern(borderTop)).append(' ').append(tc >= 0 ? Integer.toHexString(tc) : "auto");
-                if (borderRight > 0 || rc >= 0)
+                if (borderRight != BorderStyle.NONE || rc >= 0)
                     buf.append(", border-right:").append(getBorderPattern(borderRight)).append(' ').append(rc >= 0 ? Integer.toHexString(rc) : "auto");
-                if (borderBottom > 0 || bc >= 0)
+                if (borderBottom != BorderStyle.NONE || bc >= 0)
                     buf.append(", border-bottom:").append(getBorderPattern(borderBottom)).append(' ').append(bc >= 0 ? Integer.toHexString(bc) : "auto");
-                if (borderLeft > 0 || lc >= 0)
+                if (borderLeft != BorderStyle.NONE || lc >= 0)
                     buf.append(", border-left:").append(getBorderPattern(borderLeft)).append(' ').append(lc >= 0 ? Integer.toHexString(lc) : "auto");
             }
         }
-        if (fillForegroundColor != null || fillBackgroundColor != null || fillPattern > 0) {
+        if (fillForegroundColor != null || fillBackgroundColor != null || fillPattern != FillPatternType.NO_FILL) {
             buf.append(", bgcolor:");
             switch (fillPattern) {
-                case CellStyle.NO_FILL:
+                case NO_FILL:
                     buf.append("none");
                     break;
-                case CellStyle.SOLID_FOREGROUND:
+                case SOLID_FOREGROUND:
                     buf.append("solid");
                     break;
                 default:
@@ -324,7 +337,7 @@ public class CellStyleModel implements Serializable, Cloneable {
                     break;
             }
             buf.append(' ').append(fillForegroundColor != null ? fillForegroundColor.toHexString() : "auto");
-            if (fillPattern != CellStyle.NO_FILL && fillPattern != CellStyle.SOLID_FOREGROUND && fillBackgroundColor != null)
+            if (fillPattern != FillPatternType.NO_FILL && fillPattern != FillPatternType.SOLID_FOREGROUND && fillBackgroundColor != null)
                 buf.append(" / ").append(fillBackgroundColor.toHexString());
         }
         if (font != null) {
@@ -338,33 +351,38 @@ public class CellStyleModel implements Serializable, Cloneable {
     private static int getColorHash(final ColorModel color) {
         return color == null ? -1 : color.getPackedValue();
     }
-    private static String getBorderPattern(final short pattern) {
+
+    private static String getBorderPattern(final BorderStyle pattern) {
+        if (pattern == null)
+            return "none";
         switch (pattern) {
-            case CellStyle.BORDER_THIN:
+            case NONE:
+                return "none";
+            case THIN:
                 return "thin";
-            case CellStyle.BORDER_MEDIUM:
+            case MEDIUM:
                 return "medium";
-            case CellStyle.BORDER_DASHED:
+            case DASHED:
                 return "dashed";
-            case CellStyle.BORDER_DOTTED:
+            case DOTTED:
                 return "dotted";
-            case CellStyle.BORDER_THICK:
+            case THICK:
                 return "thick";
-            case CellStyle.BORDER_DOUBLE:
+            case DOUBLE:
                 return "double";
-            case CellStyle.BORDER_HAIR :
+            case HAIR :
                 return "hair";
-            case CellStyle.BORDER_MEDIUM_DASHED:
+            case MEDIUM_DASHED:
                 return "medium_dashed";
-            case CellStyle.BORDER_DASH_DOT:
+            case DASH_DOT:
                 return "dash_dot";
-            case CellStyle.BORDER_MEDIUM_DASH_DOT:
+            case MEDIUM_DASH_DOT:
                 return "medium_dash_dot";
-            case CellStyle.BORDER_DASH_DOT_DOT:
+            case DASH_DOT_DOT:
                 return "dash_dot_dot";
-            case CellStyle.BORDER_MEDIUM_DASH_DOT_DOT:
+            case MEDIUM_DASH_DOT_DOT:
                 return "medium_dash_dot_dot";
-            case CellStyle.BORDER_SLANTED_DASH_DOT:
+            case SLANTED_DASH_DOT:
                 return "slanted_dash_dot";
             default:
                 return "none";

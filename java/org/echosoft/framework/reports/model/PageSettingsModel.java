@@ -106,7 +106,7 @@ public class PageSettingsModel implements Serializable, Cloneable {
         return zoom;
     }
     public void setZoom(final Integer zoomInPercents) {
-        if (zoomInPercents != null && (zoomInPercents < 1 || zoomInPercents > 400))
+        if (zoomInPercents != null && (zoomInPercents < 10 || zoomInPercents > 400))
             throw new IllegalArgumentException("Illegal zoom value: " + zoomInPercents);
         this.zoom = zoomInPercents;
     }

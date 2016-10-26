@@ -1,7 +1,9 @@
 package org.echosoft.framework.reports.data.beans;
 
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.echosoft.framework.reports.model.events.CellEvent;
 import org.echosoft.framework.reports.model.events.CellEventListener;
@@ -27,12 +29,12 @@ public class SimpleCellListener implements CellEventListener {
         CellStyle style = (CellStyle) ctx.elctx.getVariables().get("SimpleCellListener.red");
         if (style == null) {
             style = ctx.wb.createCellStyle();
-            style.setFillPattern(CellStyle.SOLID_FOREGROUND);
+            style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             style.setFillForegroundColor(IndexedColors.CORAL.getIndex());
-            style.setBorderBottom(CellStyle.BORDER_THIN);
-            style.setBorderTop(CellStyle.BORDER_THIN);
-            style.setBorderLeft(CellStyle.BORDER_THIN);
-            style.setBorderRight(CellStyle.BORDER_THIN);
+            style.setBorderBottom(BorderStyle.THIN);
+            style.setBorderTop(BorderStyle.THIN);
+            style.setBorderLeft(BorderStyle.THIN);
+            style.setBorderRight(BorderStyle.THIN);
         }
         return style;
     }

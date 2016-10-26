@@ -20,8 +20,8 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.util.Nullable;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
@@ -363,7 +363,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         sheet.setHorizontallyCenter(pageSettings.isHorizontallyCenter());
         sheet.setVerticallyCenter(pageSettings.isVerticallyCenter());
         if (pageSettings.getZoom() != null)
-            sheet.setZoom(pageSettings.getZoom(), 100);
+            sheet.setZoom(pageSettings.getZoom());
     }
     private void processPrintSetup(final PrintSetup hps, final PrintSetupModel printSetup) {
         hps.setPaperSize(printSetup.getPaperSize());
@@ -614,7 +614,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                 if (cm == null)
                     continue;
                 final CellStyle style = ectx.styles.get(cm.getStyle());
-                ectx.cell = row.createCell(i, Cell.CELL_TYPE_BLANK);
+                ectx.cell = row.createCell(i, CellType.BLANK);
                 if (style != null)
                     ectx.cell.setCellStyle(style);
                 event.setRendered(false);
@@ -640,38 +640,38 @@ public class ExcelReportProcessor implements ReportProcessor {
      */
     protected void renderCell(final ExecutionContext ectx, final Object value) {
         if (value == null) {
-            ectx.cell.setCellType(Cell.CELL_TYPE_BLANK);
+            ectx.cell.setCellType(CellType.BLANK);
         } else
         if (value instanceof Date) {
-            ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            ectx.cell.setCellType(CellType.NUMERIC);
             ectx.cell.setCellValue((Date) value);
         } else
         if (value instanceof Calendar) {
-            ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            ectx.cell.setCellType(CellType.NUMERIC);
             ectx.cell.setCellValue((Calendar) value);
         } else
         if (value instanceof Double) {
-            ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            ectx.cell.setCellType(CellType.NUMERIC);
             ectx.cell.setCellValue((Double) value);
         } else
         if (value instanceof Number) {
-            ectx.cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            ectx.cell.setCellType(CellType.NUMERIC);
             ectx.cell.setCellValue(((Number) value).doubleValue());
         } else
         if (value instanceof Boolean) {
-            ectx.cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
+            ectx.cell.setCellType(CellType.BOOLEAN);
             ectx.cell.setCellValue((Boolean) value);
         } else
         if (value instanceof RichTextString) {
-            ectx.cell.setCellType(Cell.CELL_TYPE_STRING);
+            ectx.cell.setCellType(CellType.STRING);
             ectx.cell.setCellValue((RichTextString) value);
         } else {
             final String text = value.toString();
-            if (ectx.cell.getCellType() == Cell.CELL_TYPE_FORMULA) {
+            if (ectx.cell.getCellTypeEnum() == CellType.FORMULA) {
                 ectx.cell.setCellFormula(text);
             } else
             if (text.startsWith(FORMULA)) {
-                ectx.cell.setCellType(Cell.CELL_TYPE_FORMULA);
+                ectx.cell.setCellType(CellType.FORMULA);
                 ectx.cell.setCellFormula(text.substring(FORMULA_LENGTH));
             } else
             if (text.startsWith(MACROS)) {
@@ -692,7 +692,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                     throw new IllegalArgumentException("Unable to find custom function [" + name + "] at row:" + ectx.cell.getRowIndex() + ", cell:" + ectx.cell.getColumnIndex());
                 func.call(ectx, args);
             } else {
-                ectx.cell.setCellType(Cell.CELL_TYPE_STRING);
+                ectx.cell.setCellType(CellType.STRING);
                 ectx.cell.setCellValue(ectx.creationHelper.createRichTextString(text));
             }
         }

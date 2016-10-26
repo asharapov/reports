@@ -10,8 +10,10 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Name;
@@ -53,20 +55,20 @@ public class POIUtils {
     public static Object getCellValue(final Cell cell) {
         if (cell == null)
             return null;
-        switch (cell.getCellType()) {
-            case Cell.CELL_TYPE_NUMERIC:
+        switch (cell.getCellTypeEnum()) {
+            case NUMERIC:
                 return DateUtil.isCellDateFormatted(cell) ? cell.getDateCellValue() : cell.getNumericCellValue();
-            case Cell.CELL_TYPE_STRING: {
+            case STRING: {
                 final RichTextString rt = cell.getRichStringCellValue();
                 return rt.numFormattingRuns() == 0 ? rt.getString() : rt;
             }
-            case Cell.CELL_TYPE_FORMULA:
+            case FORMULA:
                 return cell.getCellFormula();
-            case Cell.CELL_TYPE_BLANK:
+            case BLANK:
                 return null;
-            case Cell.CELL_TYPE_BOOLEAN:
+            case BOOLEAN:
                 return cell.getBooleanCellValue();
-            case Cell.CELL_TYPE_ERROR:
+            case ERROR:
                 return "#ERR" + cell.getErrorCellValue();
             default:
                 return null;
@@ -83,41 +85,41 @@ public class POIUtils {
      */
     public static void setCellValue(final Cell cell, final Object value) {
         if (value == null) {
-            cell.setCellType(Cell.CELL_TYPE_BLANK);
+            cell.setCellType(CellType.BLANK);
         } else
         if (value instanceof Date) {
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellType(CellType.NUMERIC);
             cell.setCellValue((Date) value);
         } else
         if (value instanceof Calendar) {
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellType(CellType.NUMERIC);
             cell.setCellValue((Calendar) value);
         } else
         if (value instanceof Double) {
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellType(CellType.NUMERIC);
             cell.setCellValue((Double) value);
         } else
         if (value instanceof Number) {
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellType(CellType.NUMERIC);
             cell.setCellValue(((Number) value).doubleValue());
         } else
         if (value instanceof Boolean) {
-            cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
+            cell.setCellType(CellType.BOOLEAN);
             cell.setCellValue((Boolean) value);
         } else
         if (value instanceof RichTextString) {
-            cell.setCellType(Cell.CELL_TYPE_STRING);
+            cell.setCellType(CellType.STRING);
             cell.setCellValue((RichTextString) value);
         } else {
             final String text = value.toString();
-            if (cell.getCellType() == Cell.CELL_TYPE_FORMULA) {
+            if (cell.getCellTypeEnum() == CellType.FORMULA) {
                 cell.setCellFormula(text);
             } else
             if (text.startsWith(FORMULA)) {
-                cell.setCellType(Cell.CELL_TYPE_FORMULA);
+                cell.setCellType(CellType.FORMULA);
                 cell.setCellFormula(text.substring(FORMULA_LENGTH));
             } else {
-                cell.setCellType(Cell.CELL_TYPE_STRING);
+                cell.setCellType(CellType.STRING);
                 final CreationHelper helper = cell.getSheet().getWorkbook().getCreationHelper();
                 cell.setCellValue(helper.createRichTextString(text));
             }
@@ -321,7 +323,7 @@ public class POIUtils {
             }
         }
 
-        byte[] rgb = color.getRgbWithTint();
+        byte[] rgb = color.getRGBWithTint();
         // ниже рассмотрена спец. обработка случая когда обрабатываемый .xlsx документ был получен
         // простым сохранением в новом формате из старого .xls документа без каких-либо изменений ...
         // В других случаях, по моим наблюдениям, индексированные цвета на которых бы не работали стандартные методы POI не используются.
@@ -345,11 +347,11 @@ public class POIUtils {
      */
     public static Font ensureFontExists(final HSSFWorkbook wb, final FontModel font) {
         final short colorId = font.getColor() != null ? font.getColor().getId() : 0;
-        Font f = wb.findFont(font.getBoldWeight(), colorId, font.getFontHeight(),
+        Font f = wb.findFont(font.isBold(), colorId, font.getFontHeight(),
                 font.getFontName(), font.isItalic(), font.isStrikeout(), font.getTypeOffset(), font.getUnderline());
         if (f == null) {
             f = wb.createFont();
-            f.setBoldweight(font.getBoldWeight());
+            f.setBold(font.isBold());
             f.setCharSet(font.getCharSet());
             f.setColor(colorId);
             f.setFontHeight(font.getFontHeight());
@@ -397,7 +399,7 @@ public class POIUtils {
         for (XSSFFont f : styles.getFonts()) {
             if (f.getFontName().equals(font.getFontName())
                     && f.getFontHeight() == font.getFontHeight()
-                    && f.getBoldweight() == font.getBoldWeight()
+                    && f.getBold() == font.isBold()
                     && f.getItalic() == font.isItalic()
                     && f.getStrikeout() == font.isStrikeout()
                     && f.getTypeOffset() == font.getTypeOffset()
@@ -410,7 +412,7 @@ public class POIUtils {
         f.setFontName(font.getFontName());
         f.setFontHeight(font.getFontHeight());
         f.setCharSet(font.getCharSet());
-        f.setBoldweight(font.getBoldWeight());
+        f.setBold(font.isBold());
         f.setItalic(font.isItalic());
         f.setStrikeout(font.isStrikeout());
         f.setTypeOffset(font.getTypeOffset());
@@ -452,7 +454,7 @@ public class POIUtils {
         dst.setFontName(src.getFontName());
         dst.setFontHeight(src.getFontHeight());
         dst.setCharSet(src.getCharSet());
-        dst.setBoldweight(src.getBoldweight());
+        dst.setBold(src.getBold());
         dst.setItalic(src.getItalic());
         dst.setStrikeout(src.getStrikeout());
         dst.setTypeOffset(src.getTypeOffset());
@@ -475,7 +477,7 @@ public class POIUtils {
         dst.setFontName(src.getFontName());
         dst.setFontHeight(src.getFontHeight());
         dst.setCharSet(src.getCharSet());
-        dst.setBoldweight(src.getBoldweight());
+        dst.setBold(src.getBold());
         dst.setItalic(src.getItalic());
         dst.setStrikeout(src.getStrikeout());
         dst.setTypeOffset(src.getTypeOffset());
@@ -513,23 +515,23 @@ public class POIUtils {
     public static HSSFCellStyle copyStyle(final HSSFWorkbook wb, final short index) {
         final HSSFCellStyle src = wb.getCellStyleAt(index);
         final HSSFCellStyle dst = wb.createCellStyle();
-        dst.setAlignment(src.getAlignment());
-        dst.setVerticalAlignment(src.getVerticalAlignment());
+        dst.setAlignment(src.getAlignmentEnum());
+        dst.setVerticalAlignment(src.getVerticalAlignmentEnum());
         dst.setDataFormat(src.getDataFormat());
         dst.setHidden(src.getHidden());
         dst.setIndention(src.getIndention());
         dst.setLocked(src.getLocked());
         dst.setRotation(src.getRotation());
         dst.setWrapText(src.getWrapText());
-        dst.setBorderTop(src.getBorderTop());
-        dst.setBorderRight(src.getBorderRight());
-        dst.setBorderBottom(src.getBorderBottom());
-        dst.setBorderLeft(src.getBorderLeft());
+        dst.setBorderTop(src.getBorderTopEnum());
+        dst.setBorderRight(src.getBorderRightEnum());
+        dst.setBorderBottom(src.getBorderBottomEnum());
+        dst.setBorderLeft(src.getBorderLeftEnum());
         dst.setTopBorderColor(src.getTopBorderColor());
         dst.setRightBorderColor(src.getRightBorderColor());
         dst.setBottomBorderColor(src.getBottomBorderColor());
         dst.setLeftBorderColor(src.getLeftBorderColor());
-        dst.setFillPattern(src.getFillPattern());
+        dst.setFillPattern(src.getFillPatternEnum());
         dst.setFillForegroundColor(src.getFillForegroundColor());
         dst.setFillBackgroundColor(src.getFillBackgroundColor());
         dst.setFont(wb.getFontAt(src.getFontIndex()));
@@ -611,7 +613,7 @@ public class POIUtils {
             dst = POIUtils.copyStyle(ectx.wb, cellStyleIndex);
             if (fnColor >= 0) {
                 final Font of = ectx.wb.getFontAt(dst.getFontIndex());
-                Font nf = ectx.wb.findFont(of.getBoldweight(), (short) fnColor, of.getFontHeight(),
+                Font nf = ectx.wb.findFont(of.getBold(), (short) fnColor, of.getFontHeight(),
                         of.getFontName(), of.getItalic(), of.getStrikeout(), of.getTypeOffset(), of.getUnderline());
                 if (nf == null) {
                     nf = POIUtils.copyFont(ectx.wb, of.getIndex());
@@ -620,7 +622,7 @@ public class POIUtils {
                 dst.setFont(nf);
             }
             if (bgColor >= 0) {
-                dst.setFillPattern(CellStyle.SOLID_FOREGROUND);
+                dst.setFillPattern(FillPatternType.SOLID_FOREGROUND);
                 dst.setFillForegroundColor((short) bgColor);
             }
             ectx.elctx.getVariables().put(styleName, dst);

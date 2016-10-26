@@ -3,6 +3,8 @@ package org.echosoft.framework.reports.registry;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -94,6 +96,13 @@ public class ReportsRegistry {
     }
 
     /**
+     * Сбрасывает сведения о всех отчетах.
+     */
+    public static void resetReports() {
+        reports.clear();
+    }
+
+    /**
      * Регистрирует новый отчет в системе. Если в системе уже был зарегистрирован отчет с таким идентификатором
      * то информация о старом отчете будет удалена.
      *
@@ -106,10 +115,36 @@ public class ReportsRegistry {
     }
 
     /**
-     * Сбрасывает сведения о всех отчетах.
+     * Регистрирует отчет
+     * @param tplUrl  URL шаблона отчета
+     * @param mdlUrl  URL описание отчета
+     * @return зарегистрированная модель отчета или null если либо шаблон либо описание отчета не были указаны.
      */
-    public static void resetReports() {
-        reports.clear();
+    public static Report registerReport(final URL tplUrl, final URL mdlUrl) throws Exception {
+        if (mdlUrl == null || tplUrl == null)
+            return null;
+
+        Logs.reports.debug("registering report: " + tplUrl);
+        try (InputStream template = tplUrl.openStream()) {
+            try (InputStream model = mdlUrl.openStream()) {
+                final Report report = ReportModelParser.parse(template, model, extensions);
+                reports.put(report.getId(), report);
+                return report;
+            }
+        }
+    }
+
+    public static void registerReports(final URL... templatesUrl) throws Exception {
+        for (URL tplUrl : templatesUrl) {
+            if (tplUrl == null)
+                continue;
+            String u = tplUrl.toExternalForm();
+            final int d = u.lastIndexOf('.');
+            if (d < 0)
+                continue;
+            final URL mdlUrl = new URL(u.substring(0, d) + ".xml");
+            registerReport(tplUrl, mdlUrl);
+        }
     }
 
     /**

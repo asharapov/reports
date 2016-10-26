@@ -3,6 +3,7 @@ package org.echosoft.framework.reports.model;
 import java.io.Serializable;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.echosoft.framework.reports.model.el.Expression;
 import org.echosoft.framework.reports.model.el.ExpressionFactory;
 
@@ -20,10 +21,8 @@ public class CellModel implements Serializable, Cloneable {
 
     /**
      * Тип данных в ячейке.
-     *
-     * @see org.apache.poi.ss.usermodel.Cell#getCellType()
      */
-    private int type;
+    private CellType type;
 
     /**
      * Стиль отображения ячейки.
@@ -54,7 +53,7 @@ public class CellModel implements Serializable, Cloneable {
      */
     public CellModel(final Cell cell, final StylePalette palette) {
         expr = ExpressionFactory.makeExpression(cell);
-        type = cell.getCellType();
+        type = cell.getCellTypeEnum();
         final CellStyleModel s = palette.getStyleModel(cell.getCellStyle().getIndex());
         style = s.getId();
         dataFormat = s.getDataFormat();
@@ -65,7 +64,7 @@ public class CellModel implements Serializable, Cloneable {
      */
     public CellModel() {
         expr = ExpressionFactory.EMPTY_EXPRESSION;
-        type = Cell.CELL_TYPE_BLANK;
+        type = CellType.BLANK;
         style = -1; // используем стиль по умолчанию ...
     }
 
@@ -87,9 +86,8 @@ public class CellModel implements Serializable, Cloneable {
 
     /**
      * @return Тип данных в ячейке.
-     * @see Cell#getCellType()
      */
-    public int getType() {
+    public CellType getType() {
         return type;
     }
 
@@ -99,8 +97,8 @@ public class CellModel implements Serializable, Cloneable {
      * @param type новый тип содержимого ячейки.
      * @see Cell#getCellType()
      */
-    public void setType(int type) {
-        this.type = type;
+    public void setType(final CellType type) {
+        this.type = type != null ? type : CellType.BLANK;
     }
 
     /**

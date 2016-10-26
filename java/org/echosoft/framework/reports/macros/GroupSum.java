@@ -1,6 +1,6 @@
 package org.echosoft.framework.reports.macros;
 
-import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.processor.Group;
 import org.echosoft.framework.reports.util.POIUtils;
@@ -58,7 +58,7 @@ public class GroupSum implements Macros {
         }
 
         if (formula!=null) {
-            ectx.cell.setCellType(Cell.CELL_TYPE_FORMULA);
+            ectx.cell.setCellType(CellType.FORMULA);
             ectx.cell.setCellFormula( formula );
         }
     }

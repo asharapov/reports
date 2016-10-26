@@ -15,7 +15,7 @@ public class FontModel implements Serializable, Cloneable {
     private String fontName;
     private short fontHeight;
     private int charSet;
-    private short boldWeight;
+    private boolean bold;
     private boolean italic;
     private boolean strikeout;
     private short typeOffset;
@@ -39,11 +39,11 @@ public class FontModel implements Serializable, Cloneable {
         this.id = id;
     }
 
-    public short getBoldWeight() {
-        return boldWeight;
+    public boolean isBold() {
+        return bold;
     }
-    public void setBoldWeight(final short boldWeight) {
-        this.boldWeight = boldWeight;
+    public void setBold(final boolean bold) {
+        this.bold = bold;
     }
 
     public int getCharSet() {
@@ -128,7 +128,7 @@ public class FontModel implements Serializable, Cloneable {
                 fontName.equals(other.fontName) &&
                 fontHeight == other.fontHeight &&
                 charSet == other.charSet &&
-                boldWeight == other.boldWeight && italic == other.italic &&
+                bold == other.bold && italic == other.italic &&
                 strikeout == other.strikeout && typeOffset == other.typeOffset && underline == other.underline;
     }
 
@@ -136,7 +136,7 @@ public class FontModel implements Serializable, Cloneable {
     public String toString() {
         final StringBuilder buf = new StringBuilder(64);
         buf.append("[Font{id:").append(id).append(", name:").append(fontName).append(' ').append(fontHeight/20).append("pt");
-        if (boldWeight == Font.BOLDWEIGHT_BOLD)
+        if (bold)
             buf.append(", bold");
         if (italic)
             buf.append(", italic");
