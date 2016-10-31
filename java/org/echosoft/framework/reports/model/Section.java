@@ -54,6 +54,11 @@ public abstract class Section implements Serializable, Cloneable {
     private boolean rendered;
 
     /**
+     * Указывает должна ли разрешаться автофильтрация данных в данной секции. Имеет смысл задавать это свойство в секциях где данные лежат.
+     */
+    private boolean filtering;
+
+    /**
      * Список описаний именованных регионов которые должны быть созданы на листе по завершении обработки данной секции.
      */
     private List<NamedRegion> namedRegions;
@@ -135,6 +140,16 @@ public abstract class Section implements Serializable, Cloneable {
     }
     public void setRendered(final boolean rendered) {
         this.rendered = rendered;
+    }
+
+    /**
+     * Включен ли режим автофильтрации в данной секции
+     */
+    public boolean isFiltering() {
+        return filtering;
+    }
+    public void setFiltering(final boolean filtering) {
+        this.filtering = filtering;
     }
 
     /**

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.poi.ss.usermodel.AutoFilter;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -77,6 +78,11 @@ public final class ExecutionContext {
      * Обрабатываемый в настоящее время лист итогового отчета.
      */
     public Sheet wsheet;
+
+    /**
+     * Ссылка на интерфейс автофильтра если он был включен в ходе обработки разделов на текущем листе итогового отчета.
+     */
+    public AutoFilter autoFilter;
 
     /**
      * Обрабатываемая в настоящее время ячейка итогового отчета.

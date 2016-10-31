@@ -417,6 +417,7 @@ public class ReportModelParser {
         section.setCollapsed(Any.asBoolean(element.getAttribute("collapsed"), false));
         section.setHidden(Any.asBoolean(element.getAttribute("hidden"), false));
         section.setRendered(Any.asBoolean(StringUtil.trim(element.getAttribute("rendered")), true));
+        section.setFiltering(Any.asBoolean(StringUtil.trim(element.getAttribute("filtering")), false));
         final String pid = StringUtil.trim(element.getAttribute("provider"));
         if (pid != null)
             section.setDataProvider(report.getProviders().get(pid));
@@ -451,6 +452,7 @@ public class ReportModelParser {
         section.setCollapsed(Any.asBoolean(element.getAttribute("collapsed"), false));
         section.setHidden(Any.asBoolean(element.getAttribute("hidden"), false));
         section.setRendered(Any.asBoolean(StringUtil.trim(element.getAttribute("rendered")), true));
+        section.setFiltering(Any.asBoolean(StringUtil.trim(element.getAttribute("filtering")), false));
         final String pid = StringUtil.trim(element.getAttribute("provider"));
         if (pid != null)
             section.setDataProvider(report.getProviders().get(pid));
@@ -492,6 +494,7 @@ public class ReportModelParser {
         section.setCollapsed(Any.asBoolean(StringUtil.trim(element.getAttribute("collapsed")), false));
         section.setHidden(Any.asBoolean(StringUtil.trim(element.getAttribute("hidden")), false));
         section.setRendered(Any.asBoolean(StringUtil.trim(element.getAttribute("rendered")), true));
+        section.setFiltering(Any.asBoolean(StringUtil.trim(element.getAttribute("filtering")), false));
         final String pid = StringUtil.trim(element.getAttribute("provider"));
         if (pid != null)
             section.setDataProvider(report.getProviders().get(pid));

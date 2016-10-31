@@ -1,6 +1,10 @@
 package org.echosoft.framework.reports;
 
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.echosoft.common.utils.StringUtil;
@@ -102,6 +106,7 @@ public class SimpleReportTest {
 
         final ELContext ctx = new ELContext();
         ctx.getEnvironment().put("invoices", TestUtils.loadInvoices("report1-ds1.xml"));
+        ctx.getEnvironment().put("items", makeItems());
         ctx.getEnvironment().put("payments", TestUtils.loadPayments("report1-ds2.xml"));
 
         final long started = System.currentTimeMillis();
@@ -113,4 +118,15 @@ public class SimpleReportTest {
         out.close();
     }
 
+    private List<Map<String, Object>> makeItems() {
+        final List<Map<String, Object>> result = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            final Map<String, Object> rec = new HashMap<>();
+            rec.put("name", "item-" + (i+1));
+            rec.put("amount", i);
+            rec.put("active", i%2 == 0);
+            result.add(rec);
+        }
+        return result;
+    }
 }

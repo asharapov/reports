@@ -314,6 +314,7 @@ public class ExcelReportProcessor implements ReportProcessor {
             if (ectx.wsheet == null) {
                 ectx.wsheet = ectx.wb.createSheet(title);
             }
+            ectx.autoFilter = null;
             ectx.wsheet.setRowSumsBelow(false);
             //ectx.wsheet.setAlternativeExpression(false);  //мы использовали этот метод т.к. setRowSumBelow() не работал в должной мере, но судя по коду, в POI это исправили еще 4 года назад
 
@@ -465,6 +466,15 @@ public class ExcelReportProcessor implements ReportProcessor {
         } else {
             renderArea(ectx, section.getTemplate(), -1);
         }
+        if (section.isFiltering()) {
+            final int firstRow = sctx.sectionFirstRow > 0 ? sctx.sectionFirstRow - 1 : sctx.sectionFirstRow;
+            final int lastRow = ectx.getLastRowNum();
+            if (firstRow < lastRow) {
+                final CellRangeAddress addr = new CellRangeAddress(firstRow, lastRow, 0, sctx.section.getTemplateColumnsCount() - 1);
+                ectx.wsheet.createRow(lastRow + 1).setZeroHeight(true);
+                ectx.autoFilter = ectx.wsheet.setAutoFilter(addr);
+            }
+        }
     }
 
     protected void processGroupingSection(final ExecutionContext ectx) throws Exception {
@@ -504,6 +514,15 @@ public class ExcelReportProcessor implements ReportProcessor {
             sctx.gm = null;
         } else {
             renderArea(ectx, section.getRowTemplate(), -1);
+        }
+        if (section.isFiltering()) {
+            final int firstRow = sctx.sectionFirstRow > 0 ? sctx.sectionFirstRow - 1 : sctx.sectionFirstRow;
+            final int lastRow = ectx.getLastRowNum();
+            if (firstRow < lastRow) {
+                final CellRangeAddress addr = new CellRangeAddress(firstRow, lastRow, 0, sctx.section.getTemplateColumnsCount() - 1);
+                ectx.wsheet.createRow(lastRow + 1).setZeroHeight(true);
+                ectx.autoFilter = ectx.wsheet.setAutoFilter(addr);
+            }
         }
     }
 
@@ -557,6 +576,15 @@ public class ExcelReportProcessor implements ReportProcessor {
                     sctx.issuer.close();
                     sctx.issuer = null;
                 }
+            }
+        }
+        if (section.isFiltering()) {
+            final int firstRow = sctx.sectionFirstRow > 0 ? sctx.sectionFirstRow - 1 : sctx.sectionFirstRow;
+            final int lastRow = ectx.getLastRowNum();
+            if (firstRow < lastRow) {
+                final CellRangeAddress addr = new CellRangeAddress(firstRow, lastRow, 0, sctx.section.getTemplateColumnsCount() - 1);
+                ectx.wsheet.createRow(lastRow + 1).setZeroHeight(true);
+                ectx.autoFilter = ectx.wsheet.setAutoFilter(addr);
             }
         }
     }

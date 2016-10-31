@@ -319,6 +319,14 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="filtering" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Установка этого свойства в true приведет к включении режима автофильтрации данных размещенных в данной секции.
+                    Сам заголовок автофильтра будет размещен строкой выше (если такая строка вообще есть)
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
 
