@@ -25,6 +25,7 @@ public final class MacrosRegistry {
         MacrosRegistry.registerMacros("fnrowsum", new FNRowsSum());
         MacrosRegistry.registerMacros("fnrowsumprod", new FNRowsSumProd());
         MacrosRegistry.registerMacros("fsum", new FSum());
+        MacrosRegistry.registerMacros("link", new Link());
     }
 
     /**
