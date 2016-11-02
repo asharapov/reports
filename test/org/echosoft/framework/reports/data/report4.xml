@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding='UTF-8'?>
-<report id="report4" title="Ведомость 1" password="123" target="XSSF" preserveTemplate="true"
+<report id="report4" title="Ведомость 1" password="123" target="XSSF" preserveTemplate="false"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://echo.org.ru/schemas/excel-reports/2.0/reports.xsd">
 
@@ -16,7 +16,7 @@
     <list-data-provider id="ds1" data="${env:invoices}"/>
     <list-data-provider id="ds2" data="${env:payments}"/>
 
-    <sheet id="sheet1" title="Ведомость-1" hidden="true" rendered="false">
+    <sheet id="sheet1" title="Ведомость-1" hidden="true" rendered="true">
         <plain-section id="s1.header" height="4"/>
         <composite-section id="s1.data">
             <plain-section id="s1.data.header" height="2"/>
@@ -26,7 +26,7 @@
         <plain-section id="s1.footer" height="1"/>
     </sheet>
 
-    <sheet id="sheet2" title="Большая таблица" protected="true" zoom="60" group-columns="C-E, G-H, J-O" rendered="false">
+    <sheet id="sheet2" title="Большая таблица" protected="true" zoom="60" group-columns="C-E, G-H, J-O" rendered="true">
         <plain-section id="s2.header" height="1"/>
         <composite-section id="s2.data">
             <plain-section id="s2.data.header" height="2"/>
@@ -34,7 +34,7 @@
         </composite-section>
     </sheet>
 
-    <sheet id="sheet3" title="Работа с группировками" rendered="false">
+    <sheet id="sheet3" title="Работа с группировками" rendered="true">
         <plain-section id="s3.header" height="1"/>
         <composite-section id="s3.data">
             <plain-section id="s3.data.header" height="2"/>

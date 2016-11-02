@@ -23,6 +23,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.model.StylesTable;
+import org.apache.poi.xssf.streaming.SXSSFRow;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -314,7 +317,7 @@ public class POIUtils {
                 case 3:
                     //handle bug: MSExcel does not follow own definitions
                     double tint = color.getTint();
-                    final XSSFColor clr = wb.getTheme().getThemeColor(theme ^ 1);
+                    final XSSFColor clr = wb.getTheme().getThemeColor(theme);
                     if (clr != null) {
                         clr.setTint(tint);
                         color = clr;
@@ -339,34 +342,7 @@ public class POIUtils {
     }
 
     /**
-     * Метод проверяет наличие в рабочей книге зарегистрированного фонта с указанными характеристиками и если он отсутствует то регистрирует его.
-     *
-     * @param wb   рабочая книга в которой должен быть зарегистрирован требуемый фонт.
-     * @param font характеристики требуемого фонта.
-     * @return зарегистрированный в рабочей книге фонт с требуемыми характеристиками.
-     */
-    public static Font ensureFontExists(final HSSFWorkbook wb, final FontModel font) {
-        final short colorId = font.getColor() != null ? font.getColor().getId() : 0;
-        Font f = wb.findFont(font.isBold(), colorId, font.getFontHeight(),
-                font.getFontName(), font.isItalic(), font.isStrikeout(), font.getTypeOffset(), font.getUnderline());
-        if (f == null) {
-            f = wb.createFont();
-            f.setBold(font.isBold());
-            f.setCharSet(font.getCharSet());
-            f.setColor(colorId);
-            f.setFontHeight(font.getFontHeight());
-            f.setFontName(font.getFontName());
-            f.setItalic(font.isItalic());
-            f.setStrikeout(font.isStrikeout());
-            f.setTypeOffset(font.getTypeOffset());
-            f.setUnderline(font.getUnderline());
-        }
-        return f;
-    }
-
-    /**
      * Конструирует экземпляр {@link XSSFColor} на основе сведений из нашей модели.
-     * Этот "гениальный" метод служит только для одной цели - обойти криво работающую "заплатку" в коде POI.
      *
      * @param color описание требуемого цвета.
      * @return соответствующий экземпляр XSSFColor.
@@ -374,51 +350,68 @@ public class POIUtils {
     public static XSSFColor makeXSSFColor(final ColorModel color) {
         if (color == null)
             return null;
-        final int hash = color.getPackedValue();
-        final byte[] rgb;
-        if (hash == 0) {
-            rgb = new byte[]{-1, -1, -1};
-        } else
-        if (hash == 0xFFFFFF) {
-            rgb = new byte[]{0, 0, 0};
-        } else
-            rgb = color.toByteArray();
-        return new XSSFColor(rgb);
+        return new XSSFColor(color.toByteArray());
     }
 
     /**
      * Метод проверяет наличие в рабочей книге зарегистрированного фонта с указанными характеристиками и если он отсутствует то регистрирует его.
      *
-     * @param wb   рабочая книга в которой должен быть зарегистрирован требуемый фонт.
-     * @param font характеристики требуемого фонта.
+     * @param wb  рабочая книга в которой должен быть зарегистрирован требуемый фонт.
+     * @param fm  характеристики требуемого фонта.
      * @return зарегистрированный в рабочей книге фонт с требуемыми характеристиками.
      */
-    public static Font ensureFontExists(final XSSFWorkbook wb, final FontModel font) {
-        final int rgbHash = font.getColor() != null ? font.getColor().getPackedValue() : -1;
+    public static Font ensureFontExists(final HSSFWorkbook wb, final FontModel fm) {
+        final short colorId = fm.getColor() != null ? fm.getColor().getId() : 0;
+        Font f = wb.findFont(fm.isBold(), colorId, fm.getFontHeight(),
+                fm.getFontName(), fm.isItalic(), fm.isStrikeout(), fm.getTypeOffset(), fm.getUnderline());
+        if (f == null) {
+            f = wb.createFont();
+            f.setBold(fm.isBold());
+            f.setCharSet(fm.getCharSet());
+            f.setColor(colorId);
+            f.setFontHeight(fm.getFontHeight());
+            f.setFontName(fm.getFontName());
+            f.setItalic(fm.isItalic());
+            f.setStrikeout(fm.isStrikeout());
+            f.setTypeOffset(fm.getTypeOffset());
+            f.setUnderline(fm.getUnderline());
+        }
+        return f;
+    }
+
+    /**
+     * Метод проверяет наличие в рабочей книге зарегистрированного фонта с указанными характеристиками и если он отсутствует то регистрирует его.
+     *
+     * @param wb  рабочая книга в которой должен быть зарегистрирован требуемый фонт.
+     * @param fm  характеристики требуемого фонта.
+     * @return зарегистрированный в рабочей книге фонт с требуемыми характеристиками.
+     */
+    public static Font ensureFontExists(final XSSFWorkbook wb, final FontModel fm) {
+        final int rgbHash = fm.getColor() != null ? fm.getColor().getPackedValue() : -1;
         final StylesTable styles = wb.getStylesSource();
         for (XSSFFont f : styles.getFonts()) {
-            if (f.getFontName().equals(font.getFontName())
-                    && f.getFontHeight() == font.getFontHeight()
-                    && f.getBold() == font.isBold()
-                    && f.getItalic() == font.isItalic()
-                    && f.getStrikeout() == font.isStrikeout()
-                    && f.getTypeOffset() == font.getTypeOffset()
-                    && f.getUnderline() == font.getUnderline()
+            if (f.getFontName().equals(fm.getFontName())
+                    && f.getFontHeight() == fm.getFontHeight()
+                    && f.getBold() == fm.isBold()
+                    && f.getItalic() == fm.isItalic()
+                    && f.getStrikeout() == fm.isStrikeout()
+                    && f.getTypeOffset() == fm.getTypeOffset()
+                    && f.getUnderline() == fm.getUnderline()
                     && ColorModel.getHash(decodeXSSFColor(wb, f.getXSSFColor())) == rgbHash) {
                 return f;
             }
         }
         final XSSFFont f = wb.createFont();
-        f.setFontName(font.getFontName());
-        f.setFontHeight(font.getFontHeight());
-        f.setCharSet(font.getCharSet());
-        f.setBold(font.isBold());
-        f.setItalic(font.isItalic());
-        f.setStrikeout(font.isStrikeout());
-        f.setTypeOffset(font.getTypeOffset());
-        f.setUnderline(font.getUnderline());
-        if (font.getColor() != null)
-            f.setColor(makeXSSFColor(font.getColor()));
+        f.setFontName(fm.getFontName());
+        f.setFontHeight(fm.getFontHeight());
+        f.setCharSet(fm.getCharSet());
+        f.setBold(fm.isBold());
+        f.setItalic(fm.isItalic());
+        f.setStrikeout(fm.isStrikeout());
+        f.setTypeOffset(fm.getTypeOffset());
+        f.setUnderline(fm.getUnderline());
+        if (fm.getColor() != null)
+            f.setColor(makeXSSFColor(fm.getColor()));
         return f;
     }
 
@@ -436,6 +429,9 @@ public class POIUtils {
         } else
         if (wb instanceof XSSFWorkbook) {
             return copyFont((XSSFWorkbook)wb, index);
+        } else
+        if (wb instanceof SXSSFWorkbook) {
+            return copyFont(((SXSSFWorkbook)wb).getXSSFWorkbook(), index);
         } else
             throw new IllegalArgumentException("Unsupported document type: " + wb);
     }
@@ -500,6 +496,9 @@ public class POIUtils {
         } else
         if (wb instanceof XSSFWorkbook) {
             return copyStyle((XSSFWorkbook)wb, index);
+        } else
+        if (wb instanceof SXSSFWorkbook) {
+            return copyStyle(((SXSSFWorkbook)wb).getXSSFWorkbook(), index);
         } else
             throw new IllegalArgumentException("Unsupported document type: " + wb);
     }
@@ -645,6 +644,16 @@ public class POIUtils {
                     if (row != null) {
                         row.getCTRow().setHidden(true);
                         row.getCTRow().setCollapsed(true);
+                    }
+                }
+            } else
+            if (sheet instanceof SXSSFSheet) {
+                final SXSSFSheet xsheet = (SXSSFSheet)sheet;
+                for (int i = firstRow; i <= lastRow; i++) {
+                    final SXSSFRow row = xsheet.getRow(i);
+                    if (row != null) {
+                        row.setHidden(true);
+                        row.setCollapsed(true);
                     }
                 }
             } else

@@ -14,6 +14,7 @@ import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -228,6 +229,9 @@ public class StylePalette implements Serializable, Cloneable {
         } else
         if (wb instanceof XSSFWorkbook) {
             return applyTo((XSSFWorkbook) wb);
+        } else
+        if (wb instanceof SXSSFWorkbook) {
+            return applyTo(((SXSSFWorkbook) wb).getXSSFWorkbook());
         } else
             throw new IllegalArgumentException("Unknown workbook implementation: " + wb);
     }
