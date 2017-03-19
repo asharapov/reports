@@ -89,19 +89,6 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>java</sourceDirectory>
-        <testSourceDirectory>test</testSourceDirectory>
-        <directory>build</directory>
-        <outputDirectory>build/classes/production</outputDirectory>
-        <testOutputDirectory>build/classes/test</testOutputDirectory>
-        <testResources>
-            <testResource>
-                <directory>test</directory>
-                <excludes>
-                    <exclude>**/*.java</exclude>
-                </excludes>
-            </testResource>
-        </testResources>
 
         <plugins>
             <plugin>
