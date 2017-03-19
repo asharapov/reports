@@ -1,6 +1,7 @@
 package org.echosoft.framework.reports.macros;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.util.POIUtils;
 
@@ -25,7 +26,7 @@ public class GroupMin implements Macros {
     public void call(final ExecutionContext ectx, final String arg) {
         final String formula = POIUtils.makeGroupFormula(ectx, "MIN");
         if (formula!=null) {
-            ectx.cell.setCellType(Cell.CELL_TYPE_FORMULA);
+            ectx.cell.setCellType(CellType.FORMULA);
             ectx.cell.setCellFormula( formula );
         }
     }

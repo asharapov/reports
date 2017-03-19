@@ -104,8 +104,7 @@ public class ReportModelParser {
             report.setStreamWindowSize(Any.asInt(StringUtil.trim(root.getAttribute("stream-window-size")), 1000));
             report.setStreamUseCompression(Any.asBoolean(StringUtil.trim(root.getAttribute("stream-use-compression")), false));
 
-            for (Iterator<Element> i = XMLUtil.getChildElements(root); i.hasNext(); ) {
-                final Element element = i.next();
+            for (Element element : XMLUtil.getChildElements(root)) {
                 final String tagName = element.getTagName();
                 switch (tagName) {
                     case "description":
@@ -168,8 +167,7 @@ public class ReportModelParser {
 
     private static void parseDescription(final Report report, final Element element) {
         final ReportDescription desc = report.getDescription();
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
-            final Element el = i.next();
+        for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
             switch (tagName) {
                 case "company":
@@ -228,7 +226,7 @@ public class ReportModelParser {
             throw new RuntimeException("Mandatory attributes not specified: " + element);
         final ListDataProvider result = new ListDataProvider(id);
         result.setData(new BaseExpression(data));
-        final Iterator<Element> children = XMLUtil.getChildElements(element);
+        final Iterator<Element> children = XMLUtil.getChildElements(element).iterator();
         if (children.hasNext()) {
             throw new RuntimeException("Unsupported element: " + children.next().getTagName());
         }
@@ -242,8 +240,7 @@ public class ReportModelParser {
             throw new RuntimeException("Mandatory attributes not specified: " + element);
         final SQLDataProvider result = new SQLDataProvider(id);
         result.setDataSource(new BaseExpression(ds));
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
-            final Element el = i.next();
+        for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
             switch (tagName) {
                 case "sql":
@@ -280,8 +277,7 @@ public class ReportModelParser {
         final ClassDataProvider result = new ClassDataProvider(id);
         result.setObject(new BaseExpression(object));
         result.setMethodName(new BaseExpression(method));
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
-            final Element el = i.next();
+        for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
             switch (tagName) {
                 case "arg":
@@ -316,11 +312,11 @@ public class ReportModelParser {
                 final String token = StringUtil.trim(it.nextToken());
                 if (token == null)
                     continue;
-                final String[] cnames = StringUtil.split(token, '-');
-                if (cnames.length != 2 || cnames[0].length() == 0 || cnames[1].length() == 0)
+                final List<String> cnames = StringUtil.split(token, '-');
+                if (cnames.size() != 2 || cnames.get(0).length() == 0 || cnames.get(1).length() == 0)
                     throw new IllegalArgumentException("Incorrect value for attribute 'column-groups': " + cgs);
-                final int c1 = POIUtils.getColumnNumber(cnames[0]);
-                final int c2 = POIUtils.getColumnNumber(cnames[1]);
+                final int c1 = POIUtils.getColumnNumber(cnames.get(0));
+                final int c2 = POIUtils.getColumnNumber(cnames.get(1));
                 sheet.addColumnGroup(new ColumnGroupModel(c1, c2));
             }
         }
@@ -329,8 +325,7 @@ public class ReportModelParser {
         if (zoomstr != null)
             sheet.getPageSettings().setZoom(Any.asInt(zoomstr, 100));
         int offset = 0;
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
-            final Element el = i.next();
+        for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
             switch (tagName) {
                 case "plain-section": {
@@ -425,8 +420,7 @@ public class ReportModelParser {
         final int lastColumn = POIUtils.getColumnNumber(StringUtil.trim(element.getAttribute("lastColumn")));
         section.setTemplate(new AreaModel(sheet, offset, height, lastColumn, report.getPalette()));
         section.getTemplate().setHidden(section.isHidden());
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
-            final Element el = i.next();
+        for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
             switch (tagName) {
                 case "named-region":
@@ -461,8 +455,7 @@ public class ReportModelParser {
         final int rowHeight = Any.asInt(element.getAttribute("rowHeight"), 1);
         final int lastColumn = POIUtils.getColumnNumber(StringUtil.trim(element.getAttribute("lastColumn")));
         int height = 0;
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
-            final Element el = i.next();
+        for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
             switch (tagName) {
                 case "named-region":
@@ -503,8 +496,7 @@ public class ReportModelParser {
         final String[] colnames = Any.asStringArray(StringUtil.trim(element.getAttribute("indentColumns")), null);
         section.setIndentedColumns(colnames);
         int height = 0;
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
-            final Element el = i.next();
+        for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
             switch (tagName) {
                 case "named-region":
@@ -566,8 +558,7 @@ public class ReportModelParser {
         group.setSkipEmptyGroups(Any.asBoolean(StringUtil.trim(element.getAttribute("skipEmptyGroups")), false));
         final int height = Any.asInt(StringUtil.trim(element.getAttribute("height")), 1);
         final int lastColumn = POIUtils.getColumnNumber(StringUtil.trim(element.getAttribute("lastColumn")));
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
-            final Element el = i.next();
+        for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
             if ("group-style".equals(tagName)) {
                 final GroupStyle style = new GroupStyle();

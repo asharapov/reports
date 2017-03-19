@@ -1,8 +1,10 @@
 package org.echosoft.framework.reports.util;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -15,13 +17,16 @@ import java.util.Map;
 
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -47,17 +52,14 @@ public final class ConvertExcelToHTML {
     /**
      * Converts Excel into HTML
      *
-     * @param path Excel file path
+     * @param file Excel file path
      * @return HTML representation of workbook
      * @throws IOException an exception
      */
-    public String process(final String path) throws IOException, InvalidFormatException {
-        final InputStream in = new FileInputStream(path);
-        try {
+    public String process(final File file) throws IOException, InvalidFormatException {
+        try (InputStream in = new FileInputStream(file)) {
             final Workbook wb = WorkbookFactory.create(in);
-            return process(wb);
-        } finally {
-            in.close();
+            return process(wb, null);
         }
     }
 
@@ -70,7 +72,7 @@ public final class ConvertExcelToHTML {
      */
     public String process(final InputStream stream) throws IOException, InvalidFormatException {
         final Workbook wb = WorkbookFactory.create(stream);
-        return process(wb);
+        return process(wb, null);
     }
 
     /**
@@ -80,24 +82,28 @@ public final class ConvertExcelToHTML {
      * @return HTML representation of workbook
      * @throws IOException an exception
      */
-    public String process(final Workbook workbook) throws IOException {
+    public String process(final Workbook workbook, final Charset charset) throws IOException {
         //get first  sheet
-        Sheet sheet = workbook.getSheetAt(0);
+        final Sheet sheet = workbook.getSheetAt(0);
         final StringBuilder sb = new StringBuilder(1024);
 
         //load merged cells
-        final List<CellRangeAddress> regions = new ArrayList<CellRangeAddress>(sheet.getNumMergedRegions());
+        final List<CellRangeAddress> regions = new ArrayList<>(sheet.getNumMergedRegions());
         for (int k = 0; k < sheet.getNumMergedRegions(); k++) {
             regions.add(sheet.getMergedRegion(k));
         }
 
         sb.append("<html>\n");
         sb.append("<head>\n");
-        sb.append(" <meta http-equiv=\"Content-Type\" content=\"text/html; charset=cp1251\">\n");
+        if (charset != null) {
+            sb.append(" <meta http-equiv=\"Content-Type\" content=\"text/html; charset=").append(charset.name()).append("\">\n");
+        } else {
+            sb.append(" <meta http-equiv=\"Content-Type\" content=\"text/html\">\n");
+        }
         final Map<Integer,String> styles = styleGenerator(sb, workbook);
         sb.append("</head>\n");
         sb.append("<body>\n");
-        sb.append("<table  border=0>\n");
+        sb.append("<table  border=\"0\">\n");
 
         final int lastRowNum = sheet.getLastRowNum();
         for (int i = 0; i <= lastRowNum; i++) {
@@ -105,7 +111,7 @@ public final class ConvertExcelToHTML {
             if (row == null) {
                 row = sheet.createRow(i);
             }
-            int lastColNum = row.getPhysicalNumberOfCells();
+            final int lastColNum = row.getPhysicalNumberOfCells();
 
             // before <tr> write special tag <col>
             if (i == 0) {
@@ -177,18 +183,18 @@ public final class ConvertExcelToHTML {
     }
 
 
-    private String getFormattedNumber(String format, double num) {
+    private String getFormattedNumber(final String format, final double num) {
         final DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance(LOCALE);
         df.applyPattern(FormatConstants.getJavaFormatString(FormatConstants.NUMBER, format));
         return df.format(num);
     }
 
-    private String getFormattedDate(String format, Date date) {
+    private String getFormattedDate(final String format, final Date date) {
         final DateFormat df = new SimpleDateFormat(FormatConstants.getJavaFormatString(FormatConstants.DATE, format), LOCALE);
         return df.format(date);
     }
 
-    private String getMergedString(Sheet sheet, Cell cell, int rowNum, List<CellRangeAddress> regions) {
+    private String getMergedString(final Sheet sheet, final Cell cell, final int rowNum, final List<CellRangeAddress> regions) {
         final StringBuilder sb = new StringBuilder();
         int colNum = cell.getColumnIndex();
         for (CellRangeAddress region : regions) {
@@ -204,8 +210,8 @@ public final class ConvertExcelToHTML {
                 final Cell cellRight = sheet.getRow(startRow).getCell(finishCol);
                 final Cell cellBottom = sheet.getRow(finishRow).getCell(startCol);
                 sb.append(" style=\"");
-                addBorder(sb, "border-right:", cellRight.getCellStyle().getBorderRight(), cellRight.getCellStyle().getRightBorderColor());
-                addBorder(sb, "border-bottom:", cellBottom.getCellStyle().getBorderBottom(), cellBottom.getCellStyle().getBottomBorderColor());
+                addBorder(sb, "border-right:", cellRight.getCellStyle().getBorderRightEnum(), cellRight.getCellStyle().getRightBorderColor());
+                addBorder(sb, "border-bottom:", cellBottom.getCellStyle().getBorderBottomEnum(), cellBottom.getCellStyle().getBottomBorderColor());
                 sb.append("\"");
                 sb.append(" width=\"*\"");
                 if (colspan == 0 && rowspan != 0) {
@@ -231,7 +237,7 @@ public final class ConvertExcelToHTML {
     }
 
     private Map<Integer,String> styleGenerator(final StringBuilder sb, final Workbook book) {
-        final Map<Integer,String> styles = new HashMap<Integer,String>(book.getNumCellStyles());
+        final Map<Integer,String> styles = new HashMap<>(book.getNumCellStyles());
         sb.append(" <style type=\"text/css\">\n");
         sb.append(" table {\n");
         sb.append("   empty-cell: show;\n");
@@ -241,17 +247,17 @@ public final class ConvertExcelToHTML {
             final CellStyle style = book.getCellStyleAt(i);
             sb.append(" .class_").append(i).append(" {\n");
             //border
-            addBorder(sb, "  border-top:", style.getBorderTop(), style.getTopBorderColor());
+            addBorder(sb, "  border-top:", style.getBorderTopEnum(), style.getTopBorderColor());
             sb.append(";\n");
-            addBorder(sb, "  border-left:", style.getBorderLeft(), style.getLeftBorderColor());
+            addBorder(sb, "  border-left:", style.getBorderLeftEnum(), style.getLeftBorderColor());
             sb.append(";\n");
-            addBorder(sb, "  border-right:", style.getBorderRight(), style.getRightBorderColor());
+            addBorder(sb, "  border-right:", style.getBorderRightEnum(), style.getRightBorderColor());
             sb.append(";\n");
-            addBorder(sb, "  border-bottom:", style.getBorderBottom(), style.getBottomBorderColor());
+            addBorder(sb, "  border-bottom:", style.getBorderBottomEnum(), style.getBottomBorderColor());
             sb.append(";\n");
             //aligment
-            addHorizontalAlignment(sb, style.getAlignment());
-            addVerticalAlignment(sb, style.getVerticalAlignment());
+            addHorizontalAlignment(sb, style.getAlignmentEnum());
+            addVerticalAlignment(sb, style.getVerticalAlignmentEnum());
             //bg color
             sb.append("  background-color:").
                     append(getHEXColor(style.getFillForegroundColor(), "white")).
@@ -260,7 +266,8 @@ public final class ConvertExcelToHTML {
             final Font font = book.getFontAt(style.getFontIndex());
             sb.append("  font-size:").append(font.getFontHeightInPoints()).append(".0pt;\n");
             sb.append("  font-family:").append(font.getFontName()).append(", sans-serif;\n");
-            sb.append("  font-weight:").append(font.getBoldweight()).append(";\n");
+
+            sb.append("  font-weight:").append(font.getBold() ? "bold": "normal").append(";\n");
             sb.append("  color:").append(getHEXColor(font.getColor())).append(";\n");
             //wrap
             sb.append("  white-spacing:").append(style.getWrapText() ? "normal;" : "nowrap;\n");
@@ -274,31 +281,31 @@ public final class ConvertExcelToHTML {
     }
 
 
-    private void addBorder(StringBuilder sb, String cssKey, short thickness, short color) {
+    private void addBorder(final StringBuilder sb, final String cssKey, final BorderStyle thickness, short color) {
         sb.append(cssKey);
         switch (thickness) {
-            case CellStyle.BORDER_NONE:
+            case NONE:
                 sb.append("none;");
                 break;
-            case CellStyle.BORDER_THIN:
+            case THIN:
                 sb.append("0.5pt solid ").append(getHEXColor(color)).append(";");
                 break;
-            case CellStyle.BORDER_MEDIUM:
+            case MEDIUM:
                 sb.append("1.0pt solid ").append(getHEXColor(color)).append(";");
                 break;
-            case CellStyle.BORDER_THICK:
+            case THICK:
                 sb.append("1.5pt solid ").append(getHEXColor(color)).append(";");
                 break;
-            case CellStyle.BORDER_DASHED:
+            case DASHED:
                 sb.append("0.5pt dashed ").append(getHEXColor(color)).append(";");
                 break;
-            case CellStyle.BORDER_MEDIUM_DASHED:
+            case MEDIUM_DASHED:
                 sb.append("1.0pt dashed ").append(getHEXColor(color)).append(";");
                 break;
-            case CellStyle.BORDER_DOTTED:
+            case DOTTED:
                 sb.append("0.5pt dotted ").append(getHEXColor(color)).append(";");
                 break;
-            case CellStyle.BORDER_DOUBLE:
+            case DOUBLE:
                 sb.append("0.5pt double ").append(getHEXColor(color)).append(";");
                 break;
             default:
@@ -362,28 +369,28 @@ public final class ConvertExcelToHTML {
      * @param sb        result StringBuffer
      * @param alignment This is POI horizontal alignment presentation
      */
-    private void addHorizontalAlignment(StringBuilder sb, short alignment) {
+    private void addHorizontalAlignment(final StringBuilder sb, final HorizontalAlignment alignment) {
         sb.append("  text-align:");
         switch (alignment) {
-            case CellStyle.ALIGN_CENTER:
+            case CENTER:
                 sb.append("center;\n");
                 break;
-            case CellStyle.ALIGN_CENTER_SELECTION:
+            case CENTER_SELECTION:
                 sb.append("center-across;\n");
                 break;
-            case CellStyle.ALIGN_FILL:
+            case FILL:
                 sb.append("fill;\n");
                 break;
-            case CellStyle.ALIGN_GENERAL:
+            case GENERAL:
                 sb.append("general;\n");
                 break;
-            case CellStyle.ALIGN_JUSTIFY:
+            case JUSTIFY:
                 sb.append("justify;\n");
                 break;
-            case CellStyle.ALIGN_LEFT:
+            case LEFT:
                 sb.append("left;\n");
                 break;
-            case CellStyle.ALIGN_RIGHT:
+            case RIGHT:
                 sb.append("right;\n");
                 break;
             default:
@@ -397,19 +404,19 @@ public final class ConvertExcelToHTML {
      * @param sb        result StringBuffer
      * @param alignment This is POI avertical lignment presentation
      */
-    private void addVerticalAlignment(StringBuilder sb, short alignment) {
+    private void addVerticalAlignment(final StringBuilder sb, final VerticalAlignment alignment) {
         sb.append("  vertical-align:");
         switch (alignment) {
-            case CellStyle.VERTICAL_BOTTOM:
+            case BOTTOM:
                 sb.append("bottom;\n");
                 break;
-            case CellStyle.VERTICAL_CENTER:
+            case CENTER:
                 sb.append("middle;\n");
                 break;
-            case CellStyle.VERTICAL_JUSTIFY:
+            case JUSTIFY:
                 sb.append("justify;\n");
                 break;
-            case CellStyle.VERTICAL_TOP:
+            case TOP:
                 sb.append("top;\n");
                 break;
             default:

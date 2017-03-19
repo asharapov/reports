@@ -10,7 +10,6 @@
     <properties>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
-        <checkstyle.skip>true</checkstyle.skip>
         <poi.version>3.15</poi.version>
     </properties>
 
@@ -53,7 +52,7 @@
         <dependency>
             <groupId>org.echosoft</groupId>
             <artifactId>echosoft-common</artifactId>
-            <version>1.0.1</version>
+            <version>2.0.0</version>
         </dependency>
 
         <dependency>
@@ -76,8 +75,8 @@
 
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.19</version>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.21</version>
         </dependency>
 
         <dependency>
@@ -110,6 +109,7 @@
                 <artifactId>git-commit-id-plugin</artifactId>
                 <version>2.2.1</version>
                 <configuration>
+                    <generateGitPropertiesFilename>${project.build.outputDirectory}/META-INF/revision.properties</generateGitPropertiesFilename>
                     <generateGitPropertiesFile>false</generateGitPropertiesFile>
                     <dateFormat>yyyy-MM-dd HH:mm:ss z</dateFormat>
                     <useNativeGit>false</useNativeGit>
@@ -117,6 +117,7 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>revision-to-env</id>
                         <phase>initialize</phase>
                         <goals>
                             <goal>revision</goal>
@@ -134,13 +135,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.0.2</version>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.6.1</version>
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
@@ -202,6 +203,12 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.0.0</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
                 <version>2.5.2</version>
             </plugin>
@@ -215,7 +222,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.10</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>copy-xsd</id>
@@ -241,7 +248,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.2</version>
+                <version>2.3</version>
                 <configuration>
                     <generateBackupPoms>false</generateBackupPoms>
                 </configuration>

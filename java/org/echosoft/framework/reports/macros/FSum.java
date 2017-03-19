@@ -1,9 +1,9 @@
 package org.echosoft.framework.reports.macros;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -48,12 +48,12 @@ public class FSum implements Macros {
 
     @Override
     public void call(final ExecutionContext ectx, final String arg) {
-        final String[] args = StringUtil.split(arg, ',');
-        if (args == null || args.length < 1)
-            throw new IllegalArgumentException("Incorrect arguments count for macro fnrowsum " + Arrays.toString(args) + " at " + POIUtils.getCellName(ectx.cell));
+        final List<String> args = StringUtil.split(arg, ',');
+        if (args.size() < 1)
+            throw new IllegalArgumentException("Incorrect arguments count for macro fnrowsum " + args + " at " + POIUtils.getCellName(ectx.cell));
 
         // 1. Найдем итератор номеров строк участвующих в формуле ...
-        final String attrName = args[0];
+        final String attrName = args.get(0);
         Object v = ectx.elctx.getVariables().get(attrName);
         if (v == null) {
             v = ectx.elctx.getEnvironment().get(attrName);
@@ -63,13 +63,13 @@ public class FSum implements Macros {
         final Iterator<Integer> rows = resolveNumbers(v);
 
         // определим имя колонки участвующей в формуле (если она не задана то используется текущая обрабатываемая колонка) ...
-        String colname = args.length > 1 ? args[1].trim() : "";
+        String colname = args.size() > 1 ? args.get(1).trim() : "";
         if (colname.length() == 0) {
             colname = POIUtils.getColumnName(ectx.cell.getColumnIndex());
         }
 
         // уточним специальный режим использования (опционально) ...
-        final String mode = args.length > 2 ? args[2].trim().toLowerCase() : "";
+        final String mode = args.size() > 2 ? args.get(2).trim().toLowerCase() : "";
 
         if (rows == null || !rows.hasNext()) {
             // исключительная ситуация: нет данных для обработки ...

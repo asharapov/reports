@@ -1,7 +1,7 @@
 package org.echosoft.framework.reports.macros;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.echosoft.common.utils.StringUtil;
@@ -41,10 +41,11 @@ import org.echosoft.framework.reports.util.POIUtils;
  *  </li>
  * </ol>
  * </p>
+ *
+ * @author Anton Sharapov
  * @see FNRowsSum
  * @see MacrosRegistry
  * @see org.echosoft.framework.reports.processor.ExecutionContext#history
- * @author Anton Sharapov
  */
 public class FNRowsSumProd implements Macros {
 
@@ -55,43 +56,43 @@ public class FNRowsSumProd implements Macros {
      * {@inheritDoc}
      */
     public void call(final ExecutionContext ectx, final String arg) {
-        final String[] args = StringUtil.split(arg, ',');
-        if (args==null || args.length<2)
-            throw new IllegalArgumentException("Incorrect arguments count for macro fnrowsumprod "+ Arrays.toString(args)+" at "+POIUtils.getCellName(ectx.cell));
+        final List<String> args = StringUtil.split(arg, ',');
+        if (args.size() < 2)
+            throw new IllegalArgumentException("Incorrect arguments count for macro fnrowsumprod " + args + " at " + POIUtils.getCellName(ectx.cell));
         // определим секцию в которой надо просуммировать значения в определенных строках ...
-        final SectionContext sctx = ectx.history.get(args[0]);
-        if (sctx==null)
-            throw new IllegalArgumentException("Unknown section for macro fnrowsumprod "+Arrays.toString(args)+" at "+POIUtils.getCellName(ectx.cell));
-        if (sctx.record==0) {
+        final SectionContext sctx = ectx.history.get(args.get(0));
+        if (sctx == null)
+            throw new IllegalArgumentException("Unknown section for macro fnrowsumprod " + args + " at " + POIUtils.getCellName(ectx.cell));
+        if (sctx.record == 0) {
             ectx.cell.setCellValue(0);
             return;
         }
         // определим имена колонок которые участвуют в формуле ...
-        final ArrayList<String> colnames = new ArrayList<String>(4);
+        final ArrayList<String> colnames = new ArrayList<>(4);
         int argnum = 1;
-        for ( ; argnum<args.length; argnum++) {
-            final String col = args[argnum];
-            if ( POIUtils.isValidColumnName(args[argnum]) ) {
+        for (; argnum < args.size(); argnum++) {
+            final String col = args.get(argnum);
+            if (POIUtils.isValidColumnName(col)) {
                 colnames.add(col);
             } else
                 break;
         }
-        if (colnames.size()==0) {
-            throw new IllegalArgumentException("Unknown column for macro fnrowsumprod "+Arrays.toString(args)+"at "+POIUtils.getCellName(ectx.cell));
+        if (colnames.size() == 0) {
+            throw new IllegalArgumentException("Unknown column for macro fnrowsumprod " + args + "at " + POIUtils.getCellName(ectx.cell));
         } else
-        if (colnames.size()==1) {
+        if (colnames.size() == 1) {
             final String col1 = colnames.get(0);
-            final String col2 = POIUtils.getColumnName( ectx.cell.getColumnIndex() );
+            final String col2 = POIUtils.getColumnName(ectx.cell.getColumnIndex());
             if (col2.equals(col1))
-                throw new IllegalArgumentException("fnrowsumprod requires as minimum two columns: "+Arrays.toString(args)+"at "+POIUtils.getCellName(ectx.cell));
-            colnames.add( col2 );
+                throw new IllegalArgumentException("fnrowsumprod requires as minimum two columns: " + args + "at " + POIUtils.getCellName(ectx.cell));
+            colnames.add(col2);
         }
         // определим строки в которых надо суммировать значения ...
-        final String nthstr = args.length>argnum ? args[argnum++].trim() : "";
-        final int nth = nthstr.length()>0 ? Integer.parseInt(nthstr,10) : sctx.section.getTemplateRowsCount();
+        final String nthstr = args.size() > argnum ? args.get(argnum++).trim() : "";
+        final int nth = nthstr.length() > 0 ? Integer.parseInt(nthstr, 10) : sctx.section.getTemplateRowsCount();
         // определим смещение с которого начинается отсчет используемых макросом строк в секции ...
-        final String ofstr = args.length>argnum ? args[argnum].trim() : "";
-        final int offset = ofstr.length()>0 ? Integer.parseInt(ofstr,10) : 0;
+        final String ofstr = args.size() > argnum ? args.get(argnum).trim() : "";
+        final int offset = ofstr.length() > 0 ? Integer.parseInt(ofstr, 10) : 0;
 
         process(ectx.cell, sctx, colnames, nth, offset);
     }
@@ -99,15 +100,14 @@ public class FNRowsSumProd implements Macros {
     public void process(final Cell cell, final SectionContext sctx, final ArrayList<String> colnames, final int nth, final int offset) {
         final StringBuilder formula = new StringBuilder(32);
         final int top = sctx.sectionFirstRow + 1;
-        final int bottom = sctx.sectionFirstRow + sctx.record*sctx.section.getTemplateRowsCount();
-        if (top>bottom) {
+        final int bottom = sctx.sectionFirstRow + sctx.record * sctx.section.getTemplateRowsCount();
+        if (top > bottom) {
             cell.setCellValue(0);
             return;
-        } else
-        if (nth==1) {
+        } else if (nth == 1) {
             formula.append("SUMPRODUCT(");
-            for (int i=0,cnt=colnames.size(); i<cnt; i++) {
-                if (i>0)
+            for (int i = 0, cnt = colnames.size(); i < cnt; i++) {
+                if (i > 0)
                     formula.append(',');
                 final String colname = colnames.get(i);
                 formula.append(colname).append(top).append(':').append(colname).append(bottom);
@@ -116,7 +116,7 @@ public class FNRowsSumProd implements Macros {
         } else {
             formula.append("SUMPRODUCT(");
             formula.append("ABS(MOD(ROW(").append(top).append(':').append(bottom).append(")-ROW(A").append(top).append("),").append(nth).append(")=").append(offset).append(")");
-            for (int i=0,cnt=colnames.size(); i<cnt; i++) {
+            for (int i = 0, cnt = colnames.size(); i < cnt; i++) {
                 formula.append(',');
                 final String colname = colnames.get(i);
                 formula.append(colname).append(top).append(':').append(colname).append(bottom);

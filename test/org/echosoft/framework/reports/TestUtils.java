@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -56,8 +55,7 @@ public class TestUtils {
         final List<Invoice> result = new ArrayList<Invoice>();
         final Document doc = XMLUtil.loadDocument(openFileStream(dsName));
         final Element root = doc.getDocumentElement();
-        for (Iterator<Element> i = XMLUtil.getChildElements(root); i.hasNext(); ) {
-            final Element element = i.next();
+        for (Element element : XMLUtil.getChildElements(root)) {
             final String tagName = element.getTagName();
             if ("invoice".equals(tagName)) {
                 result.add(parseInvoice(element));
@@ -71,8 +69,7 @@ public class TestUtils {
         final List<Payment> result = new ArrayList<Payment>();
         final Document doc = XMLUtil.loadDocument(openFileStream(dsName));
         final Element root = doc.getDocumentElement();
-        for (Iterator<Element> i = XMLUtil.getChildElements(root); i.hasNext(); ) {
-            final Element element = i.next();
+        for (Element element : XMLUtil.getChildElements(root)) {
             final String tagName = element.getTagName();
             if ("activity".equals(tagName)) {
                 parseActivity(result, element);
@@ -88,8 +85,7 @@ public class TestUtils {
         final String name = StringUtil.trim(element.getAttribute("name"));
         final int level = Any.asInt(StringUtil.trim(element.getAttribute("level")));
         final Activity activity = new Activity(id, pid, name, level);
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
-            final Element el = i.next();
+        for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
             if ("activity".equals(tagName)) {
                 parseActivity(result, el);
@@ -105,8 +101,7 @@ public class TestUtils {
         final String name = StringUtil.trim(element.getAttribute("name"));
         final String director = StringUtil.trim(element.getAttribute("director"));
         final Company company = new Company(id, name, director);
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
-            final Element el = i.next();
+        for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
             if ("project".equals(tagName)) {
                 parseProject(result, activity, company, el);
@@ -121,8 +116,7 @@ public class TestUtils {
         final boolean active = Any.asBoolean(StringUtil.trim(element.getAttribute("active")));
         final Date started = asDate(StringUtil.trim(element.getAttribute("started")));
         final Project project = new Project(id, name, active, started);
-        for (Iterator<Element> i = XMLUtil.getChildElements(element); i.hasNext(); ) {
-            final Element el = i.next();
+        for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
             if ("invoice".equals(tagName)) {
                 final Invoice invoice = parseInvoice(el);

@@ -1,7 +1,7 @@
 package org.echosoft.framework.reports.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Anton Sharapov
@@ -11,7 +11,6 @@ public final class Logs {
     private Logs() {
     }
 
-
-    public static final Log reports = LogFactory.getLog("echosoft.reports");
+    public static final Logger reports = LoggerFactory.getLogger("echosoft.reports");
 
 }

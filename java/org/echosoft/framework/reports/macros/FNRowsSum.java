@@ -1,6 +1,6 @@
 package org.echosoft.framework.reports.macros;
 
-import java.util.Arrays;
+import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.echosoft.common.utils.StringUtil;
@@ -44,10 +44,11 @@ import org.echosoft.framework.reports.util.POIUtils;
  *  </li>
  * </ol>
  * </p>
+ *
+ * @author Anton Sharapov
  * @see org.echosoft.framework.reports.macros.NRowsSum
  * @see org.echosoft.framework.reports.macros.MacrosRegistry
  * @see org.echosoft.framework.reports.processor.ExecutionContext#history
- * @author Anton Sharapov
  */
 public class FNRowsSum implements Macros {
 
@@ -58,28 +59,28 @@ public class FNRowsSum implements Macros {
      * {@inheritDoc}
      */
     public void call(final ExecutionContext ectx, final String arg) {
-        final String[] args = StringUtil.split(arg, ',');
-        if (args==null || args.length<1)
-            throw new IllegalArgumentException("Incorrect arguments count for macro fnrowsum "+ Arrays.toString(args)+" at "+POIUtils.getCellName(ectx.cell));
+        final List<String> args = StringUtil.split(arg, ',');
+        if (args.size() < 1)
+            throw new IllegalArgumentException("Incorrect arguments count for macro fnrowsum " + args + " at " + POIUtils.getCellName(ectx.cell));
         // определим секцию в которой надо просуммировать значения в определенных строках ...
-        final SectionContext sctx = ectx.history.get(args[0]);
-        if (sctx==null)
-            throw new IllegalArgumentException("Unknown section for macro fnrowsum "+Arrays.toString(args)+" at "+POIUtils.getCellName(ectx.cell));
-        if (sctx.record==0) {
+        final SectionContext sctx = ectx.history.get(args.get(0));
+        if (sctx == null)
+            throw new IllegalArgumentException("Unknown section for macro fnrowsum " + args + " at " + POIUtils.getCellName(ectx.cell));
+        if (sctx.record == 0) {
             ectx.cell.setCellValue(0);
             return;
         }
         // определим имя колонки в которой надо просуммировать значения ...
-        String colname = args.length>1 ? args[1].trim() : "";
-        if (colname.length()==0) {
-            colname = POIUtils.getColumnName( ectx.cell.getColumnIndex() );
+        String colname = args.size() > 1 ? args.get(1).trim() : "";
+        if (colname.length() == 0) {
+            colname = POIUtils.getColumnName(ectx.cell.getColumnIndex());
         }
         // определим строки в которых надо суммировать значения ...
-        final String nthstr = args.length>2 ? args[2].trim() : "";
-        final int nth = nthstr.length()>0 ? Integer.parseInt(nthstr,10) : sctx.section.getTemplateRowsCount();
+        final String nthstr = args.size() > 2 ? args.get(2).trim() : "";
+        final int nth = nthstr.length() > 0 ? Integer.parseInt(nthstr, 10) : sctx.section.getTemplateRowsCount();
         // определим смещение с которого начинается отсчет используемых макросом строк в секции ...
-        final String ofstr = args.length>3 ? args[3].trim() : "";
-        final int offset = ofstr.length()>0 ? Integer.parseInt(ofstr,10) : 0;
+        final String ofstr = args.size() > 3 ? args.get(3).trim() : "";
+        final int offset = ofstr.length() > 0 ? Integer.parseInt(ofstr, 10) : 0;
 
         process(ectx.cell, sctx, colname, nth, offset);
     }
@@ -87,13 +88,12 @@ public class FNRowsSum implements Macros {
     public void process(final Cell cell, final SectionContext sctx, final String colname, final int nth, final int offset) {
         final StringBuilder formula = new StringBuilder(32);
         final int top = sctx.sectionFirstRow + 1;
-        final int bottom = sctx.sectionFirstRow + sctx.record*sctx.section.getTemplateRowsCount();
-        if (top>bottom) {
+        final int bottom = sctx.sectionFirstRow + sctx.record * sctx.section.getTemplateRowsCount();
+        if (top > bottom) {
             cell.setCellValue(0);
             return;
-        } else
-        if (nth==1) {
-            formula.append("SUM(").append(colname).append(top+offset).append(':').append(colname).append(bottom).append(')');
+        } else if (nth == 1) {
+            formula.append("SUM(").append(colname).append(top + offset).append(':').append(colname).append(bottom).append(')');
         } else {
             formula.append("SUMPRODUCT(ABS(MOD(ROW(").append(top).append(':').append(bottom).append(")-ROW(")
                     .append(colname).append(top).append("),").append(nth).append(")=").append(offset).append("),")
