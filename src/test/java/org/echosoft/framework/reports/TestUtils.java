@@ -133,7 +133,8 @@ public class TestUtils {
         final String invoice = StringUtil.trim(element.getAttribute("invoice"));
         final int amount = Any.asInt(StringUtil.trim(element.getAttribute("amount")), 0);
         final double unitcost = Any.asDouble(StringUtil.trim(element.getAttribute("unitcost")), 0d);
-        return new Invoice(id, name, contragent, invoice, amount, unitcost);
+        final String comment = StringUtil.trim(element.getAttribute("comment"));
+        return new Invoice(id, name, contragent, invoice, amount, unitcost, comment);
     }
 
     private static Date asDate(final String str) {

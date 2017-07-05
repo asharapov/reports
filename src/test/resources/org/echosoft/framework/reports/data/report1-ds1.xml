@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding='UTF-8'?>
 <data>
-  <invoice id="1" name="Бульбулятор обыкновенный" contragent="Сукинъ и Сыновья" invoice="C004/S" amount="10" unitcost="2.1" />
-  <invoice id="2" name="Бульбулятор обыкновенный" contragent="ИЧП Выкрутасов" invoice="C001/V" amount="5" unitcost="1.5" />
+  <invoice id="1" name="Бульбулятор обыкновенный" contragent="Сукинъ и Сыновья" invoice="C004/S" amount="10" unitcost="2.1" comment="О сколько нам открытий чудных\nГотовит просвещенья дух!\n"/>
+  <invoice id="2" name="Бульбулятор обыкновенный" contragent="ИЧП Выкрутасов" invoice="C001/V" amount="5" unitcost="1.5" comment="no comments"/>
   <invoice id="3" name="Бульбулятор обыкновенный" contragent="ИЧП Выкрутасов" invoice="C002/V" amount="3" unitcost="1.5" />
   <invoice id="4" name="дырка от бублика" contragent="Сукинъ и Сыновья" invoice="C001/S" amount="200" unitcost="3.0" />
   <invoice id="5" name="Бульбулятор light" contragent="ИЧП Выкрутасов" invoice="C003/V" amount="6" unitcost="1.2" />

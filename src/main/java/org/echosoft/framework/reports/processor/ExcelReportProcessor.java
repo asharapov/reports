@@ -9,9 +9,9 @@ import java.util.Map;
 
 import org.apache.poi.POIXMLProperties;
 import org.apache.poi.hpsf.DocumentSummaryInformation;
-import org.apache.poi.hpsf.MutableProperty;
-import org.apache.poi.hpsf.MutablePropertySet;
 import org.apache.poi.hpsf.MutableSection;
+import org.apache.poi.hpsf.Property;
+import org.apache.poi.hpsf.PropertySet;
 import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hpsf.Variant;
 import org.apache.poi.hpsf.wellknown.PropertyIDMap;
@@ -196,10 +196,10 @@ public class ExcelReportProcessor implements ReportProcessor {
                     fs.createDocument(new ByteArrayInputStream(emptyWorkbookData), "Workbook");
                 }
 
-                final MutablePropertySet siProperties = new MutablePropertySet();
+                final PropertySet siProperties = new PropertySet();
                 final MutableSection siSection = (MutableSection) siProperties.getSections().get(0);
                 siSection.setFormatID(SectionIDMap.SUMMARY_INFORMATION_ID);
-                final MutableProperty p0 = new MutableProperty();
+                final Property p0 = new Property();
                 p0.setID(PropertyIDMap.PID_CREATE_DTM);
                 p0.setType(Variant.VT_FILETIME);
                 p0.setValue(new Date());
@@ -207,7 +207,7 @@ public class ExcelReportProcessor implements ReportProcessor {
 
                 final String application = report.getDescription().getApplication(ctx);
                 if (application != null) {
-                    final MutableProperty p = new MutableProperty();
+                    final Property p = new Property();
                     p.setID(PropertyIDMap.PID_APPNAME);
                     p.setType(Variant.VT_LPWSTR);
                     p.setValue(application);
@@ -215,7 +215,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                 }
                 final String author = report.getDescription().getAuthor(ctx);
                 if (author != null) {
-                    final MutableProperty p = new MutableProperty();
+                    final Property p = new Property();
                     p.setID(PropertyIDMap.PID_AUTHOR);
                     p.setType(Variant.VT_LPWSTR);
                     p.setValue(author);
@@ -223,7 +223,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                 }
                 final String version = report.getDescription().getVersion(ctx);
                 if (version != null) {
-                    final MutableProperty p = new MutableProperty();
+                    final Property p = new Property();
                     p.setID(PropertyIDMap.PID_REVNUMBER);
                     p.setType(Variant.VT_LPWSTR);
                     p.setValue(version);
@@ -231,7 +231,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                 }
                 final String title = report.getDescription().getTitle(ctx);
                 if (title != null) {
-                    final MutableProperty p = new MutableProperty();
+                    final Property p = new Property();
                     p.setID(PropertyIDMap.PID_TITLE);
                     p.setType(Variant.VT_LPWSTR);
                     p.setValue(title);
@@ -239,7 +239,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                 }
                 final String subject = report.getDescription().getSubject(ctx);
                 if (subject != null) {
-                    final MutableProperty p = new MutableProperty();
+                    final Property p = new Property();
                     p.setID(PropertyIDMap.PID_SUBJECT);
                     p.setType(Variant.VT_LPWSTR);
                     p.setValue(subject);
@@ -247,19 +247,19 @@ public class ExcelReportProcessor implements ReportProcessor {
                 }
                 final String comments = report.getDescription().getComments(ctx);
                 if (comments != null) {
-                    final MutableProperty p = new MutableProperty();
+                    final Property p = new Property();
                     p.setID(PropertyIDMap.PID_COMMENTS);
                     p.setType(Variant.VT_LPWSTR);
                     p.setValue(comments);
                     siSection.setProperty(p);
                 }
 
-                final MutablePropertySet dsiProperties = new MutablePropertySet();
+                final PropertySet dsiProperties = new PropertySet();
                 final MutableSection dsiSection = (MutableSection) dsiProperties.getSections().get(0);
                 dsiSection.setFormatID(SectionIDMap.DOCUMENT_SUMMARY_INFORMATION_ID[0]);
                 final String company = report.getDescription().getCompany(ctx);
                 if (company != null) {
-                    final MutableProperty p = new MutableProperty();
+                    final Property p = new Property();
                     p.setID(PropertyIDMap.PID_COMPANY);
                     p.setType(Variant.VT_LPWSTR);
                     p.setValue(company);
@@ -267,7 +267,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                 }
                 final String category = report.getDescription().getCategory(ctx);
                 if (category != null) {
-                    final MutableProperty p = new MutableProperty();
+                    final Property p = new Property();
                     p.setID(PropertyIDMap.PID_CATEGORY);
                     p.setType(Variant.VT_LPWSTR);
                     p.setValue(category);
@@ -309,7 +309,7 @@ public class ExcelReportProcessor implements ReportProcessor {
             listener.beforeSheet(ectx);
         }
         if (ectx.sheet.isRendered()) {
-            final String title = sheet.getTitle() != null ? (String)sheet.getTitle().getValue(ectx.elctx) : sheet.getId();
+            final String title = sheet.getTitle() != null ? (String) sheet.getTitle().getValue(ectx.elctx) : sheet.getId();
             ectx.wsheet = ectx.wb.getSheet(title);  // в случае использования сохраненного шаблона отчета ...
             if (ectx.wsheet == null) {
                 ectx.wsheet = ectx.wb.createSheet(title);
@@ -366,6 +366,7 @@ public class ExcelReportProcessor implements ReportProcessor {
         if (pageSettings.getZoom() != null)
             sheet.setZoom(pageSettings.getZoom());
     }
+
     private void processPrintSetup(final PrintSetup hps, final PrintSetupModel printSetup) {
         hps.setPaperSize(printSetup.getPaperSize());
         hps.setScale(printSetup.getScale());
@@ -402,11 +403,9 @@ public class ExcelReportProcessor implements ReportProcessor {
         if (section.isRendered()) {
             if (section instanceof CompositeSection) {
                 processCompositeSection(ectx);
-            } else
-            if (section instanceof PlainSection) {
+            } else if (section instanceof PlainSection) {
                 processPlainSection(ectx);
-            } else
-            if (section instanceof GroupingSection) {
+            } else if (section instanceof GroupingSection) {
                 processGroupingSection(ectx);
             } else
                 throw new RuntimeException("Unsupported section type: " + section.getClass());
@@ -678,40 +677,32 @@ public class ExcelReportProcessor implements ReportProcessor {
     protected void renderCell(final ExecutionContext ectx, final Object value) {
         if (value == null) {
             ectx.cell.setCellType(CellType.BLANK);
-        } else
-        if (value instanceof Date) {
+        } else if (value instanceof Date) {
             ectx.cell.setCellType(CellType.NUMERIC);
             ectx.cell.setCellValue((Date) value);
-        } else
-        if (value instanceof Calendar) {
+        } else if (value instanceof Calendar) {
             ectx.cell.setCellType(CellType.NUMERIC);
             ectx.cell.setCellValue((Calendar) value);
-        } else
-        if (value instanceof Double) {
+        } else if (value instanceof Double) {
             ectx.cell.setCellType(CellType.NUMERIC);
             ectx.cell.setCellValue((Double) value);
-        } else
-        if (value instanceof Number) {
+        } else if (value instanceof Number) {
             ectx.cell.setCellType(CellType.NUMERIC);
             ectx.cell.setCellValue(((Number) value).doubleValue());
-        } else
-        if (value instanceof Boolean) {
+        } else if (value instanceof Boolean) {
             ectx.cell.setCellType(CellType.BOOLEAN);
             ectx.cell.setCellValue((Boolean) value);
-        } else
-        if (value instanceof RichTextString) {
+        } else if (value instanceof RichTextString) {
             ectx.cell.setCellType(CellType.STRING);
             ectx.cell.setCellValue((RichTextString) value);
         } else {
             final String text = value.toString();
             if (ectx.cell.getCellTypeEnum() == CellType.FORMULA) {
                 ectx.cell.setCellFormula(text);
-            } else
-            if (text.startsWith(FORMULA)) {
+            } else if (text.startsWith(FORMULA)) {
                 ectx.cell.setCellType(CellType.FORMULA);
                 ectx.cell.setCellFormula(text.substring(FORMULA_LENGTH));
-            } else
-            if (text.startsWith(MACROS)) {
+            } else if (text.startsWith(MACROS)) {
                 final int si = text.indexOf('(', MACROS_LENGTH);
                 final String name, args;
                 if (si > 0) {

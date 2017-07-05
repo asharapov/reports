@@ -8,9 +8,9 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Locale;
 
-import org.apache.poi.hpsf.MutableProperty;
-import org.apache.poi.hpsf.MutablePropertySet;
 import org.apache.poi.hpsf.MutableSection;
+import org.apache.poi.hpsf.Property;
+import org.apache.poi.hpsf.PropertySet;
 import org.apache.poi.hpsf.PropertySetFactory;
 import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hpsf.Variant;
@@ -92,20 +92,20 @@ public class POITest {
         cell2.setCellValue(new HSSFRichTextString("cell2"));
         */
         wb.write(out1);
-        final MutablePropertySet mps = new MutablePropertySet();
+        final PropertySet mps = new PropertySet();
         final MutableSection ms = (MutableSection) mps.getSections().get(0);
         ms.setFormatID(SectionIDMap.SUMMARY_INFORMATION_ID);
-        final MutableProperty p1 = new MutableProperty();
+        final Property p1 = new Property();
         p1.setID(PropertyIDMap.PID_TITLE);
         p1.setType(Variant.VT_LPWSTR);
         p1.setValue("Sample title");
         ms.setProperty(p1);
-        final MutableProperty p2 = new MutableProperty();
+        final Property p2 = new Property();
         p2.setID(PropertyIDMap.PID_AUTHOR);
         p2.setType(Variant.VT_LPWSTR);
         p2.setValue("Anton Sharapov & Co");
         ms.setProperty(p2);
-        final MutableProperty p3 = new MutableProperty();
+        final Property p3 = new Property();
         p3.setID(PropertyIDMap.PID_CREATE_DTM);
         p3.setType(Variant.VT_FILETIME);
         p3.setValue(new Date());
