@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Locale;
 
-import org.apache.poi.hpsf.MutableSection;
 import org.apache.poi.hpsf.Property;
 import org.apache.poi.hpsf.PropertySet;
 import org.apache.poi.hpsf.PropertySetFactory;
@@ -93,7 +92,7 @@ public class POITest {
         */
         wb.write(out1);
         final PropertySet mps = new PropertySet();
-        final MutableSection ms = (MutableSection) mps.getSections().get(0);
+        final org.apache.poi.hpsf.Section ms = mps.getSections().get(0);
         ms.setFormatID(SectionIDMap.SUMMARY_INFORMATION_ID);
         final Property p1 = new Property();
         p1.setID(PropertyIDMap.PID_TITLE);

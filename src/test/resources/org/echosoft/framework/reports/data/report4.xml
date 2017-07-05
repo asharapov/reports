@@ -16,7 +16,7 @@
     <list-data-provider id="ds1" data="${env:invoices}"/>
     <list-data-provider id="ds2" data="${env:payments}"/>
 
-    <sheet id="sheet1" title="Ведомость-1" hidden="true" rendered="true">
+    <sheet id="sheet1" title="Ведомость-1" hidden="false" rendered="true">
         <plain-section id="s1.header" height="4"/>
         <composite-section id="s1.data">
             <plain-section id="s1.data.header" height="2"/>

@@ -2,6 +2,8 @@ package org.echosoft.framework.reports.data.beans;
 
 import java.io.Serializable;
 
+import org.echosoft.common.utils.StringUtil;
+
 /**
  * @author Anton Sharapov
  */
@@ -21,7 +23,9 @@ public class Invoice implements Serializable {
         this.invoice = invoice;
         this.amount = amount;
         this.unitcost = unitcost;
-        this.comment = comment;
+        if (comment != null) {
+            this.comment = StringUtil.replace(comment, "\\n", "\n");
+        }
     }
 
     public String toString() {

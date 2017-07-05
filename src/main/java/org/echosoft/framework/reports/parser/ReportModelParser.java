@@ -418,7 +418,7 @@ public class ReportModelParser {
             section.setDataProvider(report.getProviders().get(pid));
         final int height = Any.asInt(element.getAttribute("height"), 1);
         final int lastColumn = POIUtils.getColumnNumber(StringUtil.trim(element.getAttribute("lastColumn")));
-        section.setTemplate(new AreaModel(sheet, offset, height, lastColumn, report.getPalette()));
+        section.setTemplate(new AreaModel(sheet, offset, height, lastColumn, report));
         section.getTemplate().setHidden(section.isHidden());
         for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
@@ -476,7 +476,7 @@ public class ReportModelParser {
                     throw new RuntimeException("Unknown element: " + tagName);
             }
         }
-        section.setRowTemplate(new AreaModel(sheet, offset + height, rowHeight, lastColumn, report.getPalette()));
+        section.setRowTemplate(new AreaModel(sheet, offset + height, rowHeight, lastColumn, report));
         return section;
     }
 
@@ -564,7 +564,7 @@ public class ReportModelParser {
                 final GroupStyle style = new GroupStyle();
                 style.setLevel(Any.asInt(StringUtil.trim(el.getAttribute("level")), 0));
                 style.setDefault(Any.asBoolean(StringUtil.trim(el.getAttribute("default")), false));
-                style.setTemplate(new AreaModel(sheet, offset, height, lastColumn, report.getPalette()));
+                style.setTemplate(new AreaModel(sheet, offset, height, lastColumn, report));
                 style.getTemplate().setHidden(group.isHidden());
                 group.addStyle(style);
                 offset += height;
@@ -575,7 +575,7 @@ public class ReportModelParser {
             final GroupStyle style = new GroupStyle();
             style.setLevel(0);
             style.setDefault(true);
-            style.setTemplate(new AreaModel(sheet, offset, height, lastColumn, report.getPalette()));
+            style.setTemplate(new AreaModel(sheet, offset, height, lastColumn, report));
             style.getTemplate().setHidden(group.isHidden());
             group.addStyle(style);
         }
@@ -621,7 +621,7 @@ public class ReportModelParser {
             final HSSFWorkbook hwb = (HSSFWorkbook) wb;
             final byte[] data = hwb.getBytes();
             final String[] shouldBeDropped = {"Workbook", "WORKBOOK", SummaryInformation.DEFAULT_STREAM_NAME, DocumentSummaryInformation.DEFAULT_STREAM_NAME};
-            final DirectoryNode directoryNode = hwb.getRootDirectory();
+            final DirectoryNode directoryNode = hwb.getDirectory();
             for (String entryName : shouldBeDropped) {
                 try {
                     final Entry entry = directoryNode.getEntry(entryName);

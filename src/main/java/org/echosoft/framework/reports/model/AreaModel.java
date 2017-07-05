@@ -51,18 +51,21 @@ public class AreaModel implements Serializable, Cloneable {
     /**
      * Собирает информацию о некоторой области из указанного листа шаблона excel.
      *
-     * @param sheet   шаблон листа отчета в котором находятся данные для данной области.
-     * @param top     номер верхней строки (начиная с 0) относящейся к указанной области.
-     * @param height  количество строк в области. Должно быть как минимум 1.
+     * @param sheet      шаблон листа отчета в котором находятся данные для данной области.
+     * @param top        номер верхней строки (начиная с 0) относящейся к указанной области.
+     * @param height     количество строк в области. Должно быть как минимум 1.
      * @param lastColumn номер последней колонки.
-     * @param palette реестр всех стилей используемых в данном отчете.
+     * @param report     формируемая модель для данного отчета
      */
-    public AreaModel(final Sheet sheet, final int top, final int height, int lastColumn, final StylePalette palette) {
+    public AreaModel(final Sheet sheet, final int top, final int height, int lastColumn, final Report report) {
+        final StylePalette palette = report.getPalette();
+        final boolean allowAutoHeightFeature = report.getTarget() != Report.TargetType.HSSF;
         if (sheet == null || top < 0 || height < 1)
             throw new IllegalArgumentException("Illegal area arguments");
         rows = new ArrayList<>();
         regions = new ArrayList<>();
 
+        final short defaultRowHeight = sheet.getDefaultRowHeight();
         final int bottom = top + height - 1;
         int lcn = 0;
         for (int i = top; i <= bottom; i++) {
@@ -70,11 +73,12 @@ public class AreaModel implements Serializable, Cloneable {
             rows.add(rm);
             final Row row = sheet.getRow(i);
             if (row == null) {
-                rm.setHeight(sheet.getDefaultRowHeight());
+                rm.setHeight(defaultRowHeight);
                 continue;
             }
             rm.setHeight(row.getHeight());
             rm.setHidden(row.getZeroHeight());
+            boolean hasWrapTextFields = false;
             lcn = lastColumn >= 0 ? lastColumn : Math.max(lcn, row.getLastCellNum());
             for (int j = 0; j <= lcn; j++) {
                 final Cell cell = row.getCell(j);
@@ -82,8 +86,10 @@ public class AreaModel implements Serializable, Cloneable {
                     rm.getCells().add(null);
                 } else {
                     rm.getCells().add(new CellModel(cell, palette));
+                    hasWrapTextFields |= cell.getCellStyle().getWrapText();
                 }
             }
+            rm.setAutoHeight(hasWrapTextFields && allowAutoHeightFeature && rm.getHeight() == defaultRowHeight);
         }
         this.columnsCount = lcn + 1;
 
@@ -94,8 +100,7 @@ public class AreaModel implements Serializable, Cloneable {
                 final Region dst =
                         new Region(this, src.getFirstColumn(), src.getFirstRow() - top, src.getLastColumn(), src.getLastRow() - top);
                 regions.add(dst);
-            } else
-            if (src.getFirstRow() < top && src.getLastRow() >= top)
+            } else if (src.getFirstRow() < top && src.getLastRow() >= top)
                 throw new IllegalArgumentException("Illegal region {top:" + top + ", height:" + height + "} bounds: conflict with region {top:" + src.getFirstRow() + ", bottom:" + src.getLastRow() + "}");
             if (src.getFirstRow() >= top && src.getFirstRow() <= bottom && src.getLastRow() > bottom)
                 throw new IllegalArgumentException("Illegal region {top:" + top + ", height:" + height + "} bounds: conflict with region {top:" + src.getFirstRow() + ", bottom:" + src.getLastRow() + "}");
@@ -191,7 +196,7 @@ public class AreaModel implements Serializable, Cloneable {
      *
      * @param colnum индекс удаляемой колонки.
      * @return массив удаленных ячеек. первый элемент массива - удаленная ячейка из первой строки области, последний элемент массива - удаленная ячейка из последней строки области.
-     *         Если в какой-то строке региона не было ячеек в указанной колонке то в соответствующий элемент массива сохраняется <code>null</code>.
+     * Если в какой-то строке региона не было ячеек в указанной колонке то в соответствующий элемент массива сохраняется <code>null</code>.
      */
     public CellModel[] removeColumn(final int colnum) {
         if (colnum < 0 || colnum >= columnsCount)
@@ -201,8 +206,7 @@ public class AreaModel implements Serializable, Cloneable {
             final Region region = it.next();
             if (region.firstCol > colnum) {
                 region.shiftColumns(-1);
-            } else
-            if (region.lastCol >= colnum) {
+            } else if (region.lastCol >= colnum) {
                 if (region.lastCol > region.firstCol) {
                     region.lastCol--;
                 } else {
@@ -234,8 +238,7 @@ public class AreaModel implements Serializable, Cloneable {
             final Region region = it.next();
             if (region.firstRow > rownum) {
                 region.shiftRows(-1);
-            } else
-            if (region.lastRow >= rownum) {
+            } else if (region.lastRow >= rownum) {
                 if (region.lastRow > region.firstRow) {
                     region.lastRow--;
                 } else {
@@ -272,8 +275,7 @@ public class AreaModel implements Serializable, Cloneable {
         for (Region region : regions) {
             if (region.firstCol >= colnum) {
                 region.shiftColumns(1);
-            } else
-            if (region.lastCol >= colnum) {
+            } else if (region.lastCol >= colnum) {
                 region.lastCol++;
             }
         }
@@ -297,8 +299,7 @@ public class AreaModel implements Serializable, Cloneable {
         for (Region region : regions) {
             if (region.firstRow >= rownum) {
                 region.shiftRows(1);
-            } else
-            if (region.lastRow >= rownum) {
+            } else if (region.lastRow >= rownum) {
                 region.lastRow++;
             }
         }
@@ -390,7 +391,6 @@ public class AreaModel implements Serializable, Cloneable {
     }
 
 
-
     /**
      * Определяет некоторое множество ячеек в области.
      * В отчетах используется как правило для объединения ячеек в формируемом отчете.
@@ -418,6 +418,7 @@ public class AreaModel implements Serializable, Cloneable {
         public int getFirstCol() {
             return firstCol;
         }
+
         public void setFirstCol(int col) {
             if (col < 0 || col > lastCol)
                 throw new IndexOutOfBoundsException("Invalid range");
@@ -427,6 +428,7 @@ public class AreaModel implements Serializable, Cloneable {
         public int getFirstRow() {
             return firstRow;
         }
+
         public void setFirstRow(int row) {
             if (row < 0 || row > lastRow)
                 throw new IndexOutOfBoundsException("Invalid range");
@@ -436,6 +438,7 @@ public class AreaModel implements Serializable, Cloneable {
         public int getLastCol() {
             return lastCol;
         }
+
         public void setLastCol(int col) {
             if (col < firstCol || col >= owner.getColumnsCount())
                 throw new IndexOutOfBoundsException("Invalid range");
@@ -445,6 +448,7 @@ public class AreaModel implements Serializable, Cloneable {
         public int getLastRow() {
             return lastRow;
         }
+
         public void setLastRow(int row) {
             if (row < firstRow || row >= owner.getRows().size())
                 throw new IndexOutOfBoundsException("Invalid range");

@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.apache.poi.POIXMLProperties;
 import org.apache.poi.hpsf.DocumentSummaryInformation;
-import org.apache.poi.hpsf.MutableSection;
 import org.apache.poi.hpsf.Property;
 import org.apache.poi.hpsf.PropertySet;
 import org.apache.poi.hpsf.SummaryInformation;
@@ -197,7 +196,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                 }
 
                 final PropertySet siProperties = new PropertySet();
-                final MutableSection siSection = (MutableSection) siProperties.getSections().get(0);
+                final org.apache.poi.hpsf.Section siSection = siProperties.getSections().get(0);
                 siSection.setFormatID(SectionIDMap.SUMMARY_INFORMATION_ID);
                 final Property p0 = new Property();
                 p0.setID(PropertyIDMap.PID_CREATE_DTM);
@@ -255,7 +254,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                 }
 
                 final PropertySet dsiProperties = new PropertySet();
-                final MutableSection dsiSection = (MutableSection) dsiProperties.getSections().get(0);
+                final org.apache.poi.hpsf.Section dsiSection = dsiProperties.getSections().get(0);
                 dsiSection.setFormatID(SectionIDMap.DOCUMENT_SUMMARY_INFORMATION_ID[0]);
                 final String company = report.getDescription().getCompany(ctx);
                 if (company != null) {
@@ -636,7 +635,7 @@ public class ExcelReportProcessor implements ReportProcessor {
             if (row == null) {
                 row = ectx.wsheet.createRow(r);
             }
-            row.setHeight(rm.getHeight());
+            row.setHeight(rm.isAutoHeight() ? (short) -1 : rm.getHeight());
             if (hidden || rm.isHidden()) {
                 row.setZeroHeight(true);
             }

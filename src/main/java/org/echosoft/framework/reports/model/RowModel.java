@@ -27,6 +27,10 @@ public class RowModel implements Serializable, Cloneable {
      */
     private boolean hidden;
 
+    /**
+     * <code>true</code> если высота данной строки должна определяться ее содержимым.
+     */
+    private boolean autoHeight;
 
     public RowModel() {
         cells = new ArrayList<>();
@@ -59,6 +63,16 @@ public class RowModel implements Serializable, Cloneable {
      */
     public void setHeight(final short height) {
         this.height = height;
+    }
+
+    /**
+     * Возвращает <code>true</code> если высота данной строки должна определяться ее содержимым.
+     */
+    public boolean isAutoHeight() {
+        return autoHeight;
+    }
+    public void setAutoHeight(final boolean autoHeight) {
+        this.autoHeight = autoHeight;
     }
 
     /**
