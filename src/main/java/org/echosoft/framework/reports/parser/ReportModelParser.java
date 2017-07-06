@@ -418,7 +418,8 @@ public class ReportModelParser {
             section.setDataProvider(report.getProviders().get(pid));
         final int height = Any.asInt(element.getAttribute("height"), 1);
         final int lastColumn = POIUtils.getColumnNumber(StringUtil.trim(element.getAttribute("lastColumn")));
-        section.setTemplate(new AreaModel(sheet, offset, height, lastColumn, report));
+        final boolean autoRowHeight = Any.asBoolean(StringUtil.trim(element.getAttribute("autoRowHeight")), false);
+        section.setTemplate(new AreaModel(sheet, offset, height, lastColumn, autoRowHeight, report));
         section.getTemplate().setHidden(section.isHidden());
         for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
@@ -454,6 +455,7 @@ public class ReportModelParser {
         section.setIndentedColumns(colnames);
         final int rowHeight = Any.asInt(element.getAttribute("rowHeight"), 1);
         final int lastColumn = POIUtils.getColumnNumber(StringUtil.trim(element.getAttribute("lastColumn")));
+        final boolean autoRowHeight = Any.asBoolean(StringUtil.trim(element.getAttribute("autoRowHeight")), false);
         int height = 0;
         for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
@@ -476,7 +478,7 @@ public class ReportModelParser {
                     throw new RuntimeException("Unknown element: " + tagName);
             }
         }
-        section.setRowTemplate(new AreaModel(sheet, offset + height, rowHeight, lastColumn, report));
+        section.setRowTemplate(new AreaModel(sheet, offset + height, rowHeight, lastColumn, autoRowHeight, report));
         return section;
     }
 
@@ -558,13 +560,14 @@ public class ReportModelParser {
         group.setSkipEmptyGroups(Any.asBoolean(StringUtil.trim(element.getAttribute("skipEmptyGroups")), false));
         final int height = Any.asInt(StringUtil.trim(element.getAttribute("height")), 1);
         final int lastColumn = POIUtils.getColumnNumber(StringUtil.trim(element.getAttribute("lastColumn")));
+        final boolean autoRowHeight = Any.asBoolean(StringUtil.trim(element.getAttribute("autoRowHeight")), false);
         for (Element el : XMLUtil.getChildElements(element)) {
             final String tagName = el.getTagName();
             if ("group-style".equals(tagName)) {
                 final GroupStyle style = new GroupStyle();
                 style.setLevel(Any.asInt(StringUtil.trim(el.getAttribute("level")), 0));
                 style.setDefault(Any.asBoolean(StringUtil.trim(el.getAttribute("default")), false));
-                style.setTemplate(new AreaModel(sheet, offset, height, lastColumn, report));
+                style.setTemplate(new AreaModel(sheet, offset, height, lastColumn, autoRowHeight, report));
                 style.getTemplate().setHidden(group.isHidden());
                 group.addStyle(style);
                 offset += height;
@@ -575,7 +578,7 @@ public class ReportModelParser {
             final GroupStyle style = new GroupStyle();
             style.setLevel(0);
             style.setDefault(true);
-            style.setTemplate(new AreaModel(sheet, offset, height, lastColumn, report));
+            style.setTemplate(new AreaModel(sheet, offset, height, lastColumn, autoRowHeight, report));
             style.getTemplate().setHidden(group.isHidden());
             group.addStyle(style);
         }

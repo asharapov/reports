@@ -327,6 +327,15 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="autoRowHeight" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Установка этого свойства в true приведет к автоматическому подбору высоты строки в секции.
+                    В противном случае, по умолчанию, будет использоваться та высота которая была определена в шаблоне отчета.
+                    Актуально когда в строке есть ячейки с признаком "перенос по словам". Работает только для целевого формата (S)XSSF.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
 
@@ -507,6 +516,15 @@
                     Позволяет явно задать порядковый номер последней колонки данной секции.
                     Может быть представлен либо десятичным числом (первая колонка = 0) либо в кодировке ALPHA-26
                     (пример: A, B, ... AZ, ...)
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="autoRowHeight" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Установка этого свойства в true приведет к автоматическому подбору высоты строки в секции.
+                    В противном случае, по умолчанию, будет использоваться та высота которая была определена в шаблоне отчета.
+                    Актуально когда в строке есть ячейки с признаком "перенос по словам". Работает только для целевого формата (S)XSSF.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

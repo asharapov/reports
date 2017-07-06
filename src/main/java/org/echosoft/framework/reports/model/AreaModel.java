@@ -51,15 +51,16 @@ public class AreaModel implements Serializable, Cloneable {
     /**
      * Собирает информацию о некоторой области из указанного листа шаблона excel.
      *
-     * @param sheet      шаблон листа отчета в котором находятся данные для данной области.
-     * @param top        номер верхней строки (начиная с 0) относящейся к указанной области.
-     * @param height     количество строк в области. Должно быть как минимум 1.
-     * @param lastColumn номер последней колонки.
-     * @param report     формируемая модель для данного отчета
+     * @param sheet         шаблон листа отчета в котором находятся данные для данной области.
+     * @param top           номер верхней строки (начиная с 0) относящейся к указанной области.
+     * @param height        количество строк в области. Должно быть как минимум 1.
+     * @param lastColumn    номер последней колонки.
+     * @param autoRowHeight использовать для строк этой области автоматическое определение высоты.
+     * @param report        формируемая модель для данного отчета
      */
-    public AreaModel(final Sheet sheet, final int top, final int height, int lastColumn, final Report report) {
+    public AreaModel(final Sheet sheet, final int top, final int height, int lastColumn, final boolean autoRowHeight, final Report report) {
         final StylePalette palette = report.getPalette();
-        final boolean allowAutoHeightFeature = report.getTarget() != Report.TargetType.HSSF;
+        final boolean allowAutoHeightFeature = autoRowHeight && report.getTarget() != Report.TargetType.HSSF;
         if (sheet == null || top < 0 || height < 1)
             throw new IllegalArgumentException("Illegal area arguments");
         rows = new ArrayList<>();
@@ -89,7 +90,7 @@ public class AreaModel implements Serializable, Cloneable {
                     hasWrapTextFields |= cell.getCellStyle().getWrapText();
                 }
             }
-            rm.setAutoHeight(hasWrapTextFields && allowAutoHeightFeature && rm.getHeight() == defaultRowHeight);
+            rm.setAutoHeight(hasWrapTextFields && allowAutoHeightFeature);
         }
         this.columnsCount = lcn + 1;
 
