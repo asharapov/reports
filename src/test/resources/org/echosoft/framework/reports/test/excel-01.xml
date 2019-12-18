@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<report id="excel-01" title="Демонстрация работы простых секций" target="XSSF" preserveTemplate="false"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://echo.org.ru/schemas/excel-reports/2.0/reports.xsd">
+
+    <description>
+        <company>Test Company</company>
+        <application>test application</application>
+        <author>John Doe</author>
+        <version>1.1</version>
+        <title>test title</title>
+        <subject>test subject</subject>
+        <category>test category</category>
+        <comments>test comments</comments>
+    </description>
+
+    <list-data-provider id="ds1" data="${env:repositories}"/>
+    <list-data-provider id="ds21" data="${env:netflix-repos}"/>
+    <list-data-provider id="ds22" data="${env:linkedin-repos}"/>
+    <sql-data-provider id="ds3" datasource="${env:ds}">
+        <sql>
+            SELECT s.id as subj_id, s.type as subj_type, s.login, s.url as subj_url, s.avatar_url as subj_avatar_url,
+            l.id as lic_id, l.name as lic_name, l.url as lic_url,
+            r.id, r.name, r.full_name, r.is_private, r.is_fork, r.url, r.description, r.created_at, r.updated_at, r.pushed_at,
+            r.homepage, r.lang, r.size, r.stars, r.forks, r.watchers, r.open_issues, r.archived, not r.archived as active, r.disabled, r.default_branch
+            FROM repository r
+            JOIN subject s ON r.owner_id = s.id
+            LEFT OUTER JOIN license l ON r.license_id = l.id
+            WHERE s.login = :owner
+            ORDER BY subj_type, login
+        </sql>
+        <param name="owner" value="${env:p31}"/>
+    </sql-data-provider>
+
+    <sheet id="sheet-1" title="Репозитории #1">
+        <plain-section id="s11" height="5"/>
+        <plain-section id="s12" height="1" provider="ds1"/>
+        <plain-section id="s13" height="5"/>
+    </sheet>
+
+    <sheet id="sheet-2" title="Репозитории #2">
+        <plain-section id="s21" height="4"/>
+        <plain-section id="s22" height="1" provider="ds21" collapsible="true" collapsed="false">
+            <named-region name="netflix_langs" firstColumn="D" lastColumn="D"/>
+            <named-region name="netflix_stars" firstColumn="E" lastColumn="E"/>
+            <named-region name="netflix_created" firstColumn="F" lastColumn="F"/>
+            <named-region name="netflix_updated" firstColumn="G" lastColumn="G"/>
+            <named-region name="netflix_active" firstColumn="I" lastColumn="I"/>
+        </plain-section>
+        <plain-section id="s23" height="5"/>
+        <plain-section id="s24" height="1" provider="ds22" collapsible="true" collapsed="false">
+            <named-region name="linkedin_langs" firstColumn="D" lastColumn="D"/>
+            <named-region name="linkedin_stars" firstColumn="E" lastColumn="E"/>
+            <named-region name="linkedin_created" firstColumn="F" lastColumn="F"/>
+            <named-region name="linkedin_updated" firstColumn="G" lastColumn="G"/>
+            <named-region name="linkedin_active" firstColumn="I" lastColumn="I"/>
+        </plain-section>
+        <plain-section id="s25" height="1"/>
+    </sheet>
+
+    <sheet id="sheet-3" title="Репозитории #3">
+        <plain-section id="s31" height="4"/>
+        <plain-section id="s32" height="1" provider="ds3" collapsible="true" collapsed="false">
+            <named-region name="langs" firstColumn="D" lastColumn="D"/>
+            <named-region name="stars" firstColumn="E" lastColumn="E"/>
+            <named-region name="created" firstColumn="F" lastColumn="F"/>
+            <named-region name="updated" firstColumn="G" lastColumn="G"/>
+            <named-region name="active" firstColumn="I" lastColumn="I"/>
+        </plain-section>
+        <plain-section id="s33" height="1"/>
+    </sheet>
+</report>

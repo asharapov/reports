@@ -4,11 +4,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.echosoft.common.collections.issuers.Issuer;
-import org.echosoft.common.collections.issuers.IteratorIssuer;
-import org.echosoft.common.collections.issuers.ReadAheadIssuer;
-import org.echosoft.common.collections.issuers.SimpleReadAheadIssuer;
-import org.echosoft.common.collections.iterators.ObjectArrayIterator;
+import org.echosoft.framework.reports.common.collections.issuers.Issuer;
+import org.echosoft.framework.reports.common.collections.issuers.IteratorIssuer;
+import org.echosoft.framework.reports.common.collections.issuers.ReadAheadIssuer;
+import org.echosoft.framework.reports.common.collections.issuers.SimpleReadAheadIssuer;
+import org.echosoft.framework.reports.common.collections.iterators.ObjectArrayIterator;
 
 /**
  * @author Anton Sharapov

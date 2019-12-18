@@ -1,0 +1,24 @@
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+
+    <persistence-unit name="github">
+        <description>Persistence unit for GitHub entities</description>
+        <class>org.echosoft.framework.reports.test.model.Subject</class>
+        <class>org.echosoft.framework.reports.test.model.License</class>
+        <class>org.echosoft.framework.reports.test.model.Repository</class>
+
+        <properties>
+            <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1"/>
+            <property name="javax.persistence.jdbc.user" value="sa"/>
+            <property name="javax.persistence.jdbc.password" value=""/>
+
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+        </properties>
+
+    </persistence-unit>
+</persistence>

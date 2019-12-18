@@ -18,9 +18,9 @@ import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.echosoft.common.utils.Any;
-import org.echosoft.common.utils.StringUtil;
-import org.echosoft.common.utils.XMLUtil;
+import org.echosoft.framework.reports.common.utils.Any;
+import org.echosoft.framework.reports.common.utils.StringUtil;
+import org.echosoft.framework.reports.common.utils.XMLUtil;
 import org.echosoft.framework.reports.model.AreaModel;
 import org.echosoft.framework.reports.model.ColumnGroupModel;
 import org.echosoft.framework.reports.model.CompositeSection;
@@ -46,8 +46,9 @@ import org.echosoft.framework.reports.model.providers.ListDataProvider;
 import org.echosoft.framework.reports.model.providers.ProviderUsage;
 import org.echosoft.framework.reports.model.providers.ProxyDataProvider;
 import org.echosoft.framework.reports.model.providers.SQLDataProvider;
-import org.echosoft.framework.reports.util.Logs;
 import org.echosoft.framework.reports.util.POIUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -59,6 +60,8 @@ import org.w3c.dom.Element;
  * @author Anton Sharapov
  */
 public class ReportModelParser {
+
+    private static final Logger log = LoggerFactory.getLogger(ReportModelParser.class);
 
     /**
      * Выполняет операцию чтения структуры информации и ее последующей компиляции.
@@ -630,7 +633,7 @@ public class ReportModelParser {
                     final Entry entry = directoryNode.getEntry(entryName);
                     if (entry != null) {
                         if (!entry.delete())
-                            Logs.reports.warn("unable to delete POIFS section: '" + entryName + "'  (" + entry + ")");
+                            log.warn("unable to delete POIFS section: '" + entryName + "'  (" + entry + ")");
                     }
                 } catch (FileNotFoundException ffe) {
                     // Секция с указанным именем отсутствует в иерархии. Просто перейдем к следующей в списке ...

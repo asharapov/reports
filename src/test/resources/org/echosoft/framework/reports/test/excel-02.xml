@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<report id="excel-02" title="Демонстрация работы секций с группировками" target="XSSF" preserveTemplate="false"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://echo.org.ru/schemas/excel-reports/2.0/reports.xsd">
+
+    <description>
+        <company>Test Company</company>
+        <application>test application</application>
+        <author>John Doe</author>
+        <version>1.1</version>
+        <title>test title</title>
+        <subject>test subject</subject>
+        <category>test category</category>
+        <comments>test comments</comments>
+    </description>
+
+    <list-data-provider id="ds1" data="${env:repositories}"/>
+
+    <sheet id="sheet-1" title="Репозитории #1">
+        <plain-section id="s11" height="5"/>
+        <grouping-section id="s12" provider="ds1" rowHeight="1">
+            <group discriminatorField="owner.type" height="1"/>
+            <group discriminatorField="owner.login" height="1"/>
+            <group discriminatorField="lang" height="1"/>
+        </grouping-section>
+        <plain-section id="s13" height="4"/>
+    </sheet>
+
+    <sheet id="sheet-2" title="Репозитории #2">
+        <plain-section id="s21" height="4"/>
+        <grouping-section id="s22" provider="ds1" rowHeight="1">
+            <group discriminatorField="owner.type" height="1"/>
+            <group discriminatorField="owner.login" height="1"/>
+            <group discriminatorField="lang" height="1"/>
+        </grouping-section>
+        <plain-section id="s23" height="1"/>
+    </sheet>
+
+    <sheet id="sheet-3" title="Репозитории #3">
+        <plain-section id="s31" height="4"/>
+        <grouping-section id="s32" provider="ds1" rowHeight="1">
+            <group height="1"/>
+            <group discriminatorField="owner.type" height="1"/>
+            <group discriminatorField="owner.login" height="1"/>
+            <group discriminatorField="lang" height="1"/>
+        </grouping-section>
+        <plain-section id="s33" height="1"/>
+    </sheet>
+
+</report>

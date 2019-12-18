@@ -7,7 +7,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.echosoft.common.utils.BeanUtil;
+import org.echosoft.framework.reports.common.utils.BeanUtil;
 
 /**
  * Содержит информацию используемую при вычислении выражений в ячейках отчета.

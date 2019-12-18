@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.echosoft.common.utils.StringUtil;
+import org.echosoft.framework.reports.common.utils.StringUtil;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.processor.SectionContext;
 import org.echosoft.framework.reports.util.POIUtils;

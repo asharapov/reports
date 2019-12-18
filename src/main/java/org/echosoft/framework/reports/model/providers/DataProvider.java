@@ -2,7 +2,7 @@ package org.echosoft.framework.reports.model.providers;
 
 import java.io.Serializable;
 
-import org.echosoft.common.collections.issuers.ReadAheadIssuer;
+import org.echosoft.framework.reports.common.collections.issuers.ReadAheadIssuer;
 import org.echosoft.framework.reports.model.el.ELContext;
 
 /**

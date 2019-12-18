@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.RichTextString;
-import org.echosoft.common.utils.BeanUtil;
+import org.echosoft.framework.reports.common.utils.BeanUtil;
 
 /**
  * Описывает вычисляемые выражения, на основе которых формируется содержимое одной ячейки отчета.

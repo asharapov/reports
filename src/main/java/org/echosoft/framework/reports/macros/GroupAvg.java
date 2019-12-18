@@ -1,8 +1,11 @@
 package org.echosoft.framework.reports.macros;
 
+import java.util.List;
+
 import org.apache.poi.ss.usermodel.CellType;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.processor.Group;
+import org.echosoft.framework.reports.processor.GroupManager;
 import org.echosoft.framework.reports.util.POIUtils;
 
 /**
@@ -24,21 +27,24 @@ public class GroupAvg implements Macros {
      * {@inheritDoc}
      */
     public void call(final ExecutionContext ectx, final String arg) {
-        final Group group = ectx.sectionContext.gm.getCurrentGroup();
-        if (group==null)
+        final GroupManager gm = arg == null ? ectx.sectionContext.gm : ectx.history.get(arg).gm;
+        if (gm == null) {
             return;
+        }
+        final Group group = gm.getCurrentGroup();
+        final List<Group> children = group != null ? group.children : gm.getCompletedRootGroups();
+        final String colname = POIUtils.getColumnName(ectx.cell.getColumnIndex());
 
         final String formula;
-        final int csize = group.children.size();
-        final int rsize = group.records.size();
+        final int csize = children.size();
+        final int rsize;
         if (csize>30) {
-            final String colname = POIUtils.getColumnName(ectx.cell.getColumnIndex());
             final StringBuilder out = new StringBuilder(128);
             out.append('(');
             for (int i=0; i<csize; i++) {
                 if (i>0)
                     out.append('+');
-                final Group child = group.children.get(i);
+                final Group child = children.get(i);
                 out.append(colname);
                 out.append(child.startRow+1);
             }
@@ -46,8 +52,7 @@ public class GroupAvg implements Macros {
             out.append(csize);
             formula = out.toString();
         } else
-        if (rsize>30 && (group.recordsHeight==null || group.recordsHeight!=1)) {
-            final String colname = POIUtils.getColumnName(ectx.cell.getColumnIndex());
+        if (group != null && (rsize=group.records.size())>30 && (group.recordsHeight==null || group.recordsHeight!=1)) {
             final StringBuilder out = new StringBuilder(128);
             out.append('(');
             for (int i=0; i<rsize; i++) {
@@ -60,12 +65,14 @@ public class GroupAvg implements Macros {
             out.append(rsize);
             formula = out.toString();
         } else {
-            formula = POIUtils.makeGroupFormula(ectx, "AVERAGE");
+            formula = POIUtils.makeGroupFormula(gm, colname, "AVERAGE");
         }
 
         if (formula!=null) {
             ectx.cell.setCellType(CellType.FORMULA);
             ectx.cell.setCellFormula( formula );
+        } else {
+            ectx.cell.setCellType(CellType.BLANK);
         }
     }
 

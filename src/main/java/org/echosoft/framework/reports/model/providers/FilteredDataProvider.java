@@ -2,8 +2,8 @@ package org.echosoft.framework.reports.model.providers;
 
 import java.util.NoSuchElementException;
 
-import org.echosoft.common.collections.issuers.ReadAheadIssuer;
-import org.echosoft.common.utils.ObjectUtil;
+import org.echosoft.framework.reports.common.collections.issuers.ReadAheadIssuer;
+import org.echosoft.framework.reports.common.utils.ObjectUtil;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.el.Expression;
 import org.echosoft.framework.reports.processor.ExcelReportProcessor;

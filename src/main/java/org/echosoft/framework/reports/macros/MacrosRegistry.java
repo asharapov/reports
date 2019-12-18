@@ -2,7 +2,7 @@ package org.echosoft.framework.reports.macros;
 
 import java.util.HashMap;
 
-import org.echosoft.common.utils.StringUtil;
+import org.echosoft.framework.reports.common.utils.StringUtil;
 
 /**
  * Реестр всех глобальных макро-функций представляющих собой особые алгоритмы по формированию значений в указанных ячейках отчета.
@@ -20,6 +20,7 @@ public final class MacrosRegistry {
         MacrosRegistry.registerMacros("gmax", new GroupMax());
         MacrosRegistry.registerMacros("gmin", new GroupMin());
         MacrosRegistry.registerMacros("gavg", new GroupAvg());
+        MacrosRegistry.registerMacros("gcnt", new GroupItemsCount());
         MacrosRegistry.registerMacros("gitemnum", new GroupItemNum());
         MacrosRegistry.registerMacros("nrowsum", new NRowsSum());
         MacrosRegistry.registerMacros("fnrowsum", new FNRowsSum());

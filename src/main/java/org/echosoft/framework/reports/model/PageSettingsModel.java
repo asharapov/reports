@@ -114,7 +114,7 @@ public class PageSettingsModel implements Serializable, Cloneable {
     /**
      * Определяет будет ли автоматически вычисляться масштаб страницы таким образом чтобы она занимала страницу целиком.
      *
-     * @return <code>true</code> если автоматическое масштабирование должно быть включено>
+     * @return <code>true</code> если автоматическое масштабирование должно быть включено.
      */
     public boolean isFitToPage() {
         return fitToPage;

@@ -27,6 +27,11 @@ public abstract class GroupManager {
     protected final ArrayList<Group> groups;
 
     /**
+     * Сведения о корневых группах в секции, обработка которых была завершена.
+     */
+    private final ArrayList<Group> completedRootGroups;
+
+    /**
      * Следует ли использовать тотальную группировку (когда в группе верхнего уровня не указано свойство 'discriminatorField ').
      */
     protected final boolean useTotalGrouping;
@@ -49,6 +54,7 @@ public abstract class GroupManager {
     public GroupManager(final List<GroupModel> groups) {
         this.models = groups != null ? groups.toArray(new GroupModel[groups.size()]) : EMPTY_GROUP_MODEL;
         this.groups = new ArrayList<>();
+        this.completedRootGroups = new ArrayList<>();
 
         if (models.length > 0) {
             useTotalGrouping = models[0].getDiscriminatorField() == null;
@@ -62,13 +68,11 @@ public abstract class GroupManager {
     }
 
     /**
-     * Возвращает список всех обрабатываемых в настоящий момент групп.
-     * Последней в списке идет текущая группа.
-     *
-     * @return список обрабатываемых в настойщий момент групп. Никогда не возвращает <code>null</code>.
+     * Возвращает список всех обработанных корневых групп в секции.
+     * Используется для того чтобы сослаться к ним во время обработки следующих секций.
      */
-    public List<Group> getProcessingGroups() {
-        return groups;
+    public List<Group> getCompletedRootGroups() {
+        return completedRootGroups;
     }
 
     /**
@@ -144,8 +148,7 @@ public abstract class GroupManager {
             final int height = ctx.getNewRowNum() - recordFirstRow;
             if (group.records.size() == 1) {
                 group.recordsHeight = height;
-            } else
-            if (group.recordsHeight != null) {
+            } else if (group.recordsHeight != null) {
                 if (group.recordsHeight != height)
                     group.recordsHeight = null;
             }
@@ -170,8 +173,8 @@ public abstract class GroupManager {
      *
      * @param bean данные для очередной строки в секции.
      * @return количество групп из списка текущих групп в которые входит указанный бин с данными.
-     *         Если метод возвращает число равное количеству групп то текущая запись входит в последнюю объявленную группировку
-     *         и для нее не надо создавать новую группу.
+     * Если метод возвращает число равное количеству групп то текущая запись входит в последнюю объявленную группировку
+     * и для нее не надо создавать новую группу.
      * @throws Exception в случае каких-либо проблем.
      */
     protected int checkValidGroups(final Object bean) throws Exception {
@@ -197,8 +200,8 @@ public abstract class GroupManager {
      * @param model информация о группе для которой выполняется создание строк.
      * @param bean  объект из источника данных секции которым начинается новая группа.
      * @return <code>true</code> в случае когда группа и соответствующая ей строка отчета были успешно созданы. В случае же когда в
-     *         процессе работы над новой группой было принято решение о нежелательности создания данной группы (равно как и всех нижележащих)
-     *         то метод возвращает <code>false</code>.
+     * процессе работы над новой группой было принято решение о нежелательности создания данной группы (равно как и всех нижележащих)
+     * то метод возвращает <code>false</code>.
      * @throws Exception в случае каких-либо проблем.
      */
     protected boolean initGroup(final ExecutionContext ctx, final GroupModel model, final Object bean) throws Exception {
@@ -238,7 +241,14 @@ public abstract class GroupManager {
         groupRendering = true;
         renderCurrentGroup(ctx);
         groupRendering = false;
-        groups.remove(groups.size() - 1);
+        final int sz = groups.size();
+        if (sz == 1) {
+            final Group g0 = groups.get(0);
+            g0.children.clear();
+            g0.records.clear();
+            completedRootGroups.add(g0);
+        }
+        groups.remove(sz - 1);
     }
 
     /**

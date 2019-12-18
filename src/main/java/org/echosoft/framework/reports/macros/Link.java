@@ -32,7 +32,7 @@ public class Link implements Macros {
 
     @Override
     public void call(final ExecutionContext ectx, final String arg) {
-        if (arg == null) {
+        if (arg == null || arg.isEmpty()) {
             ectx.cell.setCellType(CellType.BLANK);
             return;
         }

@@ -1,6 +1,6 @@
 package org.echosoft.framework.reports.model.providers;
 
-import org.echosoft.common.collections.issuers.ReadAheadIssuer;
+import org.echosoft.framework.reports.common.collections.issuers.ReadAheadIssuer;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.el.Expression;
 import org.echosoft.framework.reports.processor.ExcelReportProcessor;

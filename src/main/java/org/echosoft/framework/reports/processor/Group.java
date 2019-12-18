@@ -3,7 +3,7 @@ package org.echosoft.framework.reports.processor;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.echosoft.common.utils.BeanUtil;
+import org.echosoft.framework.reports.common.utils.BeanUtil;
 import org.echosoft.framework.reports.model.GroupModel;
 
 /**

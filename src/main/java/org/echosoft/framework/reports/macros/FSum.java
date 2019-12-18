@@ -7,10 +7,10 @@ import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.echosoft.common.collections.iterators.ArrayIterator;
-import org.echosoft.common.collections.iterators.EnumerationIterator;
-import org.echosoft.common.collections.iterators.ObjectArrayIterator;
-import org.echosoft.common.utils.StringUtil;
+import org.echosoft.framework.reports.common.collections.iterators.ArrayIterator;
+import org.echosoft.framework.reports.common.collections.iterators.EnumerationIterator;
+import org.echosoft.framework.reports.common.collections.iterators.ObjectArrayIterator;
+import org.echosoft.framework.reports.common.utils.StringUtil;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.util.POIUtils;
 

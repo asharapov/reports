@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<report id="excel-03" title="Демонстрация работы составных секций" target="XSSF" preserveTemplate="false"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://echo.org.ru/schemas/excel-reports/2.0/reports.xsd">
+
+    <description>
+        <company>Test Company</company>
+        <application>test application</application>
+        <author>John Doe</author>
+        <version>1.1</version>
+        <title>test title</title>
+        <subject>test subject</subject>
+        <category>test category</category>
+        <comments>test comments</comments>
+    </description>
+
+    <list-data-provider id="ds1" data="${env:repositories}"/>
+    <filtered-data-provider id="ds1r" predicate="${env:ds1-predicate}"/>
+
+    <sheet id="sheet-1" title="Репозитории #1">
+        <plain-section id="s11" height="4"/>
+        <composite-section id="s12" provider="ds1" provider-usage="PREFETCH_RECORDS">
+            <plain-section id="s12-header" height="2"/>
+            <plain-section id="s12-data" height="1" provider="ds1r" collapsible="true" collapsed="false"/>
+            <plain-section id="s12-footer" height="1"/>
+        </composite-section>
+        <plain-section id="s13" height="1"/>
+    </sheet>
+
+    <sheet id="sheet-2" title="Репозитории #2" rendered="true">
+        <plain-section id="s21" height="4"/>
+        <composite-section id="s22" provider="ds1" provider-usage="PREFETCH_RECORDS">
+            <plain-section id="s22-header" height="2"/>
+            <plain-section id="s22-data" height="1" provider="ds1r" collapsible="true" collapsed="true"/>
+            <plain-section id="s22-footer" height="1"/>
+        </composite-section>
+        <plain-section id="s23" height="1"/>
+    </sheet>
+
+</report>

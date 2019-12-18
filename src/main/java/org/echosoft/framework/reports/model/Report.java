@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Workbook;
-import org.echosoft.common.utils.StringUtil;
+import org.echosoft.framework.reports.common.utils.StringUtil;
 import org.echosoft.framework.reports.macros.Macros;
 import org.echosoft.framework.reports.macros.MacrosRegistry;
 import org.echosoft.framework.reports.model.el.Expression;

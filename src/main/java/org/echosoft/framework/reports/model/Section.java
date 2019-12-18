@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.echosoft.common.utils.StringUtil;
+import org.echosoft.framework.reports.common.utils.StringUtil;
 import org.echosoft.framework.reports.model.events.CellEventListenerHolder;
 import org.echosoft.framework.reports.model.events.SectionEventListenerHolder;
 import org.echosoft.framework.reports.model.providers.DataProvider;

@@ -13,15 +13,15 @@ public interface Expression extends Serializable {
      * @return true  если выражение является полностью статичным, т.е. не содержит ссылок на
      * параметры в том или ином пространстве имен контекста.
      */
-    public boolean isStatic();
+    boolean isStatic();
 
     /**
      * Вычисляет выражение на основе приведенного контекста.
      *
-     * @param context  текущий контекст выполнения.
-     * @return  содержимое ячейки отчета.
-     * @throws Exception  в случае возникновения каких-либо проблем.
+     * @param context текущий контекст выполнения.
+     * @return содержимое ячейки отчета.
+     * @throws Exception в случае возникновения каких-либо проблем.
      */
-    public Object getValue(ELContext context) throws Exception;
+    Object getValue(ELContext context) throws Exception;
 
 }

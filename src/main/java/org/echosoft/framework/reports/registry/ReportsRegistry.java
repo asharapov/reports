@@ -16,7 +16,8 @@ import org.echosoft.framework.reports.parser.ReportExtension;
 import org.echosoft.framework.reports.parser.ReportModelParser;
 import org.echosoft.framework.reports.processor.ExcelReportProcessor;
 import org.echosoft.framework.reports.processor.ReportProcessor;
-import org.echosoft.framework.reports.util.Logs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Реестр зарегистрированных в системе отчетов и построителей отчетов.
@@ -25,10 +26,12 @@ import org.echosoft.framework.reports.util.Logs;
  */
 public class ReportsRegistry {
 
+    private static final Logger log = LoggerFactory.getLogger(ReportsRegistry.class);
     private static final ReportProcessor defaultProcessor;
     private static final Map<String, ReportProcessor> processors = new HashMap<>();
     private static final Map<String, Report> reports = new HashMap<>();
     private static final List<ReportExtension> extensions = new CopyOnWriteArrayList<>();
+
     static {
         defaultProcessor = new ExcelReportProcessor();
         processors.put("excel2003", defaultProcessor);
@@ -116,15 +119,16 @@ public class ReportsRegistry {
 
     /**
      * Регистрирует отчет
-     * @param tplUrl  URL шаблона отчета
-     * @param mdlUrl  URL описание отчета
+     *
+     * @param tplUrl URL шаблона отчета
+     * @param mdlUrl URL описание отчета
      * @return зарегистрированная модель отчета или null если либо шаблон либо описание отчета не были указаны.
      */
     public static Report registerReport(final URL tplUrl, final URL mdlUrl) throws Exception {
         if (mdlUrl == null || tplUrl == null)
             return null;
 
-        Logs.reports.debug("registering report: " + tplUrl);
+        log.debug("registering report: {}", tplUrl);
         try (InputStream template = tplUrl.openStream()) {
             try (InputStream model = mdlUrl.openStream()) {
                 final Report report = ReportModelParser.parse(template, model, extensions);
@@ -200,7 +204,7 @@ public class ReportsRegistry {
             if (tuple[0] == null || tuple[1] == null)
                 continue;
 
-            Logs.reports.debug("registering report: " + tuple[0].getPath());
+            log.debug("registering report: {}", tuple[0].getPath());
             try (FileInputStream template = new FileInputStream(tuple[0])) {
                 try (FileInputStream structure = new FileInputStream(tuple[1])) {
                     final Report report = ReportModelParser.parse(template, structure, extensions);
@@ -208,7 +212,7 @@ public class ReportsRegistry {
                     result++;
                 } catch (Exception e) {
                     cause = e;
-                    Logs.reports.error(e.getMessage(), e);
+                    log.error(e.getMessage(), e);
                 }
             }
         }

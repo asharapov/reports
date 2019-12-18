@@ -2,6 +2,7 @@ package org.echosoft.framework.reports.util;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
@@ -35,9 +36,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.echosoft.framework.reports.model.ColorModel;
 import org.echosoft.framework.reports.model.FontModel;
 import org.echosoft.framework.reports.model.NamedRegion;
+import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.processor.Group;
-import org.echosoft.framework.reports.processor.SectionContext;
+import org.echosoft.framework.reports.processor.GroupManager;
 
 /**
  * Класс содержит ряд часто использующихся методов, которые оперируют над рабочей книгой Excel.
@@ -249,30 +251,31 @@ public class POIUtils {
      * Если их количество будет слишком большим то в процессе формирования отчета возникнет ошибка. Для справки: в версии POI 3.2 большинство
      * функций ограничены 30 аргументами.
      *
-     * @param ectx     контекст выполнения.
+     * @param gm  менеджер группировок для записей в секции.
+     * @param colname название колонки в формат ALPHA-26.
      * @param function название функции.
      * @return строка с вызовом функции или <code>null</code> если вызов требуемой функции в данный момент невозможен.
      */
-    public static String makeGroupFormula(final ExecutionContext ectx, final String function) {
-        final SectionContext sctx = ectx.sectionContext;
-        final Group group = sctx.gm.getCurrentGroup();
-        if (group == null)
-            return null;
+    public static String makeGroupFormula(final GroupManager gm, final String colname, final String function) {
+        Group group = gm.getCurrentGroup();
+        final List<Group> children = group == null ? gm.getCompletedRootGroups() : group.children;
 
-        final String colname = POIUtils.getColumnName(ectx.cell.getColumnIndex());
         final StringBuilder formula = new StringBuilder(16);
         formula.append(function);
         formula.append('(');
 
-        final int chsize = group.children.size();
+        final int chsize = children.size();
         if (chsize > 0) {
             for (int i = 0; i < chsize; i++) {
                 if (i > 0)
                     formula.append(',');
-                final Group child = group.children.get(i);
+                final Group child = children.get(i);
                 formula.append(colname);
                 formula.append(child.startRow + 1);
             }
+        } else
+        if (group == null) {
+            return null;
         } else
         if (group.recordsHeight != null && group.recordsHeight == 1) {
             final int start = group.startRow + group.model.getRowsCount();
@@ -584,7 +587,7 @@ public class POIUtils {
 
     /**
      * Находит или создает новый стиль на основе исходного стиля примененного к текущей обрабатываемой ячейке в котором были изменены цвета шрифта и/или фона.
-     * Информация о всех созданных данным методом стилях сохраняется в контексте выполнения в пространстве имен {@link org.echosoft.framework.reports.model.el.ELContext.Scope#VAR}.
+     * Информация о всех созданных данным методом стилях сохраняется в контексте выполнения в пространстве имен {@link ELContext.Scope#VAR}.
      *
      * @param ectx    контекст выполнения. Используется для получения информации о текущей ячейке и для кэширования информации о вновь созданных в документе стилях.
      * @param fnColor Определяет цвет шрифта в данной ячейке. Аргумент содержит идентификатор цвета в документе или <code>-1</code> если цвет шрифта должен остаться без изменений.
@@ -597,7 +600,7 @@ public class POIUtils {
 
     /**
      * Находит или создает новый стиль на основе указанного в аргументе исходного стиля в котором были изменены цвета шрифта и/или фона.
-     * Информация о всех созданных данным методом стилях сохраняется в контексте выполнения в пространстве имен {@link org.echosoft.framework.reports.model.el.ELContext.Scope#VAR}.
+     * Информация о всех созданных данным методом стилях сохраняется в контексте выполнения в пространстве имен {@link ELContext.Scope#VAR}.
      *
      * @param ectx           контекст выполнения. Используется для получения информации о текущей ячейке и для кэширования информации о вновь созданных в документе стилях.
      * @param cellStyleIndex исходный стиль, который должен послужить основой для создаваемого стиля.

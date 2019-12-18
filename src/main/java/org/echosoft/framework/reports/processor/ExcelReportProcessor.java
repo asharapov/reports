@@ -29,7 +29,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.echosoft.common.data.misc.TreeNode;
+import org.echosoft.framework.reports.common.data.TreeNode;
 import org.echosoft.framework.reports.macros.Macros;
 import org.echosoft.framework.reports.model.AreaModel;
 import org.echosoft.framework.reports.model.CellModel;
@@ -509,7 +509,6 @@ public class ExcelReportProcessor implements ReportProcessor {
                 sctx.bean = null;
             }
             sctx.gm.finalizeAllGroups(ectx);
-            sctx.gm = null;
         } else {
             renderArea(ectx, section.getRowTemplate(), -1);
         }
@@ -562,7 +561,6 @@ public class ExcelReportProcessor implements ReportProcessor {
                 sctx.bean = null;
             }
             sctx.gm.finalizeAllGroups(ectx);
-            sctx.gm = null;
         } else {
             sctx.issuer = provider != null ? provider.getIssuer(ectx.elctx) : null;
             try {

@@ -2,7 +2,7 @@ package org.echosoft.framework.reports.model;
 
 import java.io.Serializable;
 
-import org.echosoft.common.utils.StringUtil;
+import org.echosoft.framework.reports.common.utils.StringUtil;
 
 /**
  * Описание именованного региона, который будет создан по завершении рендеринга секции отчета.

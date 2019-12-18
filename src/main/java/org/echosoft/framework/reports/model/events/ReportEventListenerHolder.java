@@ -2,7 +2,7 @@ package org.echosoft.framework.reports.model.events;
 
 import java.io.Serializable;
 
-import org.echosoft.common.utils.ObjectUtil;
+import org.echosoft.framework.reports.common.utils.ObjectUtil;
 import org.echosoft.framework.reports.model.el.ELContext;
 import org.echosoft.framework.reports.model.el.Expression;
 
