@@ -44,10 +44,15 @@ public final class JdbcBeanLoader<T> implements Loader<Map<String, Object>> {
                     value = data;
                     break;
                 }
-                case Types.DATE: {
+                case Types.DATE:
+                case Types.TIMESTAMP:
+                case Types.TIMESTAMP_WITH_TIMEZONE:
                     value = rs.getTimestamp(i);
                     break;
-                }
+                case Types.TIME:
+                case Types.TIME_WITH_TIMEZONE:
+                    value = rs.getTime(i);
+                    break;
                 default: {
                     value = rs.getObject(i);
                 }
