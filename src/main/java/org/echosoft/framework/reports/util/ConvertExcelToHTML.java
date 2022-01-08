@@ -261,7 +261,7 @@ public final class ConvertExcelToHTML {
                     append(getHEXColor(style.getFillForegroundColor(), "white")).
                     append(";\n");
             //font
-            final Font font = book.getFontAt(style.getFontIndexAsInt());
+            final Font font = book.getFontAt(style.getFontIndex());
             sb.append("  font-size:").append(font.getFontHeightInPoints()).append(".0pt;\n");
             sb.append("  font-family:").append(font.getFontName()).append(", sans-serif;\n");
 

@@ -508,26 +508,26 @@ public class POIUtils {
     public static HSSFCellStyle copyStyle(final HSSFWorkbook wb, final short index) {
         final HSSFCellStyle src = wb.getCellStyleAt(index);
         final HSSFCellStyle dst = wb.createCellStyle();
-        dst.setAlignment(src.getAlignmentEnum());
-        dst.setVerticalAlignment(src.getVerticalAlignmentEnum());
+        dst.setAlignment(src.getAlignment());
+        dst.setVerticalAlignment(src.getVerticalAlignment());
         dst.setDataFormat(src.getDataFormat());
         dst.setHidden(src.getHidden());
         dst.setIndention(src.getIndention());
         dst.setLocked(src.getLocked());
         dst.setRotation(src.getRotation());
         dst.setWrapText(src.getWrapText());
-        dst.setBorderTop(src.getBorderTopEnum());
-        dst.setBorderRight(src.getBorderRightEnum());
-        dst.setBorderBottom(src.getBorderBottomEnum());
-        dst.setBorderLeft(src.getBorderLeftEnum());
+        dst.setBorderTop(src.getBorderTop());
+        dst.setBorderRight(src.getBorderRight());
+        dst.setBorderBottom(src.getBorderBottom());
+        dst.setBorderLeft(src.getBorderLeft());
         dst.setTopBorderColor(src.getTopBorderColor());
         dst.setRightBorderColor(src.getRightBorderColor());
         dst.setBottomBorderColor(src.getBottomBorderColor());
         dst.setLeftBorderColor(src.getLeftBorderColor());
-        dst.setFillPattern(src.getFillPatternEnum());
+        dst.setFillPattern(src.getFillPattern());
         dst.setFillForegroundColor(src.getFillForegroundColor());
         dst.setFillBackgroundColor(src.getFillBackgroundColor());
-        dst.setFont(wb.getFontAt(src.getFontIndexAsInt()));
+        dst.setFont(wb.getFontAt(src.getFontIndex()));
         return dst;
     }
 
@@ -605,11 +605,11 @@ public class POIUtils {
         if (dst == null) {
             dst = POIUtils.copyStyle(ectx.wb, cellStyleIndex);
             if (fnColor >= 0) {
-                final Font of = ectx.wb.getFontAt(dst.getFontIndexAsInt());
+                final Font of = ectx.wb.getFontAt(dst.getFontIndex());
                 Font nf = ectx.wb.findFont(of.getBold(), fnColor, of.getFontHeight(),
                         of.getFontName(), of.getItalic(), of.getStrikeout(), of.getTypeOffset(), of.getUnderline());
                 if (nf == null) {
-                    nf = POIUtils.copyFont(ectx.wb, of.getIndexAsInt());
+                    nf = POIUtils.copyFont(ectx.wb, of.getIndex());
                     nf.setColor(fnColor);
                 }
                 dst.setFont(nf);

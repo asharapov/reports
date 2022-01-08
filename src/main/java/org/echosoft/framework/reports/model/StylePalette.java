@@ -49,12 +49,12 @@ public class StylePalette implements Serializable, Cloneable {
     private void init(final XSSFWorkbook wb) {
         final Map<Integer, ColorModel> hashedColors = new HashMap<>();
 
-        for (int i = 0, cnt = wb.getNumberOfFontsAsInt(); i < cnt; i++) {
+        for (int i = 0, cnt = wb.getNumberOfFonts(); i < cnt; i++) {
             final XSSFFont f = wb.getFontAt(i);
             if (f == null)
                 throw new IllegalStateException("Reference to nonexistent font at index: " + i);
             final FontModel font = new FontModel();
-            font.setId(f.getIndexAsInt());
+            font.setId(f.getIndex());
             font.setFontName(f.getFontName());
             font.setCharSet(f.getCharSet());
             font.setFontHeight(f.getFontHeight());
@@ -64,34 +64,34 @@ public class StylePalette implements Serializable, Cloneable {
             font.setTypeOffset(f.getTypeOffset());
             font.setUnderline(f.getUnderline());
             font.setColor(ensureColorRegistered(f.getXSSFColor(), wb, hashedColors));
-            fonts.put(f.getIndexAsInt(), font);
+            fonts.put(f.getIndex(), font);
         }
         for (int i = 0, cnt = wb.getNumCellStyles(); i < cnt; i++) {
             final XSSFCellStyle s = wb.getCellStyleAt(i);
             final CellStyleModel style = new CellStyleModel();
             style.setId(s.getIndex());
-            style.setAlignment(s.getAlignmentEnum());
-            style.setVerticalAlignment(s.getVerticalAlignmentEnum());
+            style.setAlignment(s.getAlignment());
+            style.setVerticalAlignment(s.getVerticalAlignment());
             style.setDataFormat(s.getDataFormatString());
             style.setHidden(s.getHidden());
             style.setIndention(s.getIndention());
             style.setLocked(s.getLocked());
             style.setRotation(s.getRotation());
             style.setWrapText(s.getWrapText());
-            style.setBorderTop(s.getBorderTopEnum());
-            style.setBorderRight(s.getBorderRightEnum());
-            style.setBorderBottom(s.getBorderBottomEnum());
-            style.setBorderLeft(s.getBorderLeftEnum());
+            style.setBorderTop(s.getBorderTop());
+            style.setBorderRight(s.getBorderRight());
+            style.setBorderBottom(s.getBorderBottom());
+            style.setBorderLeft(s.getBorderLeft());
             style.setTopBorderColor(ensureColorRegistered(s.getTopBorderXSSFColor(), wb, hashedColors));
             style.setRightBorderColor(ensureColorRegistered(s.getRightBorderXSSFColor(), wb, hashedColors));
             style.setBottomBorderColor(ensureColorRegistered(s.getBottomBorderXSSFColor(), wb, hashedColors));
             style.setLeftBorderColor(ensureColorRegistered(s.getLeftBorderXSSFColor(), wb, hashedColors));
-            style.setFillPattern(s.getFillPatternEnum());
+            style.setFillPattern(s.getFillPattern());
             style.setFillForegroundColor(ensureColorRegistered(s.getFillForegroundXSSFColor(), wb, hashedColors));
             style.setFillBackgroundColor(ensureColorRegistered(s.getFillBackgroundXSSFColor(), wb, hashedColors));
-            final FontModel font = fonts.get(s.getFontIndexAsInt());
+            final FontModel font = fonts.get(s.getFontIndex());
             if (font == null)
-                throw new IllegalStateException("Reference to nonexistent font at index: " + s.getFontIndexAsInt());
+                throw new IllegalStateException("Reference to nonexistent font at index: " + s.getFontIndex());
             style.setFont(font);
             styles.put(s.getIndex(), style);
         }
@@ -120,26 +120,26 @@ public class StylePalette implements Serializable, Cloneable {
             final HSSFCellStyle s = wb.getCellStyleAt(i);
             final CellStyleModel style = new CellStyleModel();
             style.setId(s.getIndex());
-            style.setAlignment(s.getAlignmentEnum());
-            style.setVerticalAlignment(s.getVerticalAlignmentEnum());
+            style.setAlignment(s.getAlignment());
+            style.setVerticalAlignment(s.getVerticalAlignment());
             style.setDataFormat(s.getDataFormatString());
             style.setHidden(s.getHidden());
             style.setIndention(s.getIndention());
             style.setLocked(s.getLocked());
             style.setRotation(s.getRotation());
             style.setWrapText(s.getWrapText());
-            style.setBorderTop(s.getBorderTopEnum());
-            style.setBorderRight(s.getBorderRightEnum());
-            style.setBorderBottom(s.getBorderBottomEnum());
-            style.setBorderLeft(s.getBorderLeftEnum());
+            style.setBorderTop(s.getBorderTop());
+            style.setBorderRight(s.getBorderRight());
+            style.setBorderBottom(s.getBorderBottom());
+            style.setBorderLeft(s.getBorderLeft());
             style.setTopBorderColor(ensureColorRegistered(s.getTopBorderColor(), palette));
             style.setRightBorderColor(ensureColorRegistered(s.getRightBorderColor(), palette));
             style.setBottomBorderColor(ensureColorRegistered(s.getBottomBorderColor(), palette));
             style.setLeftBorderColor(ensureColorRegistered(s.getLeftBorderColor(), palette));
-            style.setFillPattern(s.getFillPatternEnum());
+            style.setFillPattern(s.getFillPattern());
             style.setFillForegroundColor(ensureColorRegistered(s.getFillForegroundColor(), palette));
             style.setFillBackgroundColor(ensureColorRegistered(s.getFillBackgroundColor(), palette));
-            style.setFont(ensureFontRegistered(s.getFontIndexAsInt(), wb, palette));
+            style.setFont(ensureFontRegistered(s.getFontIndex(), wb, palette));
             styles.put(s.getIndex(), style);
         }
     }
@@ -163,7 +163,7 @@ public class StylePalette implements Serializable, Cloneable {
             if (f == null)
                 throw new IllegalStateException("Reference to nonexistent font at index: " + fontIndex);
             font = new FontModel();
-            font.setId(f.getIndexAsInt());
+            font.setId(f.getIndex());
             font.setBold(f.getBold());
             font.setCharSet(f.getCharSet());
             font.setFontHeight(f.getFontHeight());
