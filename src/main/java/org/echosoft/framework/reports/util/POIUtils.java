@@ -353,7 +353,7 @@ public class POIUtils {
     public static XSSFColor makeXSSFColor(final ColorModel color) {
         if (color == null)
             return null;
-        return new XSSFColor(color.toByteArray());
+        return new XSSFColor(color.toByteArray(), null);
     }
 
     /**
