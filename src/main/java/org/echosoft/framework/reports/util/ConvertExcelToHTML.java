@@ -16,7 +16,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -56,7 +55,7 @@ public final class ConvertExcelToHTML {
      * @return HTML representation of workbook
      * @throws IOException an exception
      */
-    public String process(final File file) throws IOException, InvalidFormatException {
+    public String process(final File file) throws IOException {
         try (InputStream in = new FileInputStream(file)) {
             final Workbook wb = WorkbookFactory.create(in);
             return process(wb, null);
@@ -70,7 +69,7 @@ public final class ConvertExcelToHTML {
      * @return HTML representation of workbook
      * @throws IOException an exception
      */
-    public String process(final InputStream stream) throws IOException, InvalidFormatException {
+    public String process(final InputStream stream) throws IOException {
         final Workbook wb = WorkbookFactory.create(stream);
         return process(wb, null);
     }
@@ -80,9 +79,8 @@ public final class ConvertExcelToHTML {
      *
      * @param workbook HSSFWorkbook
      * @return HTML representation of workbook
-     * @throws IOException an exception
      */
-    public String process(final Workbook workbook, final Charset charset) throws IOException {
+    public String process(final Workbook workbook, final Charset charset) {
         //get first  sheet
         final Sheet sheet = workbook.getSheetAt(0);
         final StringBuilder sb = new StringBuilder(1024);
@@ -154,7 +152,7 @@ public final class ConvertExcelToHTML {
                 final DataFormat dataFormat = workbook.createDataFormat();
                 final String format = dataFormat.getFormat(cell.getCellStyle().getDataFormat());
                 final boolean isWrap = cell.getCellStyle().getWrapText();
-                switch (cell.getCellTypeEnum()) {
+                switch (cell.getCellType()) {
                     case NUMERIC:
                         if (DateUtil.isCellDateFormatted(cell)) {
                             sb.append(mask(getFormattedDate(format, cell.getDateCellValue()), isWrap));
@@ -210,8 +208,8 @@ public final class ConvertExcelToHTML {
                 final Cell cellRight = sheet.getRow(startRow).getCell(finishCol);
                 final Cell cellBottom = sheet.getRow(finishRow).getCell(startCol);
                 sb.append(" style=\"");
-                addBorder(sb, "border-right:", cellRight.getCellStyle().getBorderRightEnum(), cellRight.getCellStyle().getRightBorderColor());
-                addBorder(sb, "border-bottom:", cellBottom.getCellStyle().getBorderBottomEnum(), cellBottom.getCellStyle().getBottomBorderColor());
+                addBorder(sb, "border-right:", cellRight.getCellStyle().getBorderRight(), cellRight.getCellStyle().getRightBorderColor());
+                addBorder(sb, "border-bottom:", cellBottom.getCellStyle().getBorderBottom(), cellBottom.getCellStyle().getBottomBorderColor());
                 sb.append("\"");
                 sb.append(" width=\"*\"");
                 if (colspan == 0 && rowspan != 0) {
@@ -247,23 +245,23 @@ public final class ConvertExcelToHTML {
             final CellStyle style = book.getCellStyleAt(i);
             sb.append(" .class_").append(i).append(" {\n");
             //border
-            addBorder(sb, "  border-top:", style.getBorderTopEnum(), style.getTopBorderColor());
+            addBorder(sb, "  border-top:", style.getBorderTop(), style.getTopBorderColor());
             sb.append(";\n");
-            addBorder(sb, "  border-left:", style.getBorderLeftEnum(), style.getLeftBorderColor());
+            addBorder(sb, "  border-left:", style.getBorderLeft(), style.getLeftBorderColor());
             sb.append(";\n");
-            addBorder(sb, "  border-right:", style.getBorderRightEnum(), style.getRightBorderColor());
+            addBorder(sb, "  border-right:", style.getBorderRight(), style.getRightBorderColor());
             sb.append(";\n");
-            addBorder(sb, "  border-bottom:", style.getBorderBottomEnum(), style.getBottomBorderColor());
+            addBorder(sb, "  border-bottom:", style.getBorderBottom(), style.getBottomBorderColor());
             sb.append(";\n");
-            //aligment
-            addHorizontalAlignment(sb, style.getAlignmentEnum());
-            addVerticalAlignment(sb, style.getVerticalAlignmentEnum());
+            //alignment
+            addHorizontalAlignment(sb, style.getAlignment());
+            addVerticalAlignment(sb, style.getVerticalAlignment());
             //bg color
             sb.append("  background-color:").
                     append(getHEXColor(style.getFillForegroundColor(), "white")).
                     append(";\n");
             //font
-            final Font font = book.getFontAt(style.getFontIndex());
+            final Font font = book.getFontAt(style.getFontIndexAsInt());
             sb.append("  font-size:").append(font.getFontHeightInPoints()).append(".0pt;\n");
             sb.append("  font-family:").append(font.getFontName()).append(", sans-serif;\n");
 
@@ -381,9 +379,6 @@ public final class ConvertExcelToHTML {
             case FILL:
                 sb.append("fill;\n");
                 break;
-            case GENERAL:
-                sb.append("general;\n");
-                break;
             case JUSTIFY:
                 sb.append("justify;\n");
                 break;
@@ -393,6 +388,7 @@ public final class ConvertExcelToHTML {
             case RIGHT:
                 sb.append("right;\n");
                 break;
+            case GENERAL:
             default:
                 sb.append("general;\n");
         }
@@ -402,13 +398,13 @@ public final class ConvertExcelToHTML {
      * Converts POI vertical alignment into css view.
      *
      * @param sb        result StringBuffer
-     * @param alignment This is POI avertical lignment presentation
+     * @param alignment This is POI vertical alignment presentation
      */
     private void addVerticalAlignment(final StringBuilder sb, final VerticalAlignment alignment) {
         sb.append("  vertical-align:");
         switch (alignment) {
-            case BOTTOM:
-                sb.append("bottom;\n");
+            case TOP:
+                sb.append("top;\n");
                 break;
             case CENTER:
                 sb.append("middle;\n");
@@ -416,9 +412,7 @@ public final class ConvertExcelToHTML {
             case JUSTIFY:
                 sb.append("justify;\n");
                 break;
-            case TOP:
-                sb.append("top;\n");
-                break;
+            case BOTTOM:
             default:
                 sb.append("bottom;\n");
         }
@@ -436,7 +430,7 @@ public final class ConvertExcelToHTML {
         if (value == null) {
             return ""; // to hide "null" string
         }
-        final char content[] = new char[value.length()];
+        final char[] content = new char[value.length()];
         value.getChars(0, value.length(), content, 0);
         final StringBuilder result = new StringBuilder(content.length + 50);
         for (char c : content) {
@@ -461,10 +455,10 @@ public final class ConvertExcelToHTML {
 
 
     /**
-     * Конвертирует цвет в формате POI в строку вида #FFFFFF  (RGB формат).
+     * Конвертирует цвет в формате POI в строку вида #FFFFFF (RGB формат).
      *
      * @param color  индекс цвета в документе.
-     * @return  код цвета в формате RGB в шестнадцатиричном формате.
+     * @return  код цвета в формате RGB в шестнадцатеричном формате.
      */
     private static String getHEXColor(short color) {
         return getHEXColor(color, "windowtext");
@@ -472,11 +466,11 @@ public final class ConvertExcelToHTML {
 
 
     /**
-     * Конвертирует цвет в формате POI в строку вида #FFFFFF  (RGB формат).
+     * Конвертирует цвет в формате POI в строку вида #FFFFFF (RGB формат).
      *
      * @param color  индекс цвета в документе.
      * @param defaultColor  строка с цветом по умолчанию если индекс цвета был указан неверно.
-     * @return  код цвета в формате RGB в шестнадцатиричном формате.
+     * @return  код цвета в формате RGB в шестнадцатеричном формате.
      */
     private static String getHEXColor(short color, String defaultColor) {
 //        IndexedColors.

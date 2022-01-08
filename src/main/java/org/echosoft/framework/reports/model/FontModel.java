@@ -11,7 +11,7 @@ import org.apache.poi.ss.usermodel.Font;
  */
 public class FontModel implements Serializable, Cloneable {
 
-    private short id;
+    private int id;
     private String fontName;
     private short fontHeight;
     private int charSet;
@@ -32,10 +32,10 @@ public class FontModel implements Serializable, Cloneable {
      *
      * @return идентификатор шрифта в шаблоне отчета.
      */
-    public short getId() {
+    public int getId() {
         return id;
     }
-    public void setId(final short id) {
+    public void setId(final int id) {
         this.id = id;
     }
 

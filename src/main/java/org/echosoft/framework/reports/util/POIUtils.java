@@ -60,7 +60,7 @@ public class POIUtils {
     public static Object getCellValue(final Cell cell) {
         if (cell == null)
             return null;
-        switch (cell.getCellTypeEnum()) {
+        switch (cell.getCellType()) {
             case NUMERIC:
                 return DateUtil.isCellDateFormatted(cell) ? cell.getDateCellValue() : cell.getNumericCellValue();
             case STRING: {
@@ -69,12 +69,11 @@ public class POIUtils {
             }
             case FORMULA:
                 return cell.getCellFormula();
-            case BLANK:
-                return null;
             case BOOLEAN:
                 return cell.getBooleanCellValue();
             case ERROR:
                 return "#ERR" + cell.getErrorCellValue();
+            case BLANK:
             default:
                 return null;
         }
@@ -90,41 +89,33 @@ public class POIUtils {
      */
     public static void setCellValue(final Cell cell, final Object value) {
         if (value == null) {
-            cell.setCellType(CellType.BLANK);
+            cell.setBlank();
         } else
         if (value instanceof Date) {
-            cell.setCellType(CellType.NUMERIC);
             cell.setCellValue((Date) value);
         } else
         if (value instanceof Calendar) {
-            cell.setCellType(CellType.NUMERIC);
             cell.setCellValue((Calendar) value);
         } else
         if (value instanceof Double) {
-            cell.setCellType(CellType.NUMERIC);
             cell.setCellValue((Double) value);
         } else
         if (value instanceof Number) {
-            cell.setCellType(CellType.NUMERIC);
             cell.setCellValue(((Number) value).doubleValue());
         } else
         if (value instanceof Boolean) {
-            cell.setCellType(CellType.BOOLEAN);
             cell.setCellValue((Boolean) value);
         } else
         if (value instanceof RichTextString) {
-            cell.setCellType(CellType.STRING);
             cell.setCellValue((RichTextString) value);
         } else {
             final String text = value.toString();
-            if (cell.getCellTypeEnum() == CellType.FORMULA) {
+            if (cell.getCellType() == CellType.FORMULA) {
                 cell.setCellFormula(text);
             } else
             if (text.startsWith(FORMULA)) {
-                cell.setCellType(CellType.FORMULA);
                 cell.setCellFormula(text.substring(FORMULA_LENGTH));
             } else {
-                cell.setCellType(CellType.STRING);
                 final CreationHelper helper = cell.getSheet().getWorkbook().getCreationHelper();
                 cell.setCellValue(helper.createRichTextString(text));
             }
@@ -152,9 +143,9 @@ public class POIUtils {
     /**
      * Конвертирует наименование колонки из десятичного или ALPHA-26 форматов в числа.
      *
-     * @param columnName наименование колонки - либо число либо строка в ALPHA-26 коде (A, B, C, ... Z, AA, ... AZ, ...)
+     * @param columnName наименование колонки - либо число, либо строка в ALPHA-26 коде (A, B, C, ... Z, AA, ... AZ, ...)
      * @return порядковый номер колонки (начиная с 0).
-     *         Если наименование колонки содержит недопустимые символы то метод вернет <code>-1</code>.
+     *         Если наименование колонки содержит недопустимые символы, то метод вернет <code>-1</code>.
      */
     public static int getColumnNumber(final String columnName) {
         return getColumnNumber(columnName, -1);
@@ -163,7 +154,7 @@ public class POIUtils {
     /**
      * Конвертирует наименование колонки из десятичного или ALPHA-26 форматов в числа.
      *
-     * @param columnName наименование колонки - либо число либо строка в ALPHA-26 коде (A, B, C, ... Z, AA, ... AZ, ...)
+     * @param columnName наименование колонки - либо число, либо строка в ALPHA-26 коде (A, B, C, ... Z, AA, ... AZ, ...)
      * @param defaultValue значение по умолчанию для возвращаемого результата. Используется в случае неверного формата значения атрибута columnName.
      * @return порядковый номер колонки (начиная с 0) или, если columnName содержит недопустимые символы, то метод вернет значение атрибута defaultValue.
      */
@@ -212,7 +203,7 @@ public class POIUtils {
      * Конвертирует порядковый номер колонки (начиная с 0) в формат ALPHA-26.
      *
      * @param col порядковый номер колонки, начиная с 0.
-     * @return наименование колонки в формате  A, B, C, ... Z, AA, ... AZ, ...
+     * @return наименование колонки в формате A, B, C, ... Z, AA, ... AZ, ...
      */
     public static String getColumnName(final int col) {
         // Excel counts column A as the 1st column, we treat it as the 0th one
@@ -248,7 +239,7 @@ public class POIUtils {
     /**
      * Компилирует вызов указанной функции Excel для текущей группы.<br/>
      * <strong>Внимание!</strong> При вызове данной функции следует самостоятельно контролировать количество аргументов формируемой функции.
-     * Если их количество будет слишком большим то в процессе формирования отчета возникнет ошибка. Для справки: в версии POI 3.2 большинство
+     * Если их количество будет слишком большим, то в процессе формирования отчета возникнет ошибка. Для справки: в версии POI 3.2 большинство
      * функций ограничены 30 аргументами.
      *
      * @param gm  менеджер группировок для записей в секции.
@@ -301,7 +292,7 @@ public class POIUtils {
 
     /**
      * Декодирует информацию о цвете в случае использования XSSF формата. POI 3.9 все еще содержит какие-то ошибки при работе с цветностью
-     * поэтому нам приходится добавлять свои хаки чтобы получить более-менее приемлемые значения.
+     * поэтому нам приходится добавлять свои хаки, чтобы получить более-менее приемлемые значения.
      *
      * @param wb    документ
      * @param color описание цвета в формате POI.
@@ -332,7 +323,7 @@ public class POIUtils {
         byte[] rgb = color.getRGBWithTint();
         // ниже рассмотрена спец. обработка случая когда обрабатываемый .xlsx документ был получен
         // простым сохранением в новом формате из старого .xls документа без каких-либо изменений ...
-        // В других случаях, по моим наблюдениям, индексированные цвета на которых бы не работали стандартные методы POI не используются.
+        // В других случаях, по моим наблюдениям, индексированные цвета, на которых бы не работали стандартные методы POI, не используются.
         if (rgb == null && color.getCTColor().isSetIndexed()) {
             final int  index = color.getIndexed();
             final HSSFColor clr = HSSFColor.getIndexHash().get(index);
@@ -357,7 +348,7 @@ public class POIUtils {
     }
 
     /**
-     * Метод проверяет наличие в рабочей книге зарегистрированного фонта с указанными характеристиками и если он отсутствует то регистрирует его.
+     * Метод проверяет наличие в рабочей книге зарегистрированного фонта с указанными характеристиками, и если он отсутствует, то регистрирует его.
      *
      * @param wb  рабочая книга в которой должен быть зарегистрирован требуемый фонт.
      * @param fm  характеристики требуемого фонта.
@@ -383,7 +374,7 @@ public class POIUtils {
     }
 
     /**
-     * Метод проверяет наличие в рабочей книге зарегистрированного фонта с указанными характеристиками и если он отсутствует то регистрирует его.
+     * Метод проверяет наличие в рабочей книге зарегистрированного фонта с указанными характеристиками, и если он отсутствует, то регистрирует его.
      *
      * @param wb  рабочая книга в которой должен быть зарегистрирован требуемый фонт.
      * @param fm  характеристики требуемого фонта.
@@ -426,7 +417,7 @@ public class POIUtils {
      * @param index индекс фонта в документе который должен быть взят в качестве шаблона для копирования.
      * @return созданная в этом же документе копия шрифта.
      */
-    public static Font copyFont(final Workbook wb, final short index) {
+    public static Font copyFont(final Workbook wb, final int index) {
         if (wb instanceof HSSFWorkbook) {
             return copyFont((HSSFWorkbook)wb, index);
         } else
@@ -447,7 +438,7 @@ public class POIUtils {
      * @param index индекс фонта в документе который должен быть взят в качестве шаблона для копирования.
      * @return созданная в этом же документе копия шрифта.
      */
-    public static HSSFFont copyFont(final HSSFWorkbook wb, final short index) {
+    public static HSSFFont copyFont(final HSSFWorkbook wb, final int index) {
         final HSSFFont src = wb.getFontAt(index);
         final HSSFFont dst = wb.createFont();
         dst.setFontName(src.getFontName());
@@ -470,7 +461,7 @@ public class POIUtils {
      * @param index индекс фонта в документе который должен быть взят в качестве шаблона для копирования.
      * @return созданная в этом же документе копия шрифта.
      */
-    public static XSSFFont copyFont(final XSSFWorkbook wb, final short index) {
+    public static XSSFFont copyFont(final XSSFWorkbook wb, final int index) {
         final XSSFFont src = wb.getFontAt(index);
         final XSSFFont dst = wb.createFont();
         dst.setFontName(src.getFontName());
@@ -536,7 +527,7 @@ public class POIUtils {
         dst.setFillPattern(src.getFillPatternEnum());
         dst.setFillForegroundColor(src.getFillForegroundColor());
         dst.setFillBackgroundColor(src.getFillBackgroundColor());
-        dst.setFont(wb.getFontAt(src.getFontIndex()));
+        dst.setFont(wb.getFontAt(src.getFontIndexAsInt()));
         return dst;
     }
 
@@ -614,18 +605,18 @@ public class POIUtils {
         if (dst == null) {
             dst = POIUtils.copyStyle(ectx.wb, cellStyleIndex);
             if (fnColor >= 0) {
-                final Font of = ectx.wb.getFontAt(dst.getFontIndex());
-                Font nf = ectx.wb.findFont(of.getBold(), (short) fnColor, of.getFontHeight(),
+                final Font of = ectx.wb.getFontAt(dst.getFontIndexAsInt());
+                Font nf = ectx.wb.findFont(of.getBold(), fnColor, of.getFontHeight(),
                         of.getFontName(), of.getItalic(), of.getStrikeout(), of.getTypeOffset(), of.getUnderline());
                 if (nf == null) {
-                    nf = POIUtils.copyFont(ectx.wb, of.getIndex());
-                    nf.setColor((short) fnColor);
+                    nf = POIUtils.copyFont(ectx.wb, of.getIndexAsInt());
+                    nf.setColor(fnColor);
                 }
                 dst.setFont(nf);
             }
             if (bgColor >= 0) {
                 dst.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-                dst.setFillForegroundColor((short) bgColor);
+                dst.setFillForegroundColor(bgColor);
             }
             ectx.elctx.getVariables().put(styleName, dst);
         }

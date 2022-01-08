@@ -6,18 +6,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import org.apache.poi.POIXMLProperties;
 import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hpsf.Property;
 import org.apache.poi.hpsf.PropertySet;
 import org.apache.poi.hpsf.SummaryInformation;
 import org.apache.poi.hpsf.Variant;
 import org.apache.poi.hpsf.wellknown.PropertyIDMap;
-import org.apache.poi.hpsf.wellknown.SectionIDMap;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ooxml.POIXMLProperties;
 import org.apache.poi.openxml4j.opc.OPCPackage;
-import org.apache.poi.openxml4j.util.Nullable;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
@@ -138,7 +137,7 @@ public class ExcelReportProcessor implements ReportProcessor {
                     wb = new XSSFWorkbook();
                 }
                 final POIXMLProperties props = wb.getProperties();
-                props.getCoreProperties().setCreated(new Nullable<>(new Date()));
+                props.getCoreProperties().setCreated(Optional.of(new Date()));
                 final String application = report.getDescription().getApplication(ctx);
                 if (application != null) {
                     props.getExtendedProperties().getUnderlyingProperties().setApplication(application);
@@ -197,7 +196,7 @@ public class ExcelReportProcessor implements ReportProcessor {
 
                 final PropertySet siProperties = new PropertySet();
                 final org.apache.poi.hpsf.Section siSection = siProperties.getSections().get(0);
-                siSection.setFormatID(SectionIDMap.SUMMARY_INFORMATION_ID);
+                siSection.setFormatID(SummaryInformation.FORMAT_ID);
                 final Property p0 = new Property();
                 p0.setID(PropertyIDMap.PID_CREATE_DTM);
                 p0.setType(Variant.VT_FILETIME);
@@ -255,7 +254,7 @@ public class ExcelReportProcessor implements ReportProcessor {
 
                 final PropertySet dsiProperties = new PropertySet();
                 final org.apache.poi.hpsf.Section dsiSection = dsiProperties.getSections().get(0);
-                dsiSection.setFormatID(SectionIDMap.DOCUMENT_SUMMARY_INFORMATION_ID[0]);
+                dsiSection.setFormatID(DocumentSummaryInformation.FORMAT_ID[0]);
                 final String company = report.getDescription().getCompany(ctx);
                 if (company != null) {
                     final Property p = new Property();
@@ -673,31 +672,24 @@ public class ExcelReportProcessor implements ReportProcessor {
      */
     protected void renderCell(final ExecutionContext ectx, final Object value) {
         if (value == null) {
-            ectx.cell.setCellType(CellType.BLANK);
+            ectx.cell.setBlank();
         } else if (value instanceof Date) {
-            ectx.cell.setCellType(CellType.NUMERIC);
             ectx.cell.setCellValue((Date) value);
         } else if (value instanceof Calendar) {
-            ectx.cell.setCellType(CellType.NUMERIC);
             ectx.cell.setCellValue((Calendar) value);
         } else if (value instanceof Double) {
-            ectx.cell.setCellType(CellType.NUMERIC);
             ectx.cell.setCellValue((Double) value);
         } else if (value instanceof Number) {
-            ectx.cell.setCellType(CellType.NUMERIC);
             ectx.cell.setCellValue(((Number) value).doubleValue());
         } else if (value instanceof Boolean) {
-            ectx.cell.setCellType(CellType.BOOLEAN);
             ectx.cell.setCellValue((Boolean) value);
         } else if (value instanceof RichTextString) {
-            ectx.cell.setCellType(CellType.STRING);
             ectx.cell.setCellValue((RichTextString) value);
         } else {
             final String text = value.toString();
-            if (ectx.cell.getCellTypeEnum() == CellType.FORMULA) {
+            if (ectx.cell.getCellType() == CellType.FORMULA) {
                 ectx.cell.setCellFormula(text);
             } else if (text.startsWith(FORMULA)) {
-                ectx.cell.setCellType(CellType.FORMULA);
                 ectx.cell.setCellFormula(text.substring(FORMULA_LENGTH));
             } else if (text.startsWith(MACROS)) {
                 final int si = text.indexOf('(', MACROS_LENGTH);
@@ -717,7 +709,6 @@ public class ExcelReportProcessor implements ReportProcessor {
                     throw new IllegalArgumentException("Unable to find custom function [" + name + "] at row:" + ectx.cell.getRowIndex() + ", cell:" + ectx.cell.getColumnIndex());
                 func.call(ectx, args);
             } else {
-                ectx.cell.setCellType(CellType.STRING);
                 ectx.cell.setCellValue(ectx.creationHelper.createRichTextString(text));
             }
         }

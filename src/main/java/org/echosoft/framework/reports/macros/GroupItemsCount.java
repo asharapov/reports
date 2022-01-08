@@ -3,7 +3,6 @@ package org.echosoft.framework.reports.macros;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.poi.ss.usermodel.CellType;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.processor.Group;
 import org.echosoft.framework.reports.processor.GroupManager;
@@ -58,11 +57,9 @@ public class GroupItemsCount implements Macros {
                 out.append(child.startRow + 1);
             }
             final String formula = out.toString();
-            ectx.cell.setCellType(CellType.FORMULA);
             ectx.cell.setCellFormula(formula);
         } else {
             final int cnt = records.size();
-            ectx.cell.setCellType(CellType.NUMERIC);
             ectx.cell.setCellValue(cnt);
         }
     }

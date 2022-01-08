@@ -142,7 +142,7 @@ public class ReportModelParser {
                 }
             }
 
-            if (Boolean.valueOf(root.getAttribute("preserveTemplate"))) {
+            if (Boolean.parseBoolean(root.getAttribute("preserveTemplate"))) {
                 preserveTemplate(report, wb);
             }
             if (extensions != null) {
@@ -643,9 +643,6 @@ public class ReportModelParser {
             final ByteArrayOutputStream buf = new ByteArrayOutputStream(4096);
             if (directoryNode.getFileSystem() != null) {
                 directoryNode.getFileSystem().writeFilesystem(buf);
-            } else
-            if (directoryNode.getNFileSystem() != null) {
-                directoryNode.getNFileSystem().writeFilesystem(buf);
             }
             report.setTemplate(buf.toByteArray());
         } else {

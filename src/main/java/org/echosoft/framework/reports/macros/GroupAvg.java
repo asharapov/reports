@@ -2,7 +2,6 @@ package org.echosoft.framework.reports.macros;
 
 import java.util.List;
 
-import org.apache.poi.ss.usermodel.CellType;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.processor.Group;
 import org.echosoft.framework.reports.processor.GroupManager;
@@ -69,10 +68,9 @@ public class GroupAvg implements Macros {
         }
 
         if (formula!=null) {
-            ectx.cell.setCellType(CellType.FORMULA);
             ectx.cell.setCellFormula( formula );
         } else {
-            ectx.cell.setCellType(CellType.BLANK);
+            ectx.cell.setBlank();
         }
     }
 

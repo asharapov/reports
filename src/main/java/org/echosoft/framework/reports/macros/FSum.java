@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.echosoft.framework.reports.common.collections.iterators.ArrayIterator;
 import org.echosoft.framework.reports.common.collections.iterators.EnumerationIterator;
 import org.echosoft.framework.reports.common.collections.iterators.ObjectArrayIterator;
@@ -73,7 +72,7 @@ public class FSum implements Macros {
 
         if (rows == null || !rows.hasNext()) {
             // исключительная ситуация: нет данных для обработки ...
-            ectx.cell.setCellType(CellType.BLANK);
+            ectx.cell.setBlank();
             return;
         }
 
@@ -116,12 +115,10 @@ public class FSum implements Macros {
             buf.append(colname);
             buf.append(rows.next());
         }
-        cell.setCellType(CellType.FORMULA);
         cell.setCellFormula(buf.toString());
     }
 
     private void calculateFirstRow(final Cell cell, final String colname, final Iterator<Integer> rows) {
-        cell.setCellType(CellType.FORMULA);
         cell.setCellFormula(colname + rows.next());
     }
 }

@@ -63,10 +63,9 @@ public class GroupSum implements Macros {
         }
 
         if (formula!=null) {
-            ectx.cell.setCellType(CellType.FORMULA);
             ectx.cell.setCellFormula( formula );
         } else {
-            ectx.cell.setCellType(CellType.BLANK);
+            ectx.cell.setBlank();
         }
     }
 

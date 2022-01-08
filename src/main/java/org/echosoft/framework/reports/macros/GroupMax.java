@@ -1,6 +1,5 @@
 package org.echosoft.framework.reports.macros;
 
-import org.apache.poi.ss.usermodel.CellType;
 import org.echosoft.framework.reports.processor.ExecutionContext;
 import org.echosoft.framework.reports.processor.GroupManager;
 import org.echosoft.framework.reports.util.POIUtils;
@@ -32,10 +31,9 @@ public class GroupMax implements Macros {
 
         final String formula = POIUtils.makeGroupFormula(gm, colname, "MAX");
         if (formula!=null) {
-            ectx.cell.setCellType(CellType.FORMULA);
             ectx.cell.setCellFormula( formula );
         } else {
-            ectx.cell.setCellType(CellType.BLANK);
+            ectx.cell.setBlank();
         }
     }
 

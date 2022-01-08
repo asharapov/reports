@@ -29,7 +29,7 @@ import org.echosoft.framework.reports.util.POIUtils;
 public class StylePalette implements Serializable, Cloneable {
 
     private Map<Short, ColorModel> colors;
-    private Map<Short, FontModel> fonts;
+    private Map<Integer, FontModel> fonts;
     private Map<Short, CellStyleModel> styles;
 
     public StylePalette(final Workbook wb) {
@@ -49,12 +49,12 @@ public class StylePalette implements Serializable, Cloneable {
     private void init(final XSSFWorkbook wb) {
         final Map<Integer, ColorModel> hashedColors = new HashMap<>();
 
-        for (short i = 0, cnt = wb.getNumberOfFonts(); i < cnt; i++) {
+        for (int i = 0, cnt = wb.getNumberOfFontsAsInt(); i < cnt; i++) {
             final XSSFFont f = wb.getFontAt(i);
             if (f == null)
                 throw new IllegalStateException("Reference to nonexistent font at index: " + i);
             final FontModel font = new FontModel();
-            font.setId(f.getIndex());
+            font.setId(f.getIndexAsInt());
             font.setFontName(f.getFontName());
             font.setCharSet(f.getCharSet());
             font.setFontHeight(f.getFontHeight());
@@ -64,7 +64,7 @@ public class StylePalette implements Serializable, Cloneable {
             font.setTypeOffset(f.getTypeOffset());
             font.setUnderline(f.getUnderline());
             font.setColor(ensureColorRegistered(f.getXSSFColor(), wb, hashedColors));
-            fonts.put(f.getIndex(), font);
+            fonts.put(f.getIndexAsInt(), font);
         }
         for (int i = 0, cnt = wb.getNumCellStyles(); i < cnt; i++) {
             final XSSFCellStyle s = wb.getCellStyleAt(i);
@@ -89,9 +89,9 @@ public class StylePalette implements Serializable, Cloneable {
             style.setFillPattern(s.getFillPatternEnum());
             style.setFillForegroundColor(ensureColorRegistered(s.getFillForegroundXSSFColor(), wb, hashedColors));
             style.setFillBackgroundColor(ensureColorRegistered(s.getFillBackgroundXSSFColor(), wb, hashedColors));
-            final FontModel font = fonts.get(s.getFontIndex());
+            final FontModel font = fonts.get(s.getFontIndexAsInt());
             if (font == null)
-                throw new IllegalStateException("Reference to nonexistent font at index: " + s.getFontIndex());
+                throw new IllegalStateException("Reference to nonexistent font at index: " + s.getFontIndexAsInt());
             style.setFont(font);
             styles.put(s.getIndex(), style);
         }
@@ -139,7 +139,7 @@ public class StylePalette implements Serializable, Cloneable {
             style.setFillPattern(s.getFillPatternEnum());
             style.setFillForegroundColor(ensureColorRegistered(s.getFillForegroundColor(), palette));
             style.setFillBackgroundColor(ensureColorRegistered(s.getFillBackgroundColor(), palette));
-            style.setFont(ensureFontRegistered(s.getFontIndex(), wb, palette));
+            style.setFont(ensureFontRegistered(s.getFontIndexAsInt(), wb, palette));
             styles.put(s.getIndex(), style);
         }
     }
@@ -156,14 +156,14 @@ public class StylePalette implements Serializable, Cloneable {
         return color;
     }
 
-    private FontModel ensureFontRegistered(final short fontIndex, final Workbook wb, final HSSFPalette palette) {
+    private FontModel ensureFontRegistered(final int fontIndex, final Workbook wb, final HSSFPalette palette) {
         FontModel font = fonts.get(fontIndex);
         if (font == null) {
             final Font f = wb.getFontAt(fontIndex);
             if (f == null)
                 throw new IllegalStateException("Reference to nonexistent font at index: " + fontIndex);
             font = new FontModel();
-            font.setId(f.getIndex());
+            font.setId(f.getIndexAsInt());
             font.setBold(f.getBold());
             font.setCharSet(f.getCharSet());
             font.setFontHeight(f.getFontHeight());
@@ -203,7 +203,7 @@ public class StylePalette implements Serializable, Cloneable {
      *
      * @return полный список всех используемых в отчете шрифтов.
      */
-    public Map<Short, FontModel> getFonts() {
+    public Map<Integer, FontModel> getFonts() {
         return fonts;
     }
 
@@ -246,7 +246,7 @@ public class StylePalette implements Serializable, Cloneable {
             pal.setColorAtIndex(color.getId(), color.getRed(), color.getGreen(), color.getBlue());
         }
 
-        final Map<Short, Font> fontsmap = new HashMap<>();
+        final Map<Integer, Font> fontsmap = new HashMap<>();
         for (final FontModel font : fonts.values()) {
             final Font f = POIUtils.ensureFontExists(wb, font);
             fontsmap.put(font.getId(), f);
@@ -291,7 +291,7 @@ public class StylePalette implements Serializable, Cloneable {
     private Map<Short, CellStyle> applyTo(final XSSFWorkbook wb) {
         final Map<Short, CellStyle> result = new HashMap<>();
 
-        final Map<Short, Font> fontsmap = new HashMap<>();
+        final Map<Integer, Font> fontsmap = new HashMap<>();
         for (final FontModel font : fonts.values()) {
             final Font f = POIUtils.ensureFontExists(wb, font);
             fontsmap.put(font.getId(), f);
@@ -350,7 +350,7 @@ public class StylePalette implements Serializable, Cloneable {
             result.colors.put(e.getKey(), (ColorModel) e.getValue().clone());
         }
         result.fonts = new HashMap<>(fonts.size());
-        for (Map.Entry<Short, FontModel> e : fonts.entrySet()) {
+        for (Map.Entry<Integer, FontModel> e : fonts.entrySet()) {
             result.fonts.put(e.getKey(), (FontModel) e.getValue().clone());
         }
         result.styles = new HashMap<>(styles.size());
